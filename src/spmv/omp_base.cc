@@ -2,7 +2,7 @@
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
 #include "timer.h"
-//#include "spmv_util.h"
+#include "spmv_util.h"
 
 template <typename T>
 void SpmvSolver(Graph &g, const T *x, T *y) {
@@ -21,7 +21,7 @@ void SpmvSolver(Graph &g, const T *x, T *y) {
   Timer t;
   t.Start();
   #pragma omp parallel for
-  for (int i = 0; i < m; i++){
+  for (vidType i = 0; i < m; i++){
     auto row_begin = Ap[i];
     auto row_end   = Ap[i+1];
     auto sum = y[i];
@@ -35,34 +35,36 @@ void SpmvSolver(Graph &g, const T *x, T *y) {
   t.Stop();
 
   double time = t.Seconds();
-  //float gbyte = bytes_per_spmv(m, nnz);
-  //float GFLOPs = (time == 0) ? 0 : (2 * nnz / time);
-  //float GBYTEs = (time == 0) ? 0 : (gbyte / time);
-  //printf("\truntime [omp_base] = %.4f s ( %5.2f GFLOP/s %5.1f GB/s)\n", time, GFLOPs, GBYTEs);
-  std::cout << "runtime [base] = " << t.Seconds() << " sec\n";
+  float gbyte = bytes_per_spmv(m, nnz) / 10e9;
+  assert(time > 0.);
+  float GFLOPs = 2*nnz / time / 10e9;
+  float GBYTEs = gbyte / time;
+  std::cout << "runtime [omp_base] = " << t.Seconds() << " sec\n";
+  printf("Throughput: compute %5.2f GFLOP/s, memory %5.1f GB/s\n", GFLOPs, GBYTEs);
   return;
 }
 
 typedef float ValueT;
 int main(int argc, char *argv[]) {
   printf("Sparse Matrix-Vector Multiplication\n");
-  if (argc < 3) {
+  if (argc < 2) {
     std::cout << "Usage: " << argv[0] << " <graph-prefix>\n";
     std::cout << "Example: " << argv[0] << " inputs/citeseer\n";
     exit(1);
   }
-  Graph g(argv[1]);
+  Graph g(argv[1], 0, 0, 0, 1, 1, 0, 0);
+  g.print_meta_data();
   std::vector<ValueT> x(g.V(), 0);
   std::vector<ValueT> y(g.V(), 0);
   //srand(13);
-  for(int i = 0; i < g.V(); i++) {
+  for(vidType i = 0; i < g.V(); i++) {
     //x[i] = rand() / (RAND_MAX + 1.0);
     //y[i] = rand() / (RAND_MAX + 1.0);
     x[i] = 0.3;
   }
 
   SpmvSolver<ValueT>(g, x.data(), y.data());
-  //SpmvVerifier(g, x, y_ref, y);
+  SpmvVerifier(g, x.data(), y.data());
   return 0;
 }
 

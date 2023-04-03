@@ -14,12 +14,7 @@ std::map<OPS,double> timers;
 template<bool map_vertices, bool map_edges>
 GraphT<map_vertices, map_edges>::GraphT(std::string prefix, bool use_dag, bool directed, 
              bool use_vlabel, bool use_elabel, bool need_reverse, bool bipartite, bool partitioned) :
-    is_directed_(directed), is_bipartite_(bipartite), is_compressed_(false), 
-    max_degree(0), n_vertices(0), n_edges(0), 
-    nnz(0), max_label_frequency_(0), max_label(0),
-    feat_len(0), num_vertex_classes(0), num_edge_classes(0), 
-    edges(NULL), vertices(NULL), vlabels(NULL), elabels(NULL), 
-    features(NULL), src_list(NULL), dst_list(NULL) {
+    GraphT<map_vertices, map_edges>(directed, bipartite) {
   // parse file name
   inputfile_prefix = prefix;
   size_t i = prefix.rfind('/', prefix.length());
@@ -28,15 +23,15 @@ GraphT<map_vertices, map_edges>::GraphT(std::string prefix, bool use_dag, bool d
   if (i != string::npos) name_ = inputfile_path.substr(i+1);
   std::cout << "input file prefix: " << inputfile_prefix << ", graph name: " << name_ << "\n";
   VertexSet::release_buffers();
-  load_graph(prefix, bipartite, partitioned, use_dag, use_vlabel, use_elabel, need_reverse);
+  load_graph(prefix, use_dag, use_vlabel, use_elabel, need_reverse);
 }
 
 template<bool map_vertices, bool map_edges>
 void GraphT<map_vertices, map_edges>::load_graph(std::string prefix,
     bool use_dag, bool use_vlabel, bool use_elabel, 
-    bool need_reverse, bool bipartite, bool partitioned) {
+    bool need_reverse, bool partitioned) {
   // read meta information
-  read_meta_info(prefix, bipartite);
+  read_meta_info(prefix);
 
   // load graph data
   if (partitioned) std::cout << "This graph is partitioned, not loading the full graph\n";
@@ -191,19 +186,19 @@ void GraphT<map_vertices, map_edges>::deallocate() {
 }
 
 template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::read_meta_info(std::string prefix, bool bipartite) {
+void GraphT<map_vertices, map_edges>::read_meta_info(std::string prefix) {
   std::ifstream f_meta((prefix + ".meta.txt").c_str());
   assert(f_meta);
   int64_t nv = 0;
-  if (bipartite) {
+  if (is_bipartite_) {
     f_meta >> n_vert0 >> n_vert1;
     nv = int64_t(n_vert0) + int64_t(n_vert1);
   } else f_meta >> nv;
   f_meta >> n_edges >> vid_size >> eid_size >> vlabel_size >> elabel_size
          >> max_degree >> feat_len >> num_vertex_classes >> num_edge_classes;
-  assert(sizeof(vidType) == vid_size);
-  assert(sizeof(eidType) == eid_size);
-  assert(sizeof(vlabel_t) == vlabel_size);
+  //assert(sizeof(vidType) == vid_size);
+  //assert(sizeof(eidType) == eid_size);
+  //assert(sizeof(vlabel_t) == vlabel_size);
   //assert(sizeof(elabel_t) == elabel_size);
   f_meta.close();
   assert(nv > 0 && n_edges > 0);

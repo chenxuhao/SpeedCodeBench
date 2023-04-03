@@ -11,15 +11,14 @@ protected:
   std::string inputfile_prefix; // input file prefix of the graph
   bool is_directed_;            // is it a directed graph?
   bool is_bipartite_;           // is it a bipartite graph?
-  bool is_compressed_;          // is it a compressed graph?
   bool has_reverse;             // has reverse/incoming edges maintained
   vidType max_degree;           // maximun degree
   vidType n_vertices;           // number of vertices
   eidType n_edges;              // number of edges
   eidType nnz;                  // number of edges in COO format (may be halved due to orientation)
-  vidType max_label_frequency_; // maximum label frequency
   vidType n_vert0;              // number of type 0 vertices for bipartite graph
   vidType n_vert1;              // number of type 1 vertices for bipartite graph
+  vidType max_label_frequency_; // maximum label frequency
   int max_label;                // maximum label
   int feat_len;                 // vertex feature vector length: '0' means no features
   int num_vertex_classes;       // number of distinct vertex labels: '0' means no vertex labels
@@ -40,36 +39,54 @@ protected:
   VertexList labels_frequency_; // vertex count of each label
   VertexList sizes;             // neighbor count of each source vertex in the edgelist
   VertexList reverse_index_;    // indices to vertices grouped by vertex label
-  eidType *vertices_compressed; // row pointers of the compressed format
   std::vector<nlf_map> nlf_;    // neighborhood label frequency
   std::vector<eidType> reverse_index_offsets_; // pointers to each vertex group
-  std::vector<uint32_t> edges_compressed;      // compressed edgelist
-  std::vector<vidType> degrees; 
+  std::vector<vidType> degrees;
 
 public:
-  GraphT(std::string prefix, bool use_dag = false, bool directed = false,
-        bool use_vlabel = false, bool use_elabel = false, 
-        bool need_reverse = false, bool bipartite = false, bool partitioned = false);
-  GraphT() : name_(""), 
-            is_directed_(0), is_bipartite_(0), is_compressed_(0), has_reverse(0),
+  GraphT(std::string prefix,
+         bool use_dag = false, bool directed = false,
+         bool use_vlabel = false, bool use_elabel = false, 
+         bool need_reverse = false, bool bipartite = false, bool partitioned = false);
+  GraphT(bool directed = false, bool bipartite = false) :
+            name_(""), 
+            is_directed_(directed),
+            is_bipartite_(bipartite),
+            has_reverse(0),
+            max_degree(0),
             n_vertices(0), n_edges(0), nnz(0), 
-            max_label_frequency_(0), max_label(0), feat_len(0), 
-            num_vertex_classes(0), num_edge_classes(0), core_length_(0),
-            vid_size(4), eid_size(8), vlabel_size(0), elabel_size(0), degree_threshold(32),
-            edges(NULL), vertices(NULL), vlabels(NULL), elabels(NULL),
-            features(NULL), src_list(NULL), dst_list(NULL) { }
+            n_vert0(0), n_vert1(0),
+            max_label_frequency_(0),
+            max_label(0), feat_len(0), 
+            num_vertex_classes(0), num_edge_classes(0),
+            core_length_(0),
+            vid_size(4), eid_size(8),
+            vlabel_size(0), elabel_size(0),
+            degree_threshold(32),
+            edges(NULL),
+            vertices(NULL),
+            reverse_edges(NULL),
+            reverse_vertices(NULL),
+            vlabels(NULL),
+            elabels(NULL),
+            features(NULL),
+            src_list(NULL), dst_list(NULL) { }
   GraphT(vidType nv, eidType ne) : GraphT() { allocateFrom(nv, ne); }
   ~GraphT();
   GraphT(const GraphT &)=delete;
   GraphT& operator=(const GraphT &)=delete;
 
   void load_graph(std::string prefix, 
-                  bool use_dag = false, bool use_vlabel = false, 
-                  bool use_elabel = false, bool need_reverse = false, 
-                  bool bipartite = false, bool partitioned = false);
+                  bool use_dag = false,
+                  bool use_vlabel = false, 
+                  bool use_elabel = false,
+                  bool need_reverse = false, 
+                  bool partitioned = false);
   void load_graph_data(std::string prefix, 
-                       bool use_dag = false, bool use_vlabel = false, 
-                       bool use_elabel = false, bool need_reverse = false);
+                       bool use_dag = false,
+                       bool use_vlabel = false, 
+                       bool use_elabel = false,
+                       bool need_reverse = false);
   void deallocate();
   void load_row_pointers(std::string prefix);
 
@@ -85,14 +102,10 @@ public:
   std::string get_inputfile_prefix() const { return inputfile_prefix; }
   bool is_directed() const { return is_directed_; }
   bool is_bipartite() const { return is_bipartite_; }
-  bool is_compressed() const { return is_compressed_; }
-  bool is_compressed_only() const { return (vertices == NULL) && is_compressed_; }
   bool has_reverse_graph() const { return has_reverse; }
   vidType get_max_degree() const { return max_degree; }
-  size_t get_compressed_colidx_length() const { return edges_compressed.size(); }
 
   // get methods for graph topology information
-  vidType read_degree(vidType v) const { return degrees[v]; }
   vidType get_degree(vidType v) const { return vertices[v+1] - vertices[v]; }
   vidType out_degree(vidType v) const { return vertices[v+1] - vertices[v]; }
   eidType edge_begin(vidType v) const { return vertices[v]; }
@@ -114,8 +127,6 @@ public:
   VertexSet out_neigh(vidType v, vidType off = 0) const; // get the outgoing neighbor list of vertex v
   VertexSet in_neigh(vidType v) const;               // get the ingoing neighbor list of vertex v
   void build_reverse_graph();
-  const eidType* rowptr_compressed() const { return vertices_compressed; } // get row pointers array
-  const uint32_t* colidx_compressed() const { return &edges_compressed[0]; }    // get column indices array
  
   // Galois compatible APIs
   vidType size() const { return n_vertices; }
@@ -195,18 +206,13 @@ public:
   vidType difference_set_edgeinduced(vidType v, vidType u, vlabel_t label, VertexSet& result);
   vidType difference_set_edgeinduced(VertexSet& vs, vidType u, vlabel_t label, VertexSet& result);
 
-  vidType intersect_num_compressed(vidType v, vidType u);
-  vidType intersect_num_compressed(vidType v, vidType u, vidType up);
-  vidType intersect_num_compressed(VertexSet& vs, vidType u);
-  vidType intersect_num_compressed(VertexSet& vs, vidType u, vidType up);
-
   // print graph information
   void print_meta_data() const;
   void print_graph() const;
   void print_neighbors(vidType v) const;
 
  protected:
-  void read_meta_info(std::string prefix, bool bipartite = false);
+  void read_meta_info(std::string prefix);
   bool binary_search(vidType key, eidType begin, eidType end) const;
 };
 
