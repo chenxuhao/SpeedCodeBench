@@ -23,13 +23,13 @@ GraphT<map_vertices, map_edges>::GraphT(std::string prefix, bool use_dag, bool d
   if (i != string::npos) name_ = inputfile_path.substr(i+1);
   std::cout << "input file prefix: " << inputfile_prefix << ", graph name: " << name_ << "\n";
   VertexSet::release_buffers();
-  load_graph(prefix, use_dag, use_vlabel, use_elabel, need_reverse);
+  load_graph(prefix, use_dag, use_vlabel, use_elabel, need_reverse, partitioned);
 }
 
 template<bool map_vertices, bool map_edges>
 void GraphT<map_vertices, map_edges>::load_graph(std::string prefix,
-    bool use_dag, bool use_vlabel, bool use_elabel, 
-    bool need_reverse, bool partitioned) {
+                                                 bool use_dag, bool use_vlabel, bool use_elabel,
+                                                 bool need_reverse, bool partitioned) {
   // read meta information
   read_meta_info(prefix);
 
@@ -196,9 +196,9 @@ void GraphT<map_vertices, map_edges>::read_meta_info(std::string prefix) {
   } else f_meta >> nv;
   f_meta >> n_edges >> vid_size >> eid_size >> vlabel_size >> elabel_size
          >> max_degree >> feat_len >> num_vertex_classes >> num_edge_classes;
-  //assert(sizeof(vidType) == vid_size);
-  //assert(sizeof(eidType) == eid_size);
-  //assert(sizeof(vlabel_t) == vlabel_size);
+  assert(sizeof(vidType) == vid_size);
+  assert(sizeof(eidType) == eid_size);
+  assert(sizeof(vlabel_t) == vlabel_size);
   //assert(sizeof(elabel_t) == elabel_size);
   f_meta.close();
   assert(nv > 0 && n_edges > 0);
