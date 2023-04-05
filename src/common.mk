@@ -4,7 +4,9 @@ BIN := ../../bin
 CC := gcc
 CXX := g++
 
+CFLAGS    := -O3 -Wall -fopenmp
 CXXFLAGS  := -Wall -fopenmp -std=c++17
+ICPCFLAGS := -O3 -Wall -qopenmp
 
 INCLUDES = -I../../include
 VPATH += ../common
