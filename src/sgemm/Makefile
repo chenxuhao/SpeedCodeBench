@@ -14,3 +14,5 @@ sgemm_omp: $(OBJS) sgemm_omp.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) sgemm_omp.o -o $@ -lm -lgomp
 	mv $@ $(BIN)
 
+clean:
+	rm *.o

@@ -10,7 +10,7 @@ ICPCFLAGS := -O3 -Wall -qopenmp
 
 INCLUDES = -I../../include
 VPATH += ../common
-OBJS=VertexSet.o graph.o
+OBJS = VertexSet.o graph.o
 
 ifeq ($(DEBUG), 1)
 	CXXFLAGS += -g -O0
@@ -19,6 +19,9 @@ else
 	CXXFLAGS += -O3
 	NVFLAGS += -O3 -w
 endif
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $<
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $<
