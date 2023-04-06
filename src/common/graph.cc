@@ -14,7 +14,7 @@ std::map<OPS,double> timers;
 template<bool map_vertices, bool map_edges>
 GraphT<map_vertices, map_edges>::GraphT(std::string prefix, bool use_dag, bool directed, 
              bool use_vlabel, bool use_elabel, bool need_reverse, bool bipartite, bool partitioned) :
-    GraphT<map_vertices, map_edges>(directed, bipartite) {
+    GraphT<map_vertices, map_edges>(directed, bipartite, 0, 0) {
   // parse file name
   inputfile_prefix = prefix;
   size_t i = prefix.rfind('/', prefix.length());
@@ -22,6 +22,7 @@ GraphT<map_vertices, map_edges>::GraphT(std::string prefix, bool use_dag, bool d
   i = inputfile_path.rfind('/', inputfile_path.length());
   if (i != string::npos) name_ = inputfile_path.substr(i+1);
   std::cout << "input file prefix: " << inputfile_prefix << ", graph name: " << name_ << "\n";
+  if (bipartite) std::cout << "This is a Bipartite graph\n";
   VertexSet::release_buffers();
   load_graph(prefix, use_dag, use_vlabel, use_elabel, need_reverse, partitioned);
 }
@@ -194,6 +195,7 @@ void GraphT<map_vertices, map_edges>::read_meta_info(std::string prefix) {
     f_meta >> n_vert0 >> n_vert1;
     nv = int64_t(n_vert0) + int64_t(n_vert1);
   } else f_meta >> nv;
+  if (is_bipartite_) std::cout << "Debug: Bipartite graph nv0=" << n_vert0 << " nv1=" << n_vert1 << "\n";
   f_meta >> n_edges >> vid_size >> eid_size >> vlabel_size >> elabel_size
          >> max_degree >> feat_len >> num_vertex_classes >> num_edge_classes;
   assert(sizeof(vidType) == vid_size);

@@ -26,7 +26,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Triangle Counting
 - [x] Minimum Spanning Tree (MST) 
 - [x] Vertex Coloring (VC)
-+ Stochastic Gradient Descent (SGD) or Collaborative Filtering (CF)
+- [x] Collaborative Filtering (CF) for Stochastic Gradient Descent (SGD)
 + B+ tree
 + Kmeans
 + (Approximate) NN nearest neighbor
