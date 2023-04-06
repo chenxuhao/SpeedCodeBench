@@ -518,11 +518,11 @@ int main(int argc, char *argv[]) {
   fflush(stdout);
   if (argc < 4) {
     fprintf(stderr, "\n");
-    fprintf(stderr, "arguments: number_of_bodies number_of_timesteps\n");
+    fprintf(stderr, "arguments: number_of_bodies number_of_timesteps number_of_threads\n");
     exit(-1);
   }
 #ifdef ENABLE_OPENMP
-  num_omp_threads = atoi(argv[4]);
+  num_omp_threads = atoi(argv[3]);
   printf("OpenMP version. Number of threads: %d.\n", num_omp_threads);
   omp_set_num_threads(num_omp_threads);
 #endif

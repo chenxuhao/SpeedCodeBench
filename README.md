@@ -4,35 +4,35 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 
 ## Benchmarks
 
+- [x] Blackscholes
+- [x] Stencil
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
 + Symmetric Gauss-seidel Smoother (SymGS) 
 + Reduction
 - [x] Histogram
-- [x] Stencil
 + Scan a.k.a. Prefix Sum
 + Convolution
 + Merge / Merge Sort
 + Radix Sort
+- [x] Barnes-Hut for N-Body simulation
 - [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
 - [x] Fast Fourier transform (FFT)
-+ B+ tree
-+ Betweenness Centrality (BC)
+- [x] Betweenness Centrality (BC)
 - [x] Breadth-First Search (BFS)
-+ Connected Components (CC)
-+ Minimum Spanning Tree (MST) 
-+ PageRank (PR) 
-+ Stochastic Gradient Descent (SGD) or Collaborative Filtering (CF)
+- [x] Connected Components (CC)
+- [x] PageRank (PR) 
 - [x] Single-Source Shortest Paths (SSSP)
 - [x] Triangle Counting
-+ Vertex Coloring (VC)
-+ PageRank
+- [x] Minimum Spanning Tree (MST) 
+- [x] Vertex Coloring (VC)
++ Stochastic Gradient Descent (SGD) or Collaborative Filtering (CF)
++ B+ tree
 + Kmeans
 + (Approximate) NN nearest neighbor
 + Locality sensitive hashing (LSH)
 + Ray Tracing
 + Maximum Finding
-- [x] Blackscholes
 
 ## Sources
 
