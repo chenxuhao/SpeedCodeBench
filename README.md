@@ -27,7 +27,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Minimum Spanning Tree (MST) 
 - [x] Vertex Coloring (VC)
 - [x] Collaborative Filtering (CF) for Stochastic Gradient Descent (SGD)
-+ B+ tree
+- [x] B+ tree
 - [x] Kmeans
 + (Approximate) NN nearest neighbor
 + Locality sensitive hashing (LSH)
