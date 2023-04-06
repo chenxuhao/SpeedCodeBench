@@ -2,7 +2,7 @@
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
 
-void TCSolver(Graph &g, uint64_t &total, int, int) {
+void TCSolver(Graph &g, uint64_t &total) {
   int num_threads = 1;
   #pragma omp parallel
   {

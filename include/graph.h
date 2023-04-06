@@ -48,30 +48,31 @@ public:
          bool use_dag = false, bool directed = false,
          bool use_vlabel = false, bool use_elabel = false, 
          bool need_reverse = false, bool bipartite = false, bool partitioned = false);
-  GraphT(bool directed = false, bool bipartite = false) :
-            name_(""), 
-            is_directed_(directed),
-            is_bipartite_(bipartite),
-            has_reverse(0),
-            max_degree(0),
-            n_vertices(0), n_edges(0), nnz(0), 
-            n_vert0(0), n_vert1(0),
-            max_label_frequency_(0),
-            max_label(0), feat_len(0), 
-            num_vertex_classes(0), num_edge_classes(0),
-            core_length_(0),
-            vid_size(4), eid_size(8),
-            vlabel_size(0), elabel_size(0),
-            degree_threshold(32),
-            edges(NULL),
-            vertices(NULL),
-            reverse_edges(NULL),
-            reverse_vertices(NULL),
-            vlabels(NULL),
-            elabels(NULL),
-            features(NULL),
-            src_list(NULL), dst_list(NULL) { }
-  GraphT(vidType nv, eidType ne) : GraphT() { allocateFrom(nv, ne); }
+  GraphT(bool directed, bool bipartite, vidType nv, eidType ne) :
+         name_(""), inputfile_path(""), inputfile_prefix(""),
+         is_directed_(directed),
+         is_bipartite_(bipartite),
+         has_reverse(0),
+         max_degree(0),
+         n_vertices(nv), n_edges(ne), nnz(0), 
+         n_vert0(0), n_vert1(0),
+         max_label_frequency_(0),
+         max_label(0), feat_len(0), 
+         num_vertex_classes(0), num_edge_classes(0),
+         core_length_(0),
+         vid_size(4), eid_size(8),
+         vlabel_size(0), elabel_size(0),
+         degree_threshold(32),
+         edges(NULL),
+         vertices(NULL),
+         reverse_edges(NULL),
+         reverse_vertices(NULL),
+         vlabels(NULL),
+         elabels(NULL),
+         features(NULL),
+         src_list(NULL), dst_list(NULL) { }
+  GraphT(vidType nv, eidType ne) : GraphT(0, 0, nv, ne) { allocateFrom(nv, ne); }
+  GraphT() : GraphT(0, 0, 0, 0) { }
   ~GraphT();
   GraphT(const GraphT &)=delete;
   GraphT& operator=(const GraphT &)=delete;
