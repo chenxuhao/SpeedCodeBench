@@ -4,7 +4,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 
 ## Benchmarks
 
-- [x] Blackscholes
+- [x] Black-Scholes a differential equation to price options contracts
 - [x] Stencil
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
@@ -24,15 +24,16 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Connected Components (CC)
 - [x] PageRank (PR) 
 - [x] Single-Source Shortest Paths (SSSP)
-- [x] Triangle Counting
+- [x] Triangle Counting (TC)
 - [x] Minimum Spanning Tree (MST) 
 - [x] Vertex Coloring (VC)
 - [x] Collaborative Filtering (CF) for Stochastic Gradient Descent (SGD)
 - [x] B+ tree
 - [x] Kmeans
-- [x] Ray Tracing
+- [x] Ray Tracing (RT)
 - [x] k-nearest neighbor (k-NN)
 - [x] Locality sensitive hashing (LSH) for finding approximate nearest neighbors
+- [x] StreamCluster (SC) for online clustering of an input stream
 
 ## Sources
 
