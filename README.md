@@ -28,7 +28,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Vertex Coloring (VC)
 - [x] Collaborative Filtering (CF) for Stochastic Gradient Descent (SGD)
 + B+ tree
-+ Kmeans
+- [x] Kmeans
 + (Approximate) NN nearest neighbor
 + Locality sensitive hashing (LSH)
 + Ray Tracing
