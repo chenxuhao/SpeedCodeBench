@@ -15,6 +15,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 + Convolution
 + Merge / Merge Sort
 + Radix Sort
++ Maximum Finding
 - [x] Barnes-Hut for N-Body simulation
 - [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
 - [x] Fast Fourier transform (FFT)
@@ -29,10 +30,9 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Collaborative Filtering (CF) for Stochastic Gradient Descent (SGD)
 - [x] B+ tree
 - [x] Kmeans
-+ (Approximate) NN nearest neighbor
-+ Locality sensitive hashing (LSH)
-+ Ray Tracing
-+ Maximum Finding
+- [x] Ray Tracing
+- [x] k-nearest neighbor (k-NN)
+- [x] Locality sensitive hashing (LSH) for finding approximate nearest neighbors
 
 ## Sources
 
