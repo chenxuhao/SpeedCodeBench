@@ -8,9 +8,9 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Stencil
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
-+ Symmetric Gauss-seidel Smoother (SymGS) 
-+ Reduction
+- [x] Symmetric Gauss-seidel Smoother (SymGS) 
 - [x] Histogram
++ Reduction
 + Scan a.k.a. Prefix Sum
 + Convolution
 + Merge / Merge Sort

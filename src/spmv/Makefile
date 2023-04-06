@@ -1,4 +1,5 @@
 include ../common.mk
+OBJS += main.o
 all: spmv_omp_base
 
 spmv_omp_base: $(OBJS) omp_base.o

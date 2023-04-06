@@ -2,7 +2,7 @@
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
 
-void ColorSolver(Graph &g, int *colors);
+int ColorSolver(Graph &g, int *colors);
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -15,13 +15,7 @@ int main(int argc, char *argv[]) {
   g.print_meta_data();
 
   std::vector<int> colors(g.V(), MAX_COLOR);
-  ColorSolver(g, &colors[0]);
-
-  int max_color = 0;
-  #pragma omp parallel for reduction(max : max_color)
-  for (vidType n = 0; n < g.V(); n ++)
-    max_color = max(max_color, colors[n]);
-  auto num_colors = max_color+1;
+  auto num_colors = ColorSolver(g, &colors[0]);
   std::cout << "total_num_colors = " << num_colors << "\n";
   return 0;
 }

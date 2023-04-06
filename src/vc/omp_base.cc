@@ -38,7 +38,7 @@ void conflict_resolve(Graph &g, SlidingQueue<vidType> &inwl, int *colors) {
   }
 }
 
-void ColorSolver(Graph &g, int *colors) {
+int ColorSolver(Graph &g, int *colors) {
   int num_threads = 1;
   #pragma omp parallel
   {
@@ -60,5 +60,11 @@ void ColorSolver(Graph &g, int *colors) {
   }
   t.Stop();
   std::cout << "runtime [omp_base] = " << t.Seconds() << " sec\n";
+
+  int max_color = 0;
+  #pragma omp parallel for reduction(max : max_color)
+  for (vidType n = 0; n < g.V(); n ++)
+    max_color = max(max_color, colors[n]);
+  return max_color+1;
 }
 

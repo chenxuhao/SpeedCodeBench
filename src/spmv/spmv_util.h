@@ -29,7 +29,7 @@ T maximum_relative_error(const T * A, const T * B, const size_t N) {
 }
 
 template <typename T = float>
-inline void SpmvSerial(vidType m, eidType nnz, const eidType *Ap, const vidType *Aj, const T *Ax, const T *x, T *y) {
+void SpmvSerial(vidType m, eidType nnz, const eidType *Ap, const vidType *Aj, const T *Ax, const T *x, T *y) {
   for (vidType i = 0; i < m; i++){
     auto row_begin = Ap[i];
     auto row_end   = Ap[i+1];
@@ -64,7 +64,7 @@ void SpmvVerifier(Graph &g, const T *x, T *y_test) {
   std::vector<T> y(m, 0);
   Timer t;
   t.Start();
-  SpmvSerial(m, nnz, Ap, Aj, Ax, x, y.data());
+  SpmvSerial<T>(m, nnz, Ap, Aj, Ax, x, y.data());
   t.Stop();
   printf("runtime [serial] = %f s.\n", t.Seconds());
   auto max_error = maximum_relative_error(y_test, y.data(), m);

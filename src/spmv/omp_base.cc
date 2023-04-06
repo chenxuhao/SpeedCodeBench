@@ -3,8 +3,8 @@
 #include "graph.h"
 #include "timer.h"
 #include "spmv_util.h"
+typedef int32_t T;
 
-template <typename T>
 void SpmvSolver(Graph &g, const T *x, T *y) {
   auto m = g.V();
   auto nnz = g.E();
@@ -42,29 +42,5 @@ void SpmvSolver(Graph &g, const T *x, T *y) {
   std::cout << "runtime [omp_base] = " << t.Seconds() << " sec\n";
   printf("Throughput: compute %5.2f GFLOP/s, memory %5.1f GB/s\n", GFLOPs, GBYTEs);
   return;
-}
-
-typedef float ValueT;
-int main(int argc, char *argv[]) {
-  printf("Sparse Matrix-Vector Multiplication\n");
-  if (argc < 2) {
-    std::cout << "Usage: " << argv[0] << " <graph-prefix>\n";
-    std::cout << "Example: " << argv[0] << " inputs/citeseer\n";
-    exit(1);
-  }
-  Graph g(argv[1], 0, 0, 0, 1, 1, 0, 0);
-  g.print_meta_data();
-  std::vector<ValueT> x(g.V(), 0);
-  std::vector<ValueT> y(g.V(), 0);
-  //srand(13);
-  for(vidType i = 0; i < g.V(); i++) {
-    //x[i] = rand() / (RAND_MAX + 1.0);
-    //y[i] = rand() / (RAND_MAX + 1.0);
-    x[i] = 0.3;
-  }
-
-  SpmvSolver<ValueT>(g, x.data(), y.data());
-  SpmvVerifier(g, x.data(), y.data());
-  return 0;
 }
 
