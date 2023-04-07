@@ -1,6 +1,8 @@
 # SpeedCodeBench
 
-Benchmark Suite for SpeedCode (Software Performance Engineering Education via Coding Of Didactic Exercises)
+Benchmark Suite for SpeedCode (Software Performance Engineering Education via Coding Of Didactic Exercises).
+This repository covers representative benchmarks in a wide range of application domains 
+that can benefit from high performance parallel computing technology. 
 
 ## Benchmarks
 
@@ -44,7 +46,12 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 + Seven Dwarfs https://www2.eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-183.pdf 
 + PBBS https://cmuparlay.github.io/pbbsbench/benchmarks/index.html 
 + GBBS https://paralg.github.io/gbbs/docs/introduction 
-
++ HeCBench https://github.com/zjin-lcf/HeCBench
++ GARDENIA https://github.com/chenxuhao/gardenia
++ GraphAIBench https://github.com/chenxuhao/GraphAIBench
++ AxBench http://axbench.org/
++ DAPHNE https://github.com/esa-tu-darmstadt/daphne-benchmark.git
++ Lonestar https://iss.oden.utexas.edu/?p=projects/galois/lonestar
 
 ## Classification of High Performance Computational Problems
 
@@ -62,3 +69,23 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 12. Construct Graphical Models 
 13. Finite State Machine 
 
+## Benchmark categories in application domians
+
+1. Bioinformatics (e.g., all-pairs-distance)
+2. Computer vision and image processing (e.g., Stencil, Convolution)
+3. Cryptography (e.g., AES)
+4. Data compression and reduction (e.g., Scan, bitpacking, histogram)
+5. Data encoding, decoding, or verification (e.g., md5hash)
+6. Finance (e.g., black-scholes)
+7. Geographic information system (e.g., haversine)
+8. Graph and Tree (e.g., BC, CC, TC, VC, MST, MIS, SSSP)
+9. Language and kernel features (e.g., wordcount)
+10. Machine learning (e.g., CF, backprop, attention, kmeans, knn, page-rank, streamcluster, word2vec)
+11. Math (e.g., sgemm, spmv, symgs, jaccard, jacobi, leukocyte, lud, tridiagonal solver)
+12. Random number generation (e.g., )
+13. Search (e.g., binary search, b+tree, BFS)
+14. Signal processing (e.g., FFT)
+15. Simulation (e.g., nbody, LBM, CFD, Delaunay Mesh Refinement, hotspot3D, heartwall, laplace3d, lavaMD, particlefilter, pathfinder, pns, tpacf)
+16. Sorting (e.g., quicksort, radixsort, mergesort, bitonic-sort)
+17. Robotics (e.g., inversek2j)
+18. Automotive (e.g., daphne)
