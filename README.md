@@ -10,12 +10,11 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
 - [x] Symmetric Gauss-seidel Smoother (SymGS) 
 - [x] Histogram
-+ Reduction
-+ Scan a.k.a. Prefix Sum
+- [x] Reduction (Sum / Maximum Finding)
 + Convolution
-+ Merge / Merge Sort
 + Radix Sort
-+ Maximum Finding
+- [x] Merge / Merge Sort
+- [x] Scan a.k.a. Prefix Sum
 - [x] Barnes-Hut for N-Body simulation
 - [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
 - [x] Fast Fourier transform (FFT)
