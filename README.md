@@ -6,15 +6,15 @@ that can benefit from high performance parallel computing technology.
 
 ## Benchmarks
 
+- [x] AES Encryption
 - [x] Black-Scholes a differential equation to price options contracts
 - [x] Stencil
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
 - [x] Symmetric Gauss-seidel Smoother (SymGS) 
 - [x] Histogram
-- [x] Reduction (Sum / Maximum Finding)
-+ Convolution
-+ Radix Sort
+- [x] Reduction (Sum / Maximum Finding / MinMax)
+- [x] Convolution
 - [x] Merge / Merge Sort
 - [x] Scan a.k.a. Prefix Sum
 - [x] Barnes-Hut for N-Body simulation
