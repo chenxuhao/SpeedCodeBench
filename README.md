@@ -8,6 +8,7 @@ that can benefit from high performance parallel computing technology.
 
 - [x] AES Encryption
 - [x] Black-Scholes a differential equation to price options contracts
+- [x] CRC64 checksum
 - [x] Stencil
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
