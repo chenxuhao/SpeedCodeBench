@@ -10,6 +10,7 @@ that can benefit from high performance parallel computing technology.
 - [x] Black-Scholes a differential equation to price options contracts
 - [x] CRC64 checksum
 - [x] Stencil
+- [x] Saxpy
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
 - [x] Symmetric Gauss-seidel Smoother (SymGS) 
