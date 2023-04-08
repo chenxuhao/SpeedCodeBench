@@ -10,7 +10,7 @@ that can benefit from high performance parallel computing technology.
 - [x] Black-Scholes a differential equation to price options contracts
 - [x] CRC64 checksum
 - [x] Stencil
-- [x] Saxpy
+- [x] Saxpy: Single-Precision A X Plus Y
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
 - [x] Symmetric Gauss-seidel Smoother (SymGS) 
@@ -33,11 +33,12 @@ that can benefit from high performance parallel computing technology.
 - [x] Vertex Coloring (VC)
 - [x] Collaborative Filtering (CF) for Stochastic Gradient Descent (SGD)
 - [x] B+ tree
-- [x] Kmeans
+- [x] K-means clustering
 - [x] Ray Tracing (RT)
 - [x] k-nearest neighbor (k-NN)
 - [x] Locality sensitive hashing (LSH) for finding approximate nearest neighbors
 - [x] StreamCluster (SC) for online clustering of an input stream
+- [x] DAPHNE points2image for Automotive
 
 ## Sources
 
