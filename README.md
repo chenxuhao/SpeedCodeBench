@@ -15,6 +15,7 @@ that can benefit from high performance parallel computing technology.
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
 - [x] Symmetric Gauss-seidel Smoother (SymGS) 
 - [x] Histogram
+- [x] Inversek2j for Robotics
 - [x] Reduction (Sum / Maximum Finding / MinMax)
 - [x] Convolution
 - [x] Merge / Merge Sort
