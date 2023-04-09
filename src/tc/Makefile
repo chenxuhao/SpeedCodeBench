@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS += main.o
-all: tc_omp_base
+all: tc_omp_base tc_gpu_base 
 
 tc_omp_base: $(OBJS) omp_base.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lgomp
@@ -12,6 +12,10 @@ tc_omp_simd: $(OBJS) omp_simd.o intersect.o
 
 tc_cilk_base: $(OBJS) cilk_base.o 
 	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	mv $@ $(BIN)
+
+tc_gpu_base: $(OBJS) gpu_base.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ $(NVLIBS)
 	mv $@ $(BIN)
 
 clean:

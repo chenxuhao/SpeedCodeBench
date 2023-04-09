@@ -4,12 +4,51 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 This repository covers representative benchmarks in a wide range of application domains 
 that can benefit from high performance parallel computing technology. 
 
+
+## Quick Start
+
+Edit `env.sh` to let the libraries pointing to the right paths in your system, and then:
+
+    $ source env.sh
+
+Then just make in the root directory:
+
+    $ make
+
+Or go to each sub-directory, e.g. src/tc, and then make:
+
+    $ cd src/tc; make
+
+Binaries will be in the `bin` directory. 
+For example, `tc_omp_base` is the OpenMP version of triangle counting on CPU, `tc_gpu_base` is the GPU version.
+
+To run, go to each sub-directory, and then:
+
+    $ ./run-test.sh
+
+To find out commandline format by running executable without argument:
+
+    $ cd ../../bin
+    $ ./tc_omp_base
+
+Run triangle counting with an undirected toy graph on CPU:
+
+    $ ./tc_omp_base ../inputs/citeseer/graph
+    
+More graph datasets are available [here](https://www.dropbox.com/sh/i1jq1uwtkcd2qo0/AADJck_u3kx7FeSR5BvdrkqYa?dl=0).
+You can find the expected outputs in the README of each benchmark [see here for triangle](https://github.com/chenxuhao/GraphAIBench/blob/master/src/triangle/README.md).
+
+To control the number of threads, set the following environment variable:
+
+    $ export OMP_NUM_THREADS=[ number of cores in system ]
+
 ## Benchmarks
 
 - [x] AES Encryption
 - [x] Black-Scholes a differential equation to price options contracts
 - [x] CRC64 checksum
 - [x] Stencil
+- [x] Haversine distance for Geospatial Data Analysis
 - [x] Saxpy: Single-Precision A X Plus Y
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)

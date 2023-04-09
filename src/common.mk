@@ -54,3 +54,6 @@ endif
 %.o: %.cu
 	$(NVCC) $(NVFLAGS) $(INCLUDES) -c $<
 
+%.o: %.cxx
+	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) -c $<
+
