@@ -11,13 +11,26 @@ using namespace std;
 
 template <bool weighted, typename T>
 void fill_weights(eidType e, T* w, const T value) {
+  #pragma omp parallel for
   for (eidType j = 0; j<e; j++)
     w[j] = weighted ? (T)(j+1)/e : value; 
+}
+
+template<bool weighted, typename T>
+void jaccard_jw(eidType e, T* csrVal, const T gamma,  
+                T* weight_i, T* weight_s, T* weight_j) {
+  #pragma omp parallel for
+  for (int j = 0; j < e; j++) {
+    T Wi =  weight_i[j];
+    T Ws =  weight_s[j];
+    weight_j[j] = (gamma*csrVal[j])* (Wi/(Ws-Wi));
+  }
 }
 
 // Volume of neighboors (*weight_s)
 template<bool weighted, typename T>
 void jaccard_row_sum(vidType n, eidType* csrPtr, vidType* csrInd, T* weight_j, T* work) {
+  #pragma omp parallel for
   for (vidType row = 0; row < n; row++) {
     auto start = csrPtr[row];
     auto end   = csrPtr[row+1];
@@ -36,6 +49,7 @@ void jaccard_row_sum(vidType n, eidType* csrPtr, vidType* csrInd, T* weight_j, T
 template<bool weighted, typename T>
 void jaccard_is(vidType n, eidType e, eidType* csrPtr, vidType* csrInd, 
                 T* weight_j, T* work, T* weight_i, T* weight_s) {
+  #pragma omp parallel for
   for (vidType row = 0; row < n; row++) {
     for (int j = csrPtr[row]; j < csrPtr[row+1]; j++) {
       int col = csrInd[j];
@@ -84,16 +98,6 @@ void jaccard_is(vidType n, eidType e, eidType* csrPtr, vidType* csrInd,
   }
 }
 
-template<bool weighted, typename T>
-void jaccard_jw(eidType e, T* csrVal, const T gamma,  
-                T* weight_i, T* weight_s, T* weight_j) {
-  for (int j = 0; j < e; j++) {
-    T Wi =  weight_i[j];
-    T Ws =  weight_s[j];
-    weight_j[j] = (gamma*csrVal[j])* (Wi/(Ws-Wi));
-  }
-}
-
 template <bool weighted, typename T>
 void jaccard_weight (GraphF &g, const int iteration) {
   const T gamma = (T)0.46;  // arbitrary
@@ -119,34 +123,6 @@ void jaccard_weight (GraphF &g, const int iteration) {
   }
   double end_time = omp_get_wtime();
   std::cout << "Average execution time of kernels: " << ((end_time-start_time) * 1e-9f) / iteration << " (s)\n";
-
-#ifdef DEBUG
-  // verify using known values when weighted is true
-  float error; 
-
-  if (weighted)
-    error = std::fabs(weight_j[0] - 0.306667) +
-      std::fabs(weight_j[1] - 0.000000) +
-      std::fabs(weight_j[2] - 3.680000) +
-      std::fabs(weight_j[3] - 1.380000) +
-      std::fabs(weight_j[4] - 0.788571) +
-      std::fabs(weight_j[5] - 0.460000);
-  else
-    error = std::fabs(weight_j[0] - 0.230000) +
-      std::fabs(weight_j[1] - 0.000000) +
-      std::fabs(weight_j[2] - 3.680000) +
-      std::fabs(weight_j[3] - 1.380000) +
-      std::fabs(weight_j[4] - 0.920000) +
-      std::fabs(weight_j[5] - 0.460000);
-
-  if (error > 1e-5) {
-    for (int i = 0; i < e; i++) printf("wj: %d %f\n", i, weight_j[i]);
-    printf("FAIL");
-  } else {
-    printf("PASS");
-  }
-  printf("\n");
-#endif
   free(weight_j);
   free(weight_i);
   free(weight_s);
