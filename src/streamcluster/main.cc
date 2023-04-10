@@ -5,11 +5,8 @@ int main(int argc, char **argv) {
   char *infilename = new char[MAXNAMESIZE];
   long kmin, kmax, n, chunksize, clustersize;
   int dim;
-  int numthreads;
-  c = 0;
-  d = 0;
   if (argc<10) {
-    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc\n",
+    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nthreads\n",
         argv[0]);
     fprintf(stderr,"  k1:          Min. number of centers allowed\n");
     fprintf(stderr,"  k2:          Max. number of centers allowed\n");
@@ -19,7 +16,7 @@ int main(int argc, char **argv) {
     fprintf(stderr,"  clustersize: Maximum number of intermediate centers\n");
     fprintf(stderr,"  infile:      Input file (if n<=0)\n");
     fprintf(stderr,"  outfile:     Output file\n");
-    fprintf(stderr,"  nproc:       Number of threads to use\n");
+    fprintf(stderr,"  nthreads:    Number of threads to use\n");
     fprintf(stderr,"\n");
     fprintf(stderr, "if n > 0, points will be randomly generated instead of reading from infile.\n");
     exit(1);
@@ -32,10 +29,8 @@ int main(int argc, char **argv) {
   clustersize = atoi(argv[6]);
   strcpy(infilename, argv[7]);
   strcpy(outfilename, argv[8]);
-  nproc = atoi(argv[9]);
-  ompthreads = nproc;
-  nproc = 1;
-  omp_set_num_threads(ompthreads);
+  int nthreads = atoi(argv[9]);
+  omp_set_num_threads(nthreads);
   srand48(SEED);
   PStream* stream;
   if( n > 0 ) {
@@ -58,6 +53,5 @@ int main(int argc, char **argv) {
   printf("time pshuffle = %lf\n", time_shuffle);
   printf("time localSearch = %lf\n", time_local_search);
 #endif
-  printf("loops=%d\n", d);
   return 0;
 }

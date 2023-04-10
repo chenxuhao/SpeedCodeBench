@@ -25,7 +25,7 @@ using namespace std;
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
 //#define PRINTINFO //comment this out to disable output
-#define PROFILE // comment this out to disable instrumentation code
+//#define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
 
@@ -47,13 +47,12 @@ typedef struct {
   Point *p; /* the array itself */
 } Points;
 
-static bool *switch_membership; //whether to switch membership in pgain
-static bool* is_center; //whether a point is a center
-static int* center_table; //index table of centers
-
-static int nproc; //# of threads
-static int c, d;
-static int ompthreads;
+struct pkmedian_arg_t {
+  Points* points;
+  long kmin;
+  long kmax;
+  long* kfinal;
+};
 
 // instrumentation code
 #ifdef PROFILE
@@ -133,3 +132,32 @@ private:
 void streamCluster( PStream* stream, long kmin, long kmax, int dim,
                     long chunksize, long centersize, char* outfile );
  
+inline double gettime() {
+  struct timeval t;
+  gettimeofday(&t,NULL);
+  return (double)t.tv_sec+t.tv_usec*1e-6;
+}
+
+#ifdef INSERT_WASTE
+inline double waste(double s) {
+  for( int i =0 ; i< 4; i++ ) {
+    s += pow(s,0.78);
+  }
+  return s;
+}
+#endif
+
+/* compute Euclidean distance squared between two points */
+inline float dist(Point p1, Point p2, int dim) {
+  int i;
+  float result=0.0;
+  for (i=0;i<dim;i++)
+    result += (p1.coord[i] - p2.coord[i])*(p1.coord[i] - p2.coord[i]);
+#ifdef INSERT_WASTE
+  double s = waste(result);
+  result += s;
+  result -= s;
+#endif
+  return(result);
+}
+

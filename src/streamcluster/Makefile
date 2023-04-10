@@ -1,6 +1,6 @@
 include ../common.mk
-OBJS = main.o
-all: sc_omp_base 
+OBJS = main.o cluster.o
+all: sc_omp_base sc_gpu_base
 
 sc_omp_base: $(OBJS) omp_base.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lgomp
