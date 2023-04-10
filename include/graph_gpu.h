@@ -5,7 +5,8 @@
 #include "cutil_subset.h"
 #include "cuda_profiler_api.h"
 
-class GraphGPU {
+template <typename elabel_t=int32_t>
+class GraphGPUT {
 protected:
   bool is_directed_;                // is it a directed graph?
   bool has_reverse;                 // has reverse/incoming edges maintained
@@ -23,16 +24,16 @@ protected:
   vidType *d_vlabels_frequency;     // vertex label frequency
   vidType *d_adj_buffer;            // buffer for copying an adjacency list from a remote GPU
 public:
-  GraphGPU(vidType nv, eidType ne, int vl=0, int el=0, 
+  GraphGPUT(vidType nv, eidType ne, int vl=0, int el=0, 
            int n=0, int m=1, bool use_nvshmem=false) :
-      GraphGPU(n, m, nv, ne, vl, el) {
+      GraphGPUT(n, m, nv, ne, vl, el) {
     if (nv>0 && ne>0 && !use_nvshmem) allocateFrom(nv, ne, vl, el);
   }
-  GraphGPU(Graph &g, int n=0, int m=1) : 
-      GraphGPU(n, m, g.V(), g.E(), g.get_vertex_classes(), g.get_edge_classes()) {
+  GraphGPUT(Graph &g, int n=0, int m=1) : 
+      GraphGPUT(n, m, g.V(), g.E(), g.get_vertex_classes(), g.get_edge_classes()) {
     init(g);
   }
-  GraphGPU(int n=0, int m=0, vidType nv=0, eidType ne=0, int vl=1, int el=1,
+  GraphGPUT(int n=0, int m=0, vidType nv=0, eidType ne=0, int vl=1, int el=1,
            bool directed=false, bool reverse=false) : 
       is_directed_(directed),
       has_reverse(reverse),
@@ -377,3 +378,5 @@ public:
   }
 };
 
+typedef GraphGPUT<int32_t> GraphGPU;
+typedef GraphGPUT<float> GraphGPUF;

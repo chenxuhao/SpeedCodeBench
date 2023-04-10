@@ -2,8 +2,11 @@
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
 
-void SSSPSolver(Graph &g, vidType source, elabel_t *dist, int delta);
-void SSSPVerifier(Graph &g, vidType source, elabel_t *dist);
+typedef int ValueT;
+
+void SSSPSolver(Graph &g, vidType source, ValueT *dist, int delta);
+
+void SSSPVerifier(Graph &g, vidType source, int *dist);
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -22,7 +25,7 @@ int main(int argc, char *argv[]) {
   Graph g(argv[1], 0, 1, 0, 1);
   g.print_meta_data();
   assert(source >=0 && source < g.V());
-  std::vector<elabel_t> distances(g.V(), kDistInf);
+  std::vector<ValueT> distances(g.V(), kDistInf);
   SSSPSolver(g, source, &distances[0], delta);
   SSSPVerifier(g, source, &distances[0]);
   return 0;

@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     stream = new FileStream(infilename);
   }
   double t1 = omp_get_wtime();
-  streamCluster(stream, kmin, kmax, dim, chunksize, clustersize, outfilename );
+  streamCluster(stream, kmin, kmax, dim, chunksize, clustersize, outfilename);
   double t2 = omp_get_wtime();
   printf("time = %lf\n",t2-t1);
   delete stream;

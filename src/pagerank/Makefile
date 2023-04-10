@@ -10,5 +10,13 @@ pr_omp_push: omp_push.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) omp_push.o $(OBJS) -o $@ -lgomp
 	mv $@ $(BIN)
 
+pr_gpu_base: gpu_base.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ $(NVLIBS)
+	mv $@ $(BIN)
+
+pr_gpu_warp: gpu_warp.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_warp.o -o $@ $(NVLIBS)
+	mv $@ $(BIN)
+
 clean:
 	rm *.o

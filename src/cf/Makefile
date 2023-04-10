@@ -9,11 +9,11 @@ endif
 all: cf_omp_base 
 
 cf_gpu_base: gpu_base.o $(OBJS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) gpu_base.o $(OBJS) -o $@ $(LIBS) 
+	$(CXX) $(CXXFLAGS) $(INCLUDES) gpu_base.o $(OBJS) -o $@ $(NVLIBS) 
 	mv $@ $(BIN)
 
 cf_gpu_warp: gpu_warp.o $(OBJS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) gpu_warp.o $(OBJS) -o $@ $(LIBS) -lgomp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) gpu_warp.o $(OBJS) -o $@ $(NVLIBS) -lgomp
 	mv $@ $(BIN)
 
 cf_omp_base: omp_base.o $(OBJS)

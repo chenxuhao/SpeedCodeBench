@@ -14,5 +14,10 @@ bfs_omp_direction: omp_direction.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_direction.o -o $@ -lgomp
 	mv $@ $(BIN)
 
+# data-driven BFS baseline
+bfs_gpu_base: gpu_base.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ $(NVLIBS)
+	mv $@ $(BIN)
+
 clean:
 	rm *.o

@@ -5,7 +5,7 @@
 
 //[1] Ulrich Meyer and Peter Sanders. "δ-stepping: a parallelizable shortest path
 //    algorithm." Journal of Algorithms, 49(1):114--152, 2003.
-void SSSPSolver(Graph &g, vidType source, elabel_t *dist, int delta) {
+void SSSPSolver(Graph &g, vidType source, int *dist, int delta) {
   int num_threads = 1;
 #pragma omp parallel
   {
@@ -25,7 +25,7 @@ void SSSPSolver(Graph &g, vidType source, elabel_t *dist, int delta) {
   {
     VertexLists local_bins(0);
     int iter = 0;
-    while (static_cast<elabel_t>(shared_indexes[iter&1]) != kDistInf) {
+    while (static_cast<int>(shared_indexes[iter&1]) != kDistInf) {
       size_t &curr_bin_index = shared_indexes[iter&1];
       size_t &next_bin_index = shared_indexes[(iter+1)&1];
       size_t &curr_frontier_tail = frontier_tails[iter&1];
@@ -33,7 +33,7 @@ void SSSPSolver(Graph &g, vidType source, elabel_t *dist, int delta) {
       #pragma omp for nowait schedule(dynamic, 64)
       for (size_t i = 0; i < curr_frontier_tail; i ++) {
         auto src = frontier[i];
-        if (dist[src] >= delta * static_cast<elabel_t>(curr_bin_index)) {
+        if (dist[src] >= delta * static_cast<int>(curr_bin_index)) {
           auto offset = g.edge_begin(src);
           for (auto dst : g.N(src)) {
             auto old_dist = dist[dst];

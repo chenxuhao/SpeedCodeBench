@@ -35,10 +35,10 @@ void SGDSolver(BipartiteGraph &g, std::vector<latent_t> &latents, int * ordering
   do {
     iter ++;
     #ifdef COMPUTE_ERROR
-    for (int i = 0; i < nv; i ++) squared_errors[i] = 0;
+    for (vidType i = 0; i < nv; i ++) squared_errors[i] = 0;
     #endif
     #pragma omp parallel for schedule(dynamic, 64)
-    for (int u = 0; u < nv; u ++) {
+    for (vidType u = 0; u < nv; u ++) {
       latent_t *u_latent = &latents[K*u];
       latent_t *u_err = &errors[K*u];
       auto offset = g.edge_begin(u);

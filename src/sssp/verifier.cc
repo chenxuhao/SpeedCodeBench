@@ -3,11 +3,11 @@
 #include "graph.h"
 #include <queue>
 
-void SSSPVerifier(Graph &g, vidType source, elabel_t *dist_to_test) {
+void SSSPVerifier(Graph &g, vidType source, int *dist_to_test) {
   std::cout << "Verifying SSSP...\n";
   // Serial Dijkstra implementation to get oracle distances
-  vector<elabel_t> oracle_dist(g.V(), kDistInf);
-  typedef pair<elabel_t, IndexT> WN;
+  std::vector<int> oracle_dist(g.V(), kDistInf);
+  typedef std::pair<int, vidType> WN;
   std::priority_queue<WN, vector<WN>, greater<WN> > mq;
   int iter = 0;
   Timer t;
@@ -15,13 +15,13 @@ void SSSPVerifier(Graph &g, vidType source, elabel_t *dist_to_test) {
   oracle_dist[source] = 0;
   mq.push(make_pair(0, source));
   while (!mq.empty()) {
-    elabel_t td = mq.top().first;
-    IndexT src = mq.top().second;
+    auto td = mq.top().first;
+    auto src = mq.top().second;
     mq.pop();
     if (td == oracle_dist[src]) {
       auto offset = g.edge_begin(src);
       for (auto dst : g.N(src)) {
-        elabel_t wt = g.getEdgeData(offset++);
+        auto wt = g.getEdgeData(offset++);
         if (td + wt < oracle_dist[dst]) {
           oracle_dist[dst] = td + wt;
           mq.push(make_pair(td + wt, dst));
