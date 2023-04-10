@@ -11,10 +11,10 @@ std::map<OPS,double> timers;
     std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<uint32_t>())) \
     initializer(omp_priv = decltype(omp_orig)(omp_orig.size()))
 
-template<bool map_vertices, bool map_edges>
-GraphT<map_vertices, map_edges>::GraphT(std::string prefix, bool use_dag, bool directed, 
+template<bool map_vertices, bool map_edges, typename elabel_t>
+GraphT<map_vertices, map_edges, elabel_t>::GraphT(std::string prefix, bool use_dag, bool directed, 
              bool use_vlabel, bool use_elabel, bool need_reverse, bool bipartite, bool partitioned) :
-    GraphT<map_vertices, map_edges>(directed, bipartite, 0, 0) {
+    GraphT<map_vertices, map_edges, elabel_t>(directed, bipartite, 0, 0) {
   // parse file name
   inputfile_prefix = prefix;
   size_t i = prefix.rfind('/', prefix.length());
@@ -27,8 +27,8 @@ GraphT<map_vertices, map_edges>::GraphT(std::string prefix, bool use_dag, bool d
   load_graph(prefix, use_dag, use_vlabel, use_elabel, need_reverse, partitioned);
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::load_graph(std::string prefix,
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::load_graph(std::string prefix,
                                                  bool use_dag, bool use_vlabel, bool use_elabel,
                                                  bool need_reverse, bool partitioned) {
   // read meta information
@@ -40,8 +40,8 @@ void GraphT<map_vertices, map_edges>::load_graph(std::string prefix,
     load_graph_data(prefix, use_dag, use_vlabel, use_elabel, need_reverse);
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::load_graph_data(std::string prefix, 
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::load_graph_data(std::string prefix, 
     bool use_dag, bool use_vlabel, bool use_elabel, bool need_reverse) {
   // read row pointers
   load_row_pointers(prefix);
@@ -147,13 +147,13 @@ void GraphT<map_vertices, map_edges>::load_graph_data(std::string prefix,
   labels_frequency_.clear();
 }
 
-template<bool map_vertices, bool map_edges>
-GraphT<map_vertices, map_edges>::~GraphT() {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+GraphT<map_vertices, map_edges, elabel_t>::~GraphT() {
   deallocate();
 }
  
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::deallocate() {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::deallocate() {
   if (dst_list != NULL && dst_list != edges) {
     delete [] dst_list;
     dst_list = NULL;
@@ -186,8 +186,8 @@ void GraphT<map_vertices, map_edges>::deallocate() {
   }
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::read_meta_info(std::string prefix) {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::read_meta_info(std::string prefix) {
   std::ifstream f_meta((prefix + ".meta.txt").c_str());
   assert(f_meta);
   int64_t nv = 0;
@@ -209,8 +209,8 @@ void GraphT<map_vertices, map_edges>::read_meta_info(std::string prefix) {
   std::cout << "Reading graph: |V| " << nv << " |E| " << n_edges << "\n";
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::load_row_pointers(std::string prefix) {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::load_row_pointers(std::string prefix) {
   if constexpr (map_vertices) {
     std::cout << "mmap vertices\n";
     map_file(prefix + ".vertex.bin", vertices, n_vertices+1);
@@ -221,8 +221,8 @@ void GraphT<map_vertices, map_edges>::load_row_pointers(std::string prefix) {
   }
 }
  
-template<bool map_vertices, bool map_edges>
-VertexSet GraphT<map_vertices, map_edges>::N(vidType vid) const {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+VertexSet GraphT<map_vertices, map_edges, elabel_t>::N(vidType vid) const {
   assert(vid >= 0);
   assert(vid < n_vertices);
   eidType begin = vertices[vid], end = vertices[vid+1];
@@ -234,8 +234,8 @@ VertexSet GraphT<map_vertices, map_edges>::N(vidType vid) const {
   return VertexSet(edges + begin, end - begin, vid);
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices,map_edges>::sort_neighbors() {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices,map_edges, elabel_t>::sort_neighbors() {
   std::cout << "Sorting the neighbor lists (used for pattern mining)\n";
   #pragma omp parallel for
   for (vidType v = 0; v < n_vertices; v++) {
@@ -245,8 +245,8 @@ void GraphT<map_vertices,map_edges>::sort_neighbors() {
   }
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices,map_edges>::sort_and_clean_neighbors(std::string outfile_prefix) {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices,map_edges, elabel_t>::sort_and_clean_neighbors(std::string outfile_prefix) {
   std::cout << "Sorting the neighbor lists and remove selfloops and redundent edges (used for pattern mining)\n";
   degrees.resize(n_vertices);
   std::fill(degrees.begin(), degrees.end(), 0);
@@ -394,8 +394,8 @@ void GraphT<map_vertices,map_edges>::sort_and_clean_neighbors(std::string outfil
   }
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices,map_edges>::symmetrize() {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices,map_edges, elabel_t>::symmetrize() {
   degrees.resize(n_vertices);
   std::fill(degrees.begin(), degrees.end(), 0);
   std::cout << "Computing degrees\n";
@@ -463,51 +463,9 @@ void GraphT<map_vertices,map_edges>::symmetrize() {
   n_edges = num_edges;
   sort_neighbors();
 }
-/*
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices,map_edges>::symmetrize() {
-  std::cout << "Symmetrizing the neighbor lists (used for pattern mining)\n";
-  std::vector<std::set<vidType>> neighbor_lists(n_vertices);
-  #pragma omp parallel for
-  for (vidType v = 0; v < n_vertices; v++) {
-    auto deg = get_degree(v);
-    assert (deg <= max_degree);
-    neighbor_lists[v].insert(edges+edge_begin(v), edges+edge_end(v));
-  }
-  std::cout << "Inserting reverse edges\n";
-  for (vidType v = 0; v < n_vertices; v++) {
-    for (auto u : N(v)) {
-      if (u == v) continue;
-      neighbor_lists[u].insert(v);
-    }
-  }
 
-  std::cout << "Computing degrees\n";
-  std::vector<vidType> degrees(n_vertices, 0);
-  for (vidType v = 0; v < n_vertices; v++) {
-    degrees[v] = neighbor_lists[v].size();
-  }
-  std::cout << "Computing indices by prefix sum\n";
-  eidType *new_vertices = custom_alloc_global<eidType>(n_vertices+1);
-  parallel_prefix_sum<vidType,eidType>(degrees, new_vertices);
-  auto num_edges = new_vertices[n_vertices];
-  std::cout << "|E| after symmetrization: " << num_edges << "\n";
-  assert(num_edges <= 2*n_edges);
-  vidType *new_edges = custom_alloc_global<vidType>(num_edges);
-  #pragma omp parallel for
-  for (vidType v = 0; v < n_vertices; v ++) {
-    auto begin = new_vertices[v];
-    std::copy(neighbor_lists[v].begin(), neighbor_lists[v].end(), &new_edges[begin]);
-  }
-  delete [] vertices;
-  delete [] edges;
-  vertices = new_vertices;
-  edges = new_edges;
-  n_edges = num_edges;
-}
-*/
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices,map_edges>::write_to_file(std::string outfilename, bool v, bool e, bool vl, bool el) {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices,map_edges, elabel_t>::write_to_file(std::string outfilename, bool v, bool e, bool vl, bool el) {
   std::cout << "Writing graph to file\n";
   if (v) {
     std::ofstream outfile((outfilename+".vertex.bin").c_str(), std::ios::binary);
@@ -550,8 +508,8 @@ void GraphT<map_vertices,map_edges>::write_to_file(std::string outfilename, bool
   }
 }
  
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::build_reverse_graph() {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::build_reverse_graph() {
   std::vector<VertexList> reverse_adj_lists(n_vertices);
   for (vidType v = 0; v < n_vertices; v++) {
     for (auto u : N(v)) {
@@ -602,8 +560,8 @@ template<> VertexSet GraphT<>::in_neigh(vidType vid) const {
   return VertexSet(reverse_edges + begin, end - begin, vid);
 }
  
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::allocateFrom(vidType nv, eidType ne) {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::allocateFrom(vidType nv, eidType ne) {
   n_vertices = nv;
   n_edges    = ne;
   vertices = new eidType[nv+1];
@@ -611,8 +569,8 @@ void GraphT<map_vertices, map_edges>::allocateFrom(vidType nv, eidType ne) {
   vertices[0] = 0;
 }
  
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::compute_max_degree() {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::compute_max_degree() {
   std::cout << "computing the maximum degree\n";
   Timer t;
   t.Start();
@@ -626,8 +584,8 @@ void GraphT<map_vertices, map_edges>::compute_max_degree() {
   std::cout << "Time computing the maximum degree: " << t.Seconds() << " sec\n";
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::degree_histogram(int bin_width, std::string outfile_prefix) {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::degree_histogram(int bin_width, std::string outfile_prefix) {
   std::cout << "Degree distribution\n";
   Timer t;
   t.Start();
@@ -654,8 +612,8 @@ void GraphT<map_vertices, map_edges>::degree_histogram(int bin_width, std::strin
   }
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices, map_edges>::orientation(std::string outfile_prefix) {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices, map_edges, elabel_t>::orientation(std::string outfile_prefix) {
   std::cout << "Orientation enabled, generating DAG\n";
   Timer t;
   t.Start();
@@ -822,8 +780,8 @@ template<> eidType GraphT<>::init_edgelist(bool sym_break, bool ascend) {
   return nnz;
 }
 
-template<bool map_vertices, bool map_edges>
-bool GraphT<map_vertices,map_edges>::binary_search(vidType key, eidType begin, eidType end) const {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+bool GraphT<map_vertices,map_edges, elabel_t>::binary_search(vidType key, eidType begin, eidType end) const {
   auto l = begin;
   auto r = end-1;
   while (r >= l) { 
@@ -1143,8 +1101,8 @@ template<> void GraphT<>::BuildNLF() {
   }
 }
 
-template<bool map_vertices, bool map_edges>
-void GraphT<map_vertices,map_edges>::print_meta_data() const {
+template<bool map_vertices, bool map_edges, typename elabel_t>
+void GraphT<map_vertices,map_edges, elabel_t>::print_meta_data() const {
   std::cout << "|V|: " << n_vertices << ", |E|: " << n_edges << ", Max Degree: " << max_degree << "\n";
   if (num_vertex_classes > 0) {
     std::cout << "vertex-|\u03A3|: " << num_vertex_classes;
@@ -1230,6 +1188,7 @@ template<> void GraphT<>::buildCoreTable() {
   //  std::cout << "v_" << v << " core value: " << core_table[v] << "\n";
 }
 
-template class GraphT<false, false>;
-template class GraphT<false, true>;
-template class GraphT<true, true>;
+template class GraphT<false, false, float>;
+template class GraphT<false, false, int32_t>;
+template class GraphT<false, true, int32_t>;
+template class GraphT<true, true, int32_t>;

@@ -3,7 +3,7 @@
 
 using namespace std;
 
-template <bool map_vertices=false, bool map_edges=false>
+template <bool map_vertices=false, bool map_edges=false, typename elabel_t=int32_t>
 class GraphT {
 protected:
   std::string name_;            // name of the graph
@@ -24,8 +24,8 @@ protected:
   int num_vertex_classes;       // number of distinct vertex labels: '0' means no vertex labels
   int num_edge_classes;         // number of distinct edge labels: '0' means no edge labels
   int core_length_;
-  int vid_size, eid_size, vlabel_size, elabel_size; // number of bytes for vid, eid, vlabel, elabel
-  vidType degree_threshold;
+  int vid_size, eid_size;       // number of bytes for vid, eid
+  int vlabel_size, elabel_size; // number of bytes for vlabel, elabel
 
   vidType *edges;               // column indices of CSR format
   eidType *vertices;            // row pointers of CSR format
@@ -62,7 +62,6 @@ public:
          core_length_(0),
          vid_size(4), eid_size(8),
          vlabel_size(0), elabel_size(0),
-         degree_threshold(32),
          edges(NULL),
          vertices(NULL),
          reverse_edges(NULL),
@@ -217,8 +216,9 @@ public:
   bool binary_search(vidType key, eidType begin, eidType end) const;
 };
 
-typedef GraphT<false,false> Graph;
-typedef GraphT<false,false> InMemGraph;
-typedef GraphT<false,true>  SemiOutOfCoreGraph;
-typedef GraphT<true,true>   OutOfCoreGraph;
+typedef GraphT<false,false,int32_t> Graph;
+typedef GraphT<false,false,float>   GraphF;
+typedef GraphT<false,false,int32_t> InMemGraph;
+typedef GraphT<false,true, int32_t> SemiOutOfCoreGraph;
+typedef GraphT<true, true, int32_t> OutOfCoreGraph;
 typedef GraphT<false,false> BipartiteGraph;

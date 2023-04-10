@@ -48,6 +48,7 @@ To control the number of threads, set the following environment variable:
 - [x] Black-Scholes a differential equation to price options contracts
 - [x] CRC64 checksum
 - [x] Stencil
+- [x] Jaccard index, a.k.a, Jaccard similarity coefficient
 - [x] Haversine distance for Geospatial Data Analysis
 - [x] Saxpy: Single-Precision A X Plus Y
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
