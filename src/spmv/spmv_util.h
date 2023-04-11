@@ -54,7 +54,7 @@ T l2_error(size_t N, const T * a, const T * b) {
 }
 
 template <typename T = float>
-void SpmvVerifier(Graph &g, const T *x, T *y_test) {
+void SpmvVerifier(GraphF &g, const T *x, T *y_test) {
   printf("Verifying...\n");
   auto m = g.V();
   auto nnz = g.E();

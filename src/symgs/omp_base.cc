@@ -1,29 +1,30 @@
 // Copyright 2016, National University of Defense Technology
 // Authors: Xuhao Chen <cxh@illinois.edu>
 #include "graph.h"
-typedef int32_t T;
+typedef float T;
 
 void gauss_seidel(eidType *Ap, vidType *Aj, int *indices, T *Ax, T *x, T *b, 
                   int row_start, int row_stop, int row_step) {
-	#pragma omp parallel for
-	for (int i = row_start; i < row_stop; i += row_step) {
-		int inew = indices[i];
-		auto row_begin = Ap[inew];
-		auto row_end = Ap[inew+1];
-		T rsum = 0;
-		T diag = 0;
-		for (auto jj = row_begin; jj < row_end; jj++) {
-			auto j = Aj[jj];  //column index
-			if (inew == j) diag = Ax[jj];
-			else rsum += x[j] * Ax[jj];
-		}
-		if (diag != 0) x[inew] = (b[inew] - rsum) / diag;
-	}
+  #pragma omp parallel for
+  for (int i = row_start; i < row_stop; i += row_step) {
+    int inew = indices[i];
+    auto row_begin = Ap[inew];
+    auto row_end = Ap[inew+1];
+    T rsum = 0;
+    T diag = 0;
+    for (auto jj = row_begin; jj < row_end; jj++) {
+      auto j = Aj[jj];  //column index
+      if (inew == j) diag = Ax[jj];
+      else rsum += x[j] * Ax[jj];
+    }
+    if (diag != 0) x[inew] = (b[inew] - rsum) / diag;
+  }
 }
 
-void SymGSSolver(Graph &g, int *indices, T *Ax, T *x, T *b, std::vector<int> color_offsets) {
+void SymGSSolver(GraphF &g, int *indices, T *x, T *b, std::vector<int> color_offsets) {
   auto Ap = g.in_rowptr();
   auto Aj = g.in_colidx();
+  auto Ax = g.get_elabel_ptr();
   int num_threads = 1;
   #pragma omp parallel
   {

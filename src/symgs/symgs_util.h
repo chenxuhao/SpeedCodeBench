@@ -64,11 +64,12 @@ void gs_serial(eidType *Ap, vidType *Aj, int *indices, T *Ax, T *x, T *b,
 }
 
 template <typename T = float>
-void SymGSVerifier(Graph &g, int *indices, T *Ax, T *test_x, T *x_host, T *b, std::vector<int> color_offsets) {
+void SymGSVerifier(GraphF &g, int *indices, T *test_x, T *x_host, T *b, std::vector<int> color_offsets) {
   printf("Verifying...\n");
   auto num_rows = g.V();
   auto Ap = g.in_rowptr();
   auto Aj = g.in_colidx();
+  auto Ax = g.get_elabel_ptr();
   T *x = (T *)malloc(num_rows * sizeof(T));
   for (vidType i = 0; i < num_rows; i++)
     x[i] = x_host[i];

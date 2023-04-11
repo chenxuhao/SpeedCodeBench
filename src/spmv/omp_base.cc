@@ -3,9 +3,9 @@
 #include "graph.h"
 #include "timer.h"
 #include "spmv_util.h"
-typedef int32_t T;
+typedef float T;
 
-void SpmvSolver(Graph &g, const T *x, T *y) {
+void SpmvSolver(GraphF &g, const T *x, T *y) {
   auto m = g.V();
   auto nnz = g.E();
   auto Ap = g.in_rowptr();

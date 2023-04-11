@@ -8,11 +8,11 @@
 #include <thrust/reduce.h>
 #include <thrust/sort.h>
 
-typedef int32_t T;
+typedef float T;
 
-int ColorSolver(Graph &g, int *colors);
+int ColorSolver(GraphF &g, int *colors);
 
-void SymGSSolver(Graph &g, int *indices, T *Ax, T *x, T *b, std::vector<int> color_offsets);
+void SymGSSolver(GraphF &g, int *indices, T *x, T *b, std::vector<int> color_offsets);
 
 int main(int argc, char *argv[]) {
   std::cout << "Symmetric Gauss-Seidel smoother by Xuhao Chen\n"
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Example: " << argv[0] << " ../../input/citeseer/graph\n";
     exit(1);
   }
-  Graph g(argv[1]);
+  GraphF g(argv[1], 0, 0, 0, 1, 1, 0, 0);
   g.print_meta_data();
 
   auto m = g.V();
@@ -31,15 +31,10 @@ int main(int argc, char *argv[]) {
   auto h_x = custom_alloc_global<T>(m);
   auto h_b = custom_alloc_global<T>(m);
   auto x_host = custom_alloc_global<T>(m);
-  auto weights = custom_alloc_global<T>(nnz);
 
   // fill matrix with random values: some matrices have extreme values,
   // which makes correctness testing difficult, especially in single precision
   srand(13);
-  //for(int i = 0; i < nnz; i++) {
-  //weights[i] = 1.0 - 2.0 * (rand() / (RAND_MAX + 1.0)); // Ax[]
-  //weights[i] = rand() / (RAND_MAX + 1.0); // Ax[]
-  //}
   for(vidType i = 0; i < m; i++) {
     h_x[i] = rand() / (RAND_MAX + 1.0);
     x_host[i] = h_x[i];
@@ -61,9 +56,10 @@ int main(int argc, char *argv[]) {
       thrust::make_discard_iterator(), temp);
   thrust::exclusive_scan(temp, temp+num_colors+1, temp, 0);
   std::vector<int> color_offsets(num_colors+1);
-  for(size_t i = 0; i < color_offsets.size(); i ++) color_offsets[i] = temp[i];
-
-  SymGSSolver(g, ordering, weights, h_x, h_b, color_offsets);
-  SymGSVerifier<T>(g, ordering, weights, h_x, x_host, h_b, color_offsets);
+  #pragma omp parallel for
+  for (size_t i = 0; i < color_offsets.size(); i ++)
+    color_offsets[i] = temp[i];
+  SymGSSolver(g, ordering, h_x, h_b, color_offsets);
+  SymGSVerifier<T>(g, ordering, h_x, x_host, h_b, color_offsets);
   return 0;
 }

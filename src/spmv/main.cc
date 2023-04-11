@@ -1,8 +1,8 @@
 #include "graph.h"
 #include "spmv_util.h"
 
-typedef int32_t T;
-void SpmvSolver(Graph &g, const T *x, T *y);
+typedef float T;
+void SpmvSolver(GraphF &g, const T *x, T *y);
 
 int main(int argc, char *argv[]) {
   printf("Sparse Matrix-Vector Multiplication\n");
@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Example: " << argv[0] << " inputs/citeseer\n";
     exit(1);
   }
-  Graph g(argv[1], 0, 0, 0, 1, 1, 0, 0);
+  GraphF g(argv[1], 0, 0, 0, 1, 1, 0, 0);
   g.print_meta_data();
   std::vector<T> x(g.V(), 0);
   std::vector<T> y(g.V(), 0);
