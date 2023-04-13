@@ -27,7 +27,23 @@ int BlackScholes(int numOptions,
     #pragma omp parallel for private(i)
     for (i = 0; i<numOptions; i++) {
       // Calling main function to calculate option value based on Black & Scholes's equation.
-      fptype price = BlkSchlsEqEuroNoDiv( sptprice[i], strike[i], rate[i], volatility[i], otime[i], otype[i], 0);
+#ifdef ENABLE_SIMD
+      fptype price[NCO];
+      BlkSchlsEqEuroNoDiv(price, NCO, &(sptprice[i]), &(strike[i]),
+                          &(rate[i]), &(volatility[i]), &(otime[i]), &(otype[i]), 0);
+      for (k=0; k<NCO; k++) prices[i+k] = price[k];
+      #ifdef ERR_CHK
+      for (k=0; k<NCO; k++) {
+        priceDelta = data[i+k].DGrefval - price[k];
+        if (fabs(priceDelta) >= 1e-4) {
+          printf("Error on %d. Computed=%.5f, Ref=%.5f, Delta=%.5f\n",
+              i + k, price[k], data[i+k].DGrefval, priceDelta);
+          numError ++;
+        }
+      }
+      #endif
+#else
+      fptype price = BlkSchlsEqEuroNoDiv(sptprice[i], strike[i], rate[i], volatility[i], otime[i], otype[i], 0);
       prices[i] = price;
       #ifdef ERR_CHK
       fptype priceDelta = data[i].DGrefval - price;
@@ -36,6 +52,7 @@ int BlackScholes(int numOptions,
         numError ++;
       }
       #endif
+#endif
     }
   }
   return numError;

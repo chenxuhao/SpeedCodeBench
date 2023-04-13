@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -26,9 +28,15 @@ typedef struct OptionData_ {
         fptype DGrefval;   // DerivaGem Reference Value
 } OptionData;
 
+#ifdef ENABLE_SIMD
+void CNDF ( fptype * OutputX, fptype * InputX );
+void BlkSchlsEqEuroNoDiv (fptype * OptionPrice, fptype * sptprice,
+                          fptype * strike, fptype * rate, fptype * volatility,
+                          fptype * time, int * otype, float timet);
+#else 
 fptype CNDF ( fptype InputX );
-
 fptype BlkSchlsEqEuroNoDiv( fptype sptprice,
                             fptype strike, fptype rate, fptype volatility,
                             fptype time, int otype, float timet );
- 
+#endif 
+

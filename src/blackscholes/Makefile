@@ -1,13 +1,16 @@
 include ../common.mk
 
-OBJS = main.o blackscholes.o
+OBJS = main.o
 
-all: blackscholes blackscholes_simd
+all: bs_omp_base bs_omp_simd
 
-blackscholes: $(OBJS) omp_base.o
-	$(CC) $(CFLAGS) -DENABLE_OPENMP $(INCLUDES) $(OBJS) omp_base.o -o $@ -lm
+bs_omp_base: $(OBJS) blackscholes.o omp_base.o
+	$(CC) $(CFLAGS) $(OBJS) blackscholes.o omp_base.o -o $@ -lm
 	mv $@ $(BIN)
 
-blackscholes_simd:
-	$(CC) $(CFLAGS) -DENABLE_OPENMP -DNCO=4 $(INCLUDES) blackscholes.simd.c -o $@ -lm
+bs_omp_simd: omp_base.o blackscholes_simd.o
+	$(CC) $(CFLAGS) $(OBJS) -DENABLE_SIMD -DNCO=4 blackscholes_simd.o omp_base.o -o $@ -lm
 	mv $@ $(BIN)
+
+clean:
+	rm *.o
