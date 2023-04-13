@@ -1,41 +1,28 @@
-/***************************************************************************
- *cr
- *cr            (C) Copyright 2010 The Board of Trustees of the
- *cr                        University of Illinois
- *cr                         All Rights Reserved
- *cr
- ***************************************************************************/
-
-/* 
- * Base C implementation of MM
- */
-
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 #include <string.h>
 #define BLOCK_SIZE 48
 
 //m is matArow (hA), n is matBcol (wB), and k is matAcol (wA)
-void basicSgemm( char transa, char transb, int m, int n, int k, float alpha, const float *A, int lda, const float *B, int ldb, float beta, float *C, int ldc )
-{
+void sgemm(char transa, char transb,
+           int m, int n, int k, 
+           float alpha, const float *A, int lda,
+           const float *B, int ldb, float beta,
+           float *C, int ldc ) {
   if ((transa != 'N') && (transa != 'n')) {
-    std::cerr << "unsupported value of 'transa' in regtileSgemm()" << std::endl;
+    std::cerr << "unsupported value of 'transa' in regtileSgemm()\n";
     return;
   }
-  
   if ((transb != 'T') && (transb != 't')) {
-    std::cerr << "unsupported value of 'transb' in regtileSgemm()" << std::endl;
+    std::cerr << "unsupported value of 'transb' in regtileSgemm()\n";
     return;
   }
-
   int bx, by;// tile index
   int tx, ty;// element index
   float Asub, Bsub, Csub;
   int hA_grid, wB_grid, wA_grid;
   int hA_bound, wB_bound, wA_bound;
   int a, b;
-
   //height and width of A, B, C
   int hA,wA, wB, hC, wC;
   hA = m;
@@ -43,25 +30,20 @@ void basicSgemm( char transa, char transb, int m, int n, int k, float alpha, con
   wB = n;
   hC = m;
   wC = n;
-  
   //clear C
   memset(C, 0, hC*wC*sizeof(float));
-
   hA_grid = (hA+BLOCK_SIZE-1)/BLOCK_SIZE;
   hA_bound = hA%BLOCK_SIZE;
   wB_grid = (wB+BLOCK_SIZE-1)/BLOCK_SIZE;
   wB_bound = wB%BLOCK_SIZE;
   wA_grid = (wA+BLOCK_SIZE-1)/BLOCK_SIZE;
   wA_bound = wA%BLOCK_SIZE;
-  
   //for each block in the whole matrix C
   #pragma omp parallel for shared(A, B, C) private(ty, tx, Asub, Bsub, Csub) collapse(2)//schedule(static)
   for(by=0;by<hA_grid;by++) {
     for(bx=0;bx<wB_grid;bx++) {
-		
       //for each block in the same row of martix A (or the same column of matrix B)
       for(a=0;a<wA_grid;a++) {
-
 	//check bound
 	int yb = BLOCK_SIZE; //bound of ty
 	int xb = BLOCK_SIZE; //bound of tx

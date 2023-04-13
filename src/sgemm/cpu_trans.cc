@@ -1,29 +1,18 @@
-/***************************************************************************
- *cr
- *cr            (C) Copyright 2010 The Board of Trustees of the
- *cr                        University of Illinois
- *cr                         All Rights Reserved
- *cr
- ***************************************************************************/
+#include <iostream>
 
-/* 
- * C implementation of MM, adjusted for improved CPU performance.
- */
-
-
-
-void basicSgemm( char transa, char transb, int m, int n, int k, float alpha, const float *A, int lda, const float *B, int ldb, float beta, float *C, int ldc )
-{
+void sgemm(char transa, char transb, 
+           int m, int n, int k,
+           float alpha, const float *A, int lda,
+           const float *B, int ldb, float beta,
+           float *C, int ldc ) {
   if ((transa != 'N') && (transa != 'n')) {
     std::cerr << "unsupported value of 'transa' in regtileSgemm()" << std::endl;
     return;
   }
-  
   if ((transb != 'T') && (transb != 't')) {
     std::cerr << "unsupported value of 'transb' in regtileSgemm()" << std::endl;
     return;
   }
-
   // Transpose A and B.
   // Transposition allows the dot-product calculation to process contiguous (instead of strided)
   // array elements, improving performance of the main loop.
