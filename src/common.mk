@@ -25,7 +25,8 @@ GENCODE_SM80 := -gencode arch=compute_80,code=sm_80 -gencode arch=compute_80,cod
 GENCODE_SM86 := -gencode arch=compute_86,code=sm_86
 CUDA_ARCH := $(GENCODE_SM70)
 NVFLAGS := $(CUDA_ARCH)
-NVFLAGS += -Xptxas -v -std=c++17
+NVFLAGS += -Xptxas -v
+#NVFLAGS += -std=c++17
 NVFLAGS += -DUSE_GPU
 
 NVLIBS = -L$(CUDA_HOME)/lib64 -L$(CUDA_HOME)/lib64/stubs -lcuda -lcudart

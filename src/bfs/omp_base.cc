@@ -56,4 +56,3 @@ void BFSSolver(Graph &g, vidType source, vidType* dist) {
     dist[i] = depth[i];
 }
 
-void SSSPSolver(Graph &g, vidType source, elabel_t *dist, int delta) {}

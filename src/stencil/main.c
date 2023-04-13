@@ -37,8 +37,8 @@ static int read_data(float *A0, int nx,int ny,int nz,FILE *fp) {
   return 0;
 }
 
-void stencil(float c0, float c1, float *A0, float * Anext,
-             const int nx, const int ny, const int nz);
+void stencil(float c0, float c1, float *A0, float *Anext,
+             const int nx, const int ny, const int nz, const int niter);
 
 int main(int argc, char** argv) {
   int nx = 0, ny = 0, nz = 0;
@@ -74,22 +74,8 @@ int main(int argc, char** argv) {
   FILE *fp = fopen(inpFile, "rb");
   read_data(h_A0, nx, ny, nz, fp);
   fclose(fp);
-  memcpy (h_Anext, h_A0, sizeof(float) * size);
-
-  double start = omp_get_wtime();
-  int t;
-  for (t=0; t<iteration; t++) {
-    stencil(c0, c1, h_A0, h_Anext, nx, ny, nz);
-    float *temp = h_A0;
-    h_A0 = h_Anext;
-    h_Anext = temp;
-  }
-  float *temp=h_A0;
-  h_A0 = h_Anext;
-  h_Anext = temp;
-  double end = omp_get_wtime();
-  printf("runtime = %f sec\n", end - start);
-
+  memcpy(h_Anext, h_A0, sizeof(float) * size);
+  stencil(c0, c1, h_A0, h_Anext, nx, ny, nz, iteration);
   if (outFile) outputData(outFile, h_Anext, nx, ny, nz);
   free (h_A0);
   free (h_Anext);

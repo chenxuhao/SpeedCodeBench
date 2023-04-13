@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS = main.o
-all: sgemm_cpu_base sgemm_omp_base sgemm_gpu_base
+all: sgemm_cpu_base sgemm_omp_base
 
 sgemm_cpu_base: $(OBJS) cpu_base.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@ -lm

@@ -14,6 +14,10 @@ cc_gpu_base: gpu_base.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ $(NVLIBS)
 	mv $@ $(BIN)
 
+cc_gpu_warp: gpu_warp.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_warp.o -o $@ $(NVLIBS)
+	mv $@ $(BIN)
+
 cc_gpu_afforest: gpu_afforest.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_afforest.o -o $@ $(NVLIBS)
 	mv $@ $(BIN)
