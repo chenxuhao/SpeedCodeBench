@@ -144,8 +144,7 @@ int main(int argc, char **argv) {
         attributes,           /* [numObjects][numAttributes] */
         nclusters,
         threshold,
-        &cluster_centres   
-        );
+        &cluster_centres);
   }
   timing = omp_get_wtime() - timing;
   printf("number of Clusters %d\n",nclusters); 
@@ -184,11 +183,11 @@ int cluster(int      numObjects,      /* number of input objects */
   nclusters = num_nclusters;
   srand(7);
   tmp_cluster_centres = kmeans_clustering(attributes,
-      numAttributes,
-      numObjects,
-      nclusters,
-      threshold,
-      membership);
+                                          numAttributes,
+                                          numObjects,
+                                          nclusters,
+                                          threshold,
+                                          membership);
   if (*cluster_centres) {
     free((*cluster_centres)[0]);
     free(*cluster_centres);
