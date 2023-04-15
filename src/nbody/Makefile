@@ -1,9 +1,16 @@
-CXX=g++ 
-CXX_FLAGS=-O3 -fopenmp -DENABLE_OPENMP
-SRC=main.cc
-EXE=bh-omp
-INC=-I../../include
+include ../common.mk
 
-all:
-	$(CXX) $(CXX_FLAGS) $(INC) $(SRC) -o $(EXE)
-	mv $(EXE) ../../bin
+OBJS = main.o
+
+all: bh_omp_base
+
+bh_omp_base: $(OBJS) omp_base.o
+	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lgomp -lm
+	mv $@ $(BIN)
+
+bh_gpu_base: $(OBJS) gpu_base.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ -lgomp $(NVLIBS) -lm
+	mv $@ $(BIN)
+
+clean:
+	rm *.o

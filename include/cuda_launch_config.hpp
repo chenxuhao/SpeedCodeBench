@@ -266,29 +266,22 @@ template <typename UnaryFunction>
 inline __host__ __device__
 size_t default_block_size(const cudaDeviceProp     &properties,
                           const cudaFuncAttributes &attributes,
-                          UnaryFunction block_size_to_smem_size)
-{
+                          UnaryFunction block_size_to_smem_size) {
   size_t max_occupancy      = properties.maxThreadsPerMultiProcessor;
   size_t largest_blocksize  = util::min_(properties.maxThreadsPerBlock, attributes.maxThreadsPerBlock);
   size_t granularity        = properties.warpSize;
   size_t max_blocksize      = 0;
   size_t highest_occupancy  = 0;
-
-  for(size_t blocksize = largest_blocksize; blocksize != 0; blocksize -= granularity)
-  {
+  for(size_t blocksize = largest_blocksize; blocksize != 0; blocksize -= granularity) {
     size_t occupancy = blocksize * max_active_blocks_per_multiprocessor(properties, attributes, blocksize, block_size_to_smem_size(blocksize));
-
-    if(occupancy > highest_occupancy)
-    {
+    if(occupancy > highest_occupancy) {
       max_blocksize = blocksize;
       highest_occupancy = occupancy;
     }
-
     // early out, can't do better
     if(highest_occupancy == max_occupancy)
       break;
   }
-
   return max_blocksize;
 }
 
@@ -300,84 +293,66 @@ template<typename UnaryFunction>
 inline __host__ __device__
 std::size_t block_size_with_maximum_potential_occupancy(const cudaFuncAttributes &attributes,
                                                         const cudaDeviceProp &properties,
-                                                        UnaryFunction block_size_to_dynamic_smem_size)
-{
+                                                        UnaryFunction block_size_to_dynamic_smem_size) {
   return __cuda_launch_config_detail::default_block_size(properties, attributes, block_size_to_dynamic_smem_size);
 }
 
 
 inline __host__ __device__
 std::size_t block_size_with_maximum_potential_occupancy(const cudaFuncAttributes &attributes,
-                                                        const cudaDeviceProp &properties)
-{
+                                                        const cudaDeviceProp &properties) {
   return block_size_with_maximum_potential_occupancy(attributes, properties, __cuda_launch_config_detail::util::zero_function<std::size_t>());
 }
 
 template<typename T>
-inline __host__
-std::size_t block_size_with_maximum_potential_occupancy(T t)
-{
+inline __host__ std::size_t block_size_with_maximum_potential_occupancy(T t) {
   cudaError_t err;
   cudaFuncAttributes attributes;
   err = cudaFuncGetAttributes(&attributes, t);
-
-  if (err != cudaSuccess)
-    return 0;
-
+  if (err != cudaSuccess) return 0;
   int device;
   err = cudaGetDevice(&device);
-
-  if (err != cudaSuccess)
-    return 0;
-
+  if (err != cudaSuccess) return 0;
   cudaDeviceProp properties;
   err = cudaGetDeviceProperties(&properties, device);
-  
-  if (err != cudaSuccess)
-    return 0;
-
+  if (err != cudaSuccess) return 0;
   return block_size_with_maximum_potential_occupancy(attributes, properties);
 }
 
-inline __host__
-std::size_t maximum_residency(const cudaFuncAttributes &attributes, const cudaDeviceProp &properties,
-			      size_t CTA_SIZE, size_t dynamic_smem_bytes)
-{
+inline __host__ std::size_t maximum_residency(const cudaFuncAttributes &attributes,
+                                              const cudaDeviceProp &properties,
+                                              size_t CTA_SIZE, size_t dynamic_smem_bytes) {
   return __cuda_launch_config_detail::max_active_blocks_per_multiprocessor(properties, attributes, CTA_SIZE, dynamic_smem_bytes);
 }
 
 template<typename T>
-inline __host__
-std::size_t maximum_residency(T t, size_t CTA_SIZE, size_t dynamic_smem_bytes)
-{
+inline __host__ std::size_t maximum_residency(T t, size_t CTA_SIZE, size_t dynamic_smem_bytes) {
   cudaError_t err;
   cudaFuncAttributes attributes;
   err = cudaFuncGetAttributes(&attributes, t);
-
-  if (err != cudaSuccess)
-    return 0;
-
+  if (err != cudaSuccess) return 0;
   int device;
   err = cudaGetDevice(&device);
-
-  if (err != cudaSuccess)
-    return 0;
-
+  if (err != cudaSuccess) return 0;
   cudaDeviceProp properties;
   err = cudaGetDeviceProperties(&properties, device);
-  
-  if (err != cudaSuccess)
-    return 0;
-
+  if (err != cudaSuccess) return 0;
   return maximum_residency(attributes, properties, CTA_SIZE, dynamic_smem_bytes);
 }
 
 template<typename T>
-inline __host__ void refine_kernel_config(size_t &nthreads, size_t &nblocks, T t) {
-  int max_blocks_per_SM = maximum_residency(t, nthreads, 0);
-  std::cout << "max_blocks_per_SM = " << max_blocks_per_SM << "\n";
-  cudaDeviceProp deviceProp;
-  CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, 0));
-  size_t max_blocks = max_blocks_per_SM * deviceProp.multiProcessorCount;
-  if (max_blocks > 0) nblocks = std::min(max_blocks, nblocks);
+inline __host__ std::size_t all_resident(T t, const dim3& grid, const dim3& threads, size_t dynamic_smem_bytes) {
+  cudaError_t err;
+  cudaFuncAttributes attributes;
+  err = cudaFuncGetAttributes(&attributes, t);
+  if (err != cudaSuccess) return 0;
+  int device;
+  err = cudaGetDevice(&device);
+  if (err != cudaSuccess) return 0;
+  cudaDeviceProp properties;
+  err = cudaGetDeviceProperties(&properties, device);
+  if (err != cudaSuccess)
+    return 0;
+  return (maximum_residency(attributes, properties, threads.x * threads.y * threads.z, dynamic_smem_bytes) * properties.multiProcessorCount) >= grid.x * grid.y * grid.z;
 }
+
