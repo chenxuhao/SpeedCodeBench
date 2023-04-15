@@ -1,4 +1,4 @@
-KERNELS = bc bfs blackscholes cc cf fft histo kmeans nbody pagerank sgemm sssp spmv stencil streamcluster symgs tc vc
+KERNELS = bc bfs blackscholes cc cf fft histogram kmeans nbody pagerank sgemm sssp spmv stencil streamcluster symgs tc vc
 
 .PHONY: all
 all: $(KERNELS)
