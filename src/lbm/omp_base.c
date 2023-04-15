@@ -1,58 +1,38 @@
-/* $Id: lbm.c,v 1.1 2008/03/04 17:30:02 stratton Exp $ */
-
-/*############################################################################*/
-
-#include "lbm.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-
-#if !defined(SPEC_CPU)
-#ifdef _OPENMP
 #include <omp.h>
-#endif
-#endif
-
-/*############################################################################*/
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "config.h"
+#include "lbm_1d_array.h"
 
 #define DFL1 (1.0/ 3.0)
 #define DFL2 (1.0/18.0)
 #define DFL3 (1.0/36.0)
 
-/*############################################################################*/
-
 void LBM_allocateGrid( float** ptr ) {
-	const size_t margin = 2*SIZE_X*SIZE_Y*N_CELL_ENTRIES,
-	             size   = sizeof( LBM_Grid ) + 2*margin*sizeof( float );
-
-	*ptr = malloc( size );
-	if( ! *ptr ) {
-		printf( "LBM_allocateGrid: could not allocate %.1f MByte\n",
-		        size / (1024.0*1024.0) );
-		exit( 1 );
-	}
+  const size_t margin = 2*SIZE_X*SIZE_Y*N_CELL_ENTRIES,
+        size   = sizeof( LBM_Grid ) + 2*margin*sizeof( float );
+  *ptr = malloc( size );
+  if( ! *ptr ) {
+    printf( "LBM_allocateGrid: could not allocate %.1f MByte\n",
+        size / (1024.0*1024.0) );
+    exit( 1 );
+  }
 #if !defined(SPEC_CPU)
-	printf( "LBM_allocateGrid: allocated %.1f MByte\n",
-	        size / (1024.0*1024.0) );
+  printf( "LBM_allocateGrid: allocated %.1f MByte\n",
+      size / (1024.0*1024.0) );
 #endif
-	*ptr += margin;
+  *ptr += margin;
 }
-
-/*############################################################################*/
 
 void LBM_freeGrid( float** ptr ) {
-	const size_t margin = 2*SIZE_X*SIZE_Y*N_CELL_ENTRIES;
-
-	free( *ptr-margin );
-	*ptr = NULL;
+  const size_t margin = 2*SIZE_X*SIZE_Y*N_CELL_ENTRIES;
+  free( *ptr-margin );
+  *ptr = NULL;
 }
-
-/*############################################################################*/
 
 void LBM_initializeGrid( LBM_Grid grid ) {
 	SWEEP_VAR
-
 	/*voption indep*/
 #if !defined(SPEC_CPU)
 #ifdef _OPENMP
@@ -84,99 +64,85 @@ void LBM_initializeGrid( LBM_Grid grid ) {
 	SWEEP_END
 }
 
-/*############################################################################*/
-
 void LBM_swapGrids( LBM_GridPtr* grid1, LBM_GridPtr* grid2 ) {
-	LBM_GridPtr aux = *grid1;
-	*grid1 = *grid2;
-	*grid2 = aux;
+  LBM_GridPtr aux = *grid1;
+  *grid1 = *grid2;
+  *grid2 = aux;
 }
 
 /*############################################################################*/
 
 void LBM_loadObstacleFile( LBM_Grid grid, const char* filename ) {
-	int x,  y,  z;
+  int x,  y,  z;
+  FILE* file = fopen( filename, "rb" );
+  for( z = 0; z < SIZE_Z; z++ ) {
+    for( y = 0; y < SIZE_Y; y++ ) {
+      for( x = 0; x < SIZE_X; x++ ) {
+        if( fgetc( file ) != '.' ) SET_FLAG( grid, x, y, z, OBSTACLE );
+      }
+      fgetc( file );
+    }
+    fgetc( file );
+  }
 
-	FILE* file = fopen( filename, "rb" );
-
-	for( z = 0; z < SIZE_Z; z++ ) {
-		for( y = 0; y < SIZE_Y; y++ ) {
-			for( x = 0; x < SIZE_X; x++ ) {
-				if( fgetc( file ) != '.' ) SET_FLAG( grid, x, y, z, OBSTACLE );
-			}
-			fgetc( file );
-		}
-		fgetc( file );
-	}
-
-	fclose( file );
+  fclose( file );
 }
-
-/*############################################################################*/
 
 void LBM_initializeSpecialCellsForLDC( LBM_Grid grid ) {
-	int x,  y,  z;
-
-	/*voption indep*/
+  int x,  y,  z;
+  /*voption indep*/
 #if !defined(SPEC_CPU)
 #ifdef _OPENMP
 #pragma omp parallel for private( x, y )
 #endif
 #endif
-	for( z = -2; z < SIZE_Z+2; z++ ) {
-		for( y = 0; y < SIZE_Y; y++ ) {
-			for( x = 0; x < SIZE_X; x++ ) {
-				if( x == 0 || x == SIZE_X-1 ||
-				    y == 0 || y == SIZE_Y-1 ||
-				    z == 0 || z == SIZE_Z-1 ) {
-					SET_FLAG( grid, x, y, z, OBSTACLE );
-				}
-				else {
-					if( (z == 1 || z == SIZE_Z-2) &&
-					     x > 1 && x < SIZE_X-2 &&
-					     y > 1 && y < SIZE_Y-2 ) {
-						SET_FLAG( grid, x, y, z, ACCEL );
-					}
-				}
-			}
-		}
-	}
+  for( z = -2; z < SIZE_Z+2; z++ ) {
+    for( y = 0; y < SIZE_Y; y++ ) {
+      for( x = 0; x < SIZE_X; x++ ) {
+        if( x == 0 || x == SIZE_X-1 ||
+            y == 0 || y == SIZE_Y-1 ||
+            z == 0 || z == SIZE_Z-1 ) {
+          SET_FLAG( grid, x, y, z, OBSTACLE );
+        }
+        else {
+          if( (z == 1 || z == SIZE_Z-2) &&
+              x > 1 && x < SIZE_X-2 &&
+              y > 1 && y < SIZE_Y-2 ) {
+            SET_FLAG( grid, x, y, z, ACCEL );
+          }
+        }
+      }
+    }
+  }
 }
-
-/*############################################################################*/
 
 void LBM_initializeSpecialCellsForChannel( LBM_Grid grid ) {
-	int x,  y,  z;
-
-	/*voption indep*/
+  int x,  y,  z;
+  /*voption indep*/
 #if !defined(SPEC_CPU)
 #ifdef _OPENMP
 #pragma omp parallel for private( x, y )
 #endif
 #endif
-	for( z = -2; z < SIZE_Z+2; z++ ) {
-		for( y = 0; y < SIZE_Y; y++ ) {
-			for( x = 0; x < SIZE_X; x++ ) {
-				if( x == 0 || x == SIZE_X-1 ||
-				    y == 0 || y == SIZE_Y-1 ) {
-					SET_FLAG( grid, x, y, z, OBSTACLE );
+  for( z = -2; z < SIZE_Z+2; z++ ) {
+    for( y = 0; y < SIZE_Y; y++ ) {
+      for( x = 0; x < SIZE_X; x++ ) {
+        if( x == 0 || x == SIZE_X-1 ||
+            y == 0 || y == SIZE_Y-1 ) {
+          SET_FLAG( grid, x, y, z, OBSTACLE );
 
-					if( (z == 0 || z == SIZE_Z-1) &&
-					    ! TEST_FLAG( grid, x, y, z, OBSTACLE ))
-						SET_FLAG( grid, x, y, z, IN_OUT_FLOW );
-				}
-			}
-		}
-	}
+          if( (z == 0 || z == SIZE_Z-1) &&
+              ! TEST_FLAG( grid, x, y, z, OBSTACLE ))
+            SET_FLAG( grid, x, y, z, IN_OUT_FLOW );
+        }
+      }
+    }
+  }
 }
-
-/*############################################################################*/
 
 void LBM_performStreamCollide( LBM_Grid srcGrid, LBM_Grid dstGrid ) {
 	SWEEP_VAR
-
 	float ux, uy, uz, u2, rho;
-
 	/*voption indep*/
 #if !defined(SPEC_CPU)
 #ifdef _OPENMP
@@ -268,8 +234,6 @@ void LBM_performStreamCollide( LBM_Grid srcGrid, LBM_Grid dstGrid ) {
 		DST_WB( dstGrid ) = (1.0f-OMEGA)*SRC_WB( srcGrid ) + DFL3*OMEGA*rho*(1.0f + (-ux-uz)*(4.5f*(-ux-uz) + 3.0f) - u2);
 	SWEEP_END
 }
-
-/*############################################################################*/
 
 void LBM_handleInOutFlow( LBM_Grid srcGrid ) {
 	float ux , uy , uz , rho ,
@@ -659,12 +623,11 @@ void LBM_compareVelocityField( LBM_Grid grid, const char* filename,
 					loadValue( file, &fileUz );
 				}
 				else {
-					if( sizeof( OUTPUT_PRECISION ) == sizeof( double )) {
-						fscanf( file, "%lf %lf %lf\n", &fileUx, &fileUy, &fileUz );
-					}
-					else {
+					//if( sizeof( OUTPUT_PRECISION ) == sizeof( double )) {
+						//fscanf( file, "%lf %lf %lf\n", &fileUx, &fileUy, &fileUz );
+					//} else {
 						fscanf( file, "%f %f %f\n", &fileUx, &fileUy, &fileUz );
-					}
+					//}
 				}
 
 				dUx = ux - fileUx;

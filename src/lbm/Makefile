@@ -1,13 +1,17 @@
 include ../common.mk
 OBJS = main.o
-all: lbm_base lbm_omp
+all: lbm_cpu_base lbm_omp_base
 
-lbm_base: $(OBJS) lbm_base.o
-	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) lbm_base.o -o $@ -lm
+lbm_cpu_base: $(OBJS) cpu_base.o
+	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@ -lm
 	mv $@ $(BIN)
 
-lbm_omp: $(OBJS) lbm_omp.o
-	$(CC) $(CFLAGS) -D_OPENMP $(INCLUDES) $(OBJS) lbm_omp.o -o $@ -lm
+lbm_omp_base: $(OBJS) omp_base.o
+	$(CC) $(CFLAGS) -D_OPENMP $(INCLUDES) $(OBJS) omp_base.o -o $@ -lm
+	mv $@ $(BIN)
+
+lbm_gpu_base: $(OBJS) gpu_base.o
+	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ $(NVLIBS) -lm
 	mv $@ $(BIN)
 
 clean:

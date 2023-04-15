@@ -1,5 +1,3 @@
-/* $Id: lbm_1d_array.h,v 1.1 2008/03/04 17:30:03 stratton Exp $ */
-
 #ifndef _LBM_MACROS_H_
 #define _LBM_MACROS_H_
 
@@ -9,16 +7,49 @@ typedef enum {C = 0,
     NT, NB, ST, SB,
     ET, EB, WT, WB,
     FLAGS, N_CELL_ENTRIES} CELL_ENTRIES;
+
+//Unchangeable settings: volume simulation size for the given example
 #define SIZE   (120)
 #define SIZE_X (1*SIZE)
 #define SIZE_Y (1*SIZE)
 #define SIZE_Z (150)
-/*############################################################################*/
 
+#ifdef USE_GPU
+typedef float* LBM_Grid;
+#else
 typedef float LBM_Grid[SIZE_Z*SIZE_Y*SIZE_X*N_CELL_ENTRIES];
+#endif
 typedef LBM_Grid* LBM_GridPtr;
 
-/*############################################################################*/
+//Flattening function
+//  This macro will be used to map a 3-D index and element to a value
+//  The macro below implements the equivalent of a 3-D array of 
+//  20-element structures in C standard layout.
+#ifdef USE_GPU // GPU
+#define CALC_INDEX(x,y,z,e) ( e + N_CELL_ENTRIES*\
+                               ((x)+(y)*PADDED_X+(z)*PADDED_X*PADDED_Y) )
+
+#define SWEEP_X  __temp_x__
+#define SWEEP_Y  __temp_y__
+#define SWEEP_Z  __temp_z__
+#define SWEEP_VAR int __temp_x__, __temp_y__, __temp_z__;
+
+#define SWEEP_START(x1,y1,z1,x2,y2,z2) \
+	for( __temp_z__ = z1; \
+	     __temp_z__ < z2; \
+		__temp_z__++) { \
+            for( __temp_y__ = 0; \
+                 __temp_y__ < SIZE_Y; \
+                 __temp_y__++) { \
+		for(__temp_x__ = 0; \
+	            __temp_x__ < SIZE_X; \
+                    __temp_x__++) { \
+
+#define SWEEP_END }}}
+
+#define GRID_ENTRY_SWEEP(g,dx,dy,dz,e) ((g)[CALC_INDEX((dx)+SWEEP_X, (dy)+SWEEP_Y, (dz)+SWEEP_Z, e)])
+
+#else // CPU
 
 #define CALC_INDEX(x,y,z,e) ((e)+N_CELL_ENTRIES*((x)+ \
 						 (y)*SIZE_X+(z)*SIZE_X*SIZE_Y))
@@ -36,8 +67,10 @@ typedef LBM_Grid* LBM_GridPtr;
 #define SWEEP_Y (((i / N_CELL_ENTRIES) / SIZE_X) % SIZE_Y)
 #define SWEEP_Z  ((i / N_CELL_ENTRIES) / (SIZE_X*SIZE_Y))
 
-#define GRID_ENTRY(g,x,y,z,e)          ((g)[CALC_INDEX( x,  y,  z, e)])
 #define GRID_ENTRY_SWEEP(g,dx,dy,dz,e) ((g)[CALC_INDEX(dx, dy, dz, e)+(i)])
+#endif // end CPU vs. GPU
+
+#define GRID_ENTRY(g,x,y,z,e)          ((g)[CALC_INDEX( x,  y,  z, e)])
 
 #define LOCAL(g,e)       (GRID_ENTRY_SWEEP( g,  0,  0,  0, e ))
 #define NEIGHBOR_C(g,e)  (GRID_ENTRY_SWEEP( g,  0,  0,  0, e ))

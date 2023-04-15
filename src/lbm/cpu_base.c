@@ -1,54 +1,37 @@
 /* $Id: lbm.c,v 1.1 2008/03/04 17:30:02 stratton Exp $ */
 
-/*############################################################################*/
-
-#include "lbm.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-
-#if !defined(SPEC_CPU)
-#ifdef _OPENMP
 #include <omp.h>
-#endif
-#endif
-
-/*############################################################################*/
+#include "config.h"
+#include "lbm_1d_array.h"
 
 #define DFL1 (1.0/ 3.0)
 #define DFL2 (1.0/18.0)
 #define DFL3 (1.0/36.0)
 
-/*############################################################################*/
-
 void LBM_allocateGrid( float** ptr ) {
-	const size_t margin = 2*SIZE_X*SIZE_Y*N_CELL_ENTRIES,
-	             size   = sizeof( LBM_Grid ) + 2*margin*sizeof( float );
-
-	*ptr = malloc( size );
-	if( ! *ptr ) {
-		printf( "LBM_allocateGrid: could not allocate %.1f MByte\n",
-		        size / (1024.0*1024.0) );
-		exit( 1 );
-	}
+  const size_t margin = 2*SIZE_X*SIZE_Y*N_CELL_ENTRIES,
+  size = sizeof( LBM_Grid ) + 2*margin*sizeof( float );
+  *ptr = malloc( size );
+  if( ! *ptr ) {
+    printf( "LBM_allocateGrid: could not allocate %.1f MByte\n",
+        size / (1024.0*1024.0) );
+    exit( 1 );
+  }
 #if !defined(SPEC_CPU)
-	printf( "LBM_allocateGrid: allocated %.1f MByte\n",
-	        size / (1024.0*1024.0) );
+  printf( "LBM_allocateGrid: allocated %.1f MByte\n",
+      size / (1024.0*1024.0) );
 #endif
-	*ptr += margin;
+  *ptr += margin;
 }
-
-/*############################################################################*/
 
 void LBM_freeGrid( float** ptr ) {
-	const size_t margin = 2*SIZE_X*SIZE_Y*N_CELL_ENTRIES;
-
-	free( *ptr-margin );
-	*ptr = NULL;
+  const size_t margin = 2*SIZE_X*SIZE_Y*N_CELL_ENTRIES;
+  free( *ptr-margin );
+  *ptr = NULL;
 }
-
-/*############################################################################*/
 
 void LBM_initializeGrid( LBM_Grid grid ) {
 	SWEEP_VAR
@@ -609,81 +592,73 @@ void LBM_storeVelocityField( LBM_Grid grid, const char* filename,
 	fclose( file );
 }
 
-/*############################################################################*/
+void LBM_compareVelocityField( LBM_Grid grid, const char* filename, const int binary ) {
+  int x, y, z;
+  float rho, ux, uy, uz;
+  OUTPUT_PRECISION fileUx, fileUy, fileUz,
+                   dUx, dUy, dUz,
+                   diff2, maxDiff2 = -1e+30;
+  FILE* file = fopen( filename, (binary ? "rb" : "r") );
+  for ( z = 0; z < SIZE_Z; z++ ) {
+    for ( y = 0; y < SIZE_Y; y++ ) {
+      for ( x = 0; x < SIZE_X; x++ ) {
+        rho = + GRID_ENTRY( grid, x, y, z, C  ) + GRID_ENTRY( grid, x, y, z, N  )
+              + GRID_ENTRY( grid, x, y, z, S  ) + GRID_ENTRY( grid, x, y, z, E  )
+              + GRID_ENTRY( grid, x, y, z, W  ) + GRID_ENTRY( grid, x, y, z, T  )
+              + GRID_ENTRY( grid, x, y, z, B  ) + GRID_ENTRY( grid, x, y, z, NE )
+              + GRID_ENTRY( grid, x, y, z, NW ) + GRID_ENTRY( grid, x, y, z, SE )
+              + GRID_ENTRY( grid, x, y, z, SW ) + GRID_ENTRY( grid, x, y, z, NT )
+              + GRID_ENTRY( grid, x, y, z, NB ) + GRID_ENTRY( grid, x, y, z, ST )
+              + GRID_ENTRY( grid, x, y, z, SB ) + GRID_ENTRY( grid, x, y, z, ET )
+              + GRID_ENTRY( grid, x, y, z, EB ) + GRID_ENTRY( grid, x, y, z, WT )
+              + GRID_ENTRY( grid, x, y, z, WB );
+        ux = + GRID_ENTRY( grid, x, y, z, E  ) - GRID_ENTRY( grid, x, y, z, W  ) 
+             + GRID_ENTRY( grid, x, y, z, NE ) - GRID_ENTRY( grid, x, y, z, NW ) 
+             + GRID_ENTRY( grid, x, y, z, SE ) - GRID_ENTRY( grid, x, y, z, SW ) 
+             + GRID_ENTRY( grid, x, y, z, ET ) + GRID_ENTRY( grid, x, y, z, EB ) 
+             - GRID_ENTRY( grid, x, y, z, WT ) - GRID_ENTRY( grid, x, y, z, WB );
+        uy = + GRID_ENTRY( grid, x, y, z, N  ) - GRID_ENTRY( grid, x, y, z, S  ) 
+             + GRID_ENTRY( grid, x, y, z, NE ) + GRID_ENTRY( grid, x, y, z, NW ) 
+             - GRID_ENTRY( grid, x, y, z, SE ) - GRID_ENTRY( grid, x, y, z, SW ) 
+             + GRID_ENTRY( grid, x, y, z, NT ) + GRID_ENTRY( grid, x, y, z, NB ) 
+             - GRID_ENTRY( grid, x, y, z, ST ) - GRID_ENTRY( grid, x, y, z, SB );
+        uz = + GRID_ENTRY( grid, x, y, z, T  ) - GRID_ENTRY( grid, x, y, z, B  ) 
+             + GRID_ENTRY( grid, x, y, z, NT ) - GRID_ENTRY( grid, x, y, z, NB ) 
+             + GRID_ENTRY( grid, x, y, z, ST ) - GRID_ENTRY( grid, x, y, z, SB ) 
+             + GRID_ENTRY( grid, x, y, z, ET ) - GRID_ENTRY( grid, x, y, z, EB ) 
+             + GRID_ENTRY( grid, x, y, z, WT ) - GRID_ENTRY( grid, x, y, z, WB );
+        ux /= rho;
+        uy /= rho;
+        uz /= rho;
 
-void LBM_compareVelocityField( LBM_Grid grid, const char* filename,
-                             const int binary ) {
-	int x, y, z;
-	float rho, ux, uy, uz;
-	OUTPUT_PRECISION fileUx, fileUy, fileUz,
-	                 dUx, dUy, dUz,
-	                 diff2, maxDiff2 = -1e+30;
+        if( binary ) {
+          loadValue( file, &fileUx );
+          loadValue( file, &fileUy );
+          loadValue( file, &fileUz );
+        }
+        else {
+          //if ( sizeof( OUTPUT_PRECISION ) == sizeof( double )) {
+          //  fscanf( file, "%lf %lf %lf\n", &fileUx, &fileUy, &fileUz );
+          //} else {
+            fscanf( file, "%f %f %f\n", &fileUx, &fileUy, &fileUz );
+          //}
+        }
 
-	FILE* file = fopen( filename, (binary ? "rb" : "r") );
-
-	for( z = 0; z < SIZE_Z; z++ ) {
-		for( y = 0; y < SIZE_Y; y++ ) {
-			for( x = 0; x < SIZE_X; x++ ) {
-				rho = + GRID_ENTRY( grid, x, y, z, C  ) + GRID_ENTRY( grid, x, y, z, N  )
-				      + GRID_ENTRY( grid, x, y, z, S  ) + GRID_ENTRY( grid, x, y, z, E  )
-				      + GRID_ENTRY( grid, x, y, z, W  ) + GRID_ENTRY( grid, x, y, z, T  )
-				      + GRID_ENTRY( grid, x, y, z, B  ) + GRID_ENTRY( grid, x, y, z, NE )
-				      + GRID_ENTRY( grid, x, y, z, NW ) + GRID_ENTRY( grid, x, y, z, SE )
-				      + GRID_ENTRY( grid, x, y, z, SW ) + GRID_ENTRY( grid, x, y, z, NT )
-				      + GRID_ENTRY( grid, x, y, z, NB ) + GRID_ENTRY( grid, x, y, z, ST )
-				      + GRID_ENTRY( grid, x, y, z, SB ) + GRID_ENTRY( grid, x, y, z, ET )
-				      + GRID_ENTRY( grid, x, y, z, EB ) + GRID_ENTRY( grid, x, y, z, WT )
-				      + GRID_ENTRY( grid, x, y, z, WB );
-				ux = + GRID_ENTRY( grid, x, y, z, E  ) - GRID_ENTRY( grid, x, y, z, W  ) 
-				     + GRID_ENTRY( grid, x, y, z, NE ) - GRID_ENTRY( grid, x, y, z, NW ) 
-				     + GRID_ENTRY( grid, x, y, z, SE ) - GRID_ENTRY( grid, x, y, z, SW ) 
-				     + GRID_ENTRY( grid, x, y, z, ET ) + GRID_ENTRY( grid, x, y, z, EB ) 
-				     - GRID_ENTRY( grid, x, y, z, WT ) - GRID_ENTRY( grid, x, y, z, WB );
-				uy = + GRID_ENTRY( grid, x, y, z, N  ) - GRID_ENTRY( grid, x, y, z, S  ) 
-				     + GRID_ENTRY( grid, x, y, z, NE ) + GRID_ENTRY( grid, x, y, z, NW ) 
-				     - GRID_ENTRY( grid, x, y, z, SE ) - GRID_ENTRY( grid, x, y, z, SW ) 
-				     + GRID_ENTRY( grid, x, y, z, NT ) + GRID_ENTRY( grid, x, y, z, NB ) 
-				     - GRID_ENTRY( grid, x, y, z, ST ) - GRID_ENTRY( grid, x, y, z, SB );
-				uz = + GRID_ENTRY( grid, x, y, z, T  ) - GRID_ENTRY( grid, x, y, z, B  ) 
-				     + GRID_ENTRY( grid, x, y, z, NT ) - GRID_ENTRY( grid, x, y, z, NB ) 
-				     + GRID_ENTRY( grid, x, y, z, ST ) - GRID_ENTRY( grid, x, y, z, SB ) 
-				     + GRID_ENTRY( grid, x, y, z, ET ) - GRID_ENTRY( grid, x, y, z, EB ) 
-				     + GRID_ENTRY( grid, x, y, z, WT ) - GRID_ENTRY( grid, x, y, z, WB );
-				ux /= rho;
-				uy /= rho;
-				uz /= rho;
-
-				if( binary ) {
-					loadValue( file, &fileUx );
-					loadValue( file, &fileUy );
-					loadValue( file, &fileUz );
-				}
-				else {
-					if( sizeof( OUTPUT_PRECISION ) == sizeof( double )) {
-						fscanf( file, "%lf %lf %lf\n", &fileUx, &fileUy, &fileUz );
-					}
-					else {
-						fscanf( file, "%f %f %f\n", &fileUx, &fileUy, &fileUz );
-					}
-				}
-
-				dUx = ux - fileUx;
-				dUy = uy - fileUy;
-				dUz = uz - fileUz;
-				diff2 = dUx*dUx + dUy*dUy + dUz*dUz;
-				if( diff2 > maxDiff2 ) maxDiff2 = diff2;
-			}
-		}
-	}
+        dUx = ux - fileUx;
+        dUy = uy - fileUy;
+        dUz = uz - fileUz;
+        diff2 = dUx*dUx + dUy*dUy + dUz*dUz;
+        if( diff2 > maxDiff2 ) maxDiff2 = diff2;
+      }
+    }
+  }
 
 #if defined(SPEC_CPU)
-	printf( "LBM_compareVelocityField: maxDiff = %e  \n\n",
-	        sqrt( maxDiff2 )  );
+  printf( "LBM_compareVelocityField: maxDiff = %e  \n\n", sqrt( maxDiff2 )  );
 #else
-	printf( "LBM_compareVelocityField: maxDiff = %e  ==>  %s\n\n",
-	        sqrt( maxDiff2 ),
-	        sqrt( maxDiff2 ) > 1e-5 ? "##### ERROR #####" : "OK" );
+  printf( "LBM_compareVelocityField: maxDiff = %e  ==>  %s\n\n", sqrt( maxDiff2 ),
+         sqrt( maxDiff2 ) > 1e-5 ? "##### ERROR #####" : "OK" );
 #endif
-	fclose( file );
+  fclose( file );
 }
 

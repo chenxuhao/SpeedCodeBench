@@ -3,8 +3,11 @@
 #include <sys/times.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "lbm.h"
+//#include "lbm.h"
 #include "config.h"
+#include "lbm_1d_array.h"
+
+#define N_DISTR_FUNCS FLAGS
 
 typedef struct {
   float timeScale;
@@ -31,6 +34,25 @@ void MAIN_startClock( MAIN_Time* time );
 void MAIN_stopClock( MAIN_Time* time, const MAIN_Param* param );
 
 static LBM_GridPtr srcGrid, dstGrid;
+
+void LBM_allocateGrid( float** ptr );
+void LBM_freeGrid( float** ptr );
+void LBM_initializeGrid( LBM_Grid grid );
+void LBM_initializeSpecialCellsForLDC( LBM_Grid grid );
+void LBM_loadObstacleFile( LBM_Grid grid, const char* filename );
+void LBM_initializeSpecialCellsForChannel( LBM_Grid grid );
+void LBM_swapGrids( LBM_GridPtr* grid1, LBM_GridPtr* grid2 );
+void LBM_performStreamCollide( LBM_Grid srcGrid, LBM_Grid dstGrid );
+void LBM_handleInOutFlow( LBM_Grid srcGrid );
+void LBM_showGridStatistics( LBM_Grid Grid );
+void LBM_storeVelocityField( LBM_Grid grid, const char* filename, const BOOL binary );
+void LBM_compareVelocityField( LBM_Grid grid, const char* filename, const BOOL binary );
+#ifdef USE_GPU
+void CUDA_LBM_allocateGrid( float** ptr );
+void CUDA_LBM_freeGrid( float** ptr );
+void CUDA_LBM_initializeGrid( float** d_grid, float** h_grid );
+void CUDA_LBM_getDeviceGrid( float** d_grid, float** h_grid );
+#endif
 
 int main( int nArgs, char* arg[] ) {
   MAIN_Param param;
@@ -118,6 +140,13 @@ void MAIN_initialize( const MAIN_Param* param ) {
     LBM_initializeSpecialCellsForLDC( *srcGrid );
     LBM_initializeSpecialCellsForLDC( *dstGrid );
   }
+#ifdef USE_GPU
+  //Setup DEVICE datastructures
+  CUDA_LBM_allocateGrid( (float**) &CUDA_srcGrid );
+  CUDA_LBM_allocateGrid( (float**) &CUDA_dstGrid );
+  CUDA_LBM_initializeGrid( (float**)&CUDA_srcGrid, (float**)&TEMP_srcGrid );
+  CUDA_LBM_initializeGrid( (float**)&CUDA_dstGrid, (float**)&TEMP_dstGrid );
+#endif
   LBM_showGridStatistics( *srcGrid );
 }
 
