@@ -14,5 +14,9 @@ histo_omp: $(OBJS) omp.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp.o -o $@ -lm -lgomp
 	mv $@ $(BIN)
 
+histo_gpu_base: $(OBJS) gpu_base.o gpu_kernels_base.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_base.o gpu_kernels_base.o -o $@ -lm $(NVLIBS)
+	mv $@ $(BIN)
+
 clean:
 	rm *.o
