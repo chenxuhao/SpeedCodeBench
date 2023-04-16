@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <omp.h>
+#include <unistd.h> 
 //#include "getopt.h"
 
 extern double wtime(void);
@@ -30,14 +31,14 @@ int num_omp_threads = 1;
 int cluster(int, int, float**, int, float, float***);
 
 void usage(char *argv0) {
-    char *help =
-        "Usage: %s [switches] -i filename\n"
-        "       -i filename     :  file containing data to be clustered\n"
-        "       -b                 :input file is in binary format\n"
-		"       -k                 : number of clusters (default is 8) \n"
-        "       -t threshold    : threshold value\n";
-    fprintf(stderr, help, argv0);
-    exit(-1);
+  char *help =
+    "Usage: %s [switches] -i filename\n"
+    "       -i filename     :  file containing data to be clustered\n"
+    "       -b                 :input file is in binary format\n"
+    "       -k                 : number of clusters (default is 8) \n"
+    "       -t threshold    : threshold value\n";
+  fprintf(stderr, help, argv0);
+  exit(-1);
 }
 
 int main(int argc, char **argv) {
@@ -86,8 +87,10 @@ int main(int argc, char **argv) {
       fprintf(stderr, "Error: no such file (%s)\n", filename);
       exit(1);
     }
-    read(infile, &numObjects,    sizeof(int));
-    read(infile, &numAttributes, sizeof(int));
+    if (read(infile, &numObjects, sizeof(int)) < 0)
+      printf("WARNING: reading file error\n");
+    if (read(infile, &numAttributes, sizeof(int)) < 0)
+      printf("WARNING: reading file error\n");
 
     /* allocate space for attributes[] and read attributes of all objects */
     buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
@@ -95,7 +98,8 @@ int main(int argc, char **argv) {
     attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
     for (i=1; i<numObjects; i++)
       attributes[i] = attributes[i-1] + numAttributes;
-    read(infile, buf, numObjects*numAttributes*sizeof(float));
+    if (read(infile, buf, numObjects*numAttributes*sizeof(float)) < 0)
+      printf("WARNING: reading file error\n");
     close(infile);
   }
   else {

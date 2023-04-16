@@ -3,11 +3,11 @@
 #include "graph.h"
 typedef float T;
 
-void gauss_seidel(eidType *Ap, vidType *Aj, int *indices, T *Ax, T *x, T *b, 
+void gauss_seidel(eidType *Ap, vidType *Aj, vidType *indices, T *Ax, T *x, T *b, 
                   int row_start, int row_stop, int row_step) {
   #pragma omp parallel for
   for (int i = row_start; i < row_stop; i += row_step) {
-    int inew = indices[i];
+    auto inew = indices[i];
     auto row_begin = Ap[inew];
     auto row_end = Ap[inew+1];
     T rsum = 0;
@@ -21,7 +21,7 @@ void gauss_seidel(eidType *Ap, vidType *Aj, int *indices, T *Ax, T *x, T *b,
   }
 }
 
-void SymGSSolver(GraphF &g, int *indices, T *x, T *b, std::vector<int> color_offsets) {
+void SymGSSolver(GraphF &g, vidType *indices, T *x, T *b, std::vector<int> color_offsets) {
   auto Ap = g.in_rowptr();
   auto Aj = g.in_colidx();
   auto Ax = g.get_elabel_ptr();

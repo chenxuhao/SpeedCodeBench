@@ -44,4 +44,6 @@ typedef enum {OBSTACLE    = 1 << 0,
 //CUDA block size (not trivially changeable here)
 #define BLOCK_SIZE SIZE_X
 
+void storeValue( FILE* file, OUTPUT_PRECISION* v );
+void loadValue( FILE* file, OUTPUT_PRECISION* v );
 #endif /* _CONFIG_H_ */

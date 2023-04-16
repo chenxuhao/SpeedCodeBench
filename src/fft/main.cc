@@ -61,7 +61,8 @@ void inputData(char* fName, float* dat, int numwords) {
     fprintf(stderr, "Cannot open input file\n");
     exit(-1);
   }
-  fread (dat, sizeof (float), numwords, fid);
+  if (fread (dat, sizeof (float), numwords, fid) != size_t(numwords))
+    printf("WARNING: file reading error\n");
   fclose (fid); 
 }
 

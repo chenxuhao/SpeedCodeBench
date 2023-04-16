@@ -3,7 +3,6 @@
 #include <sys/times.h>
 #include <unistd.h>
 #include <sys/stat.h>
-//#include "lbm.h"
 #include "config.h"
 #include "lbm_1d_array.h"
 

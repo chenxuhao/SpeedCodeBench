@@ -1,5 +1,5 @@
 include ../common.mk
-OBJS = main.o
+OBJS = main.o file.o
 all: lbm_cpu_base lbm_omp_base
 
 lbm_cpu_base: $(OBJS) cpu_base.o

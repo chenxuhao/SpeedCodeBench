@@ -14,8 +14,8 @@ int isIdentical(float *i, float *j, int D) {
   if (equal) return 1;
   else return 0;
 }
-
-/* comparator for floating point numbers */
+/*
+// comparator for floating point numbers 
 static int floatcomp(const void *i, const void *j) {
   float a, b;
   a = *(float *)(i);
@@ -24,8 +24,8 @@ static int floatcomp(const void *i, const void *j) {
   if (a < b) return (-1);
   return(0);
 }
-
-/* shuffle points into random order */
+*/
+// shuffle points into random order
 void shuffle(Points *points) {
 #ifdef PROFILE
   double t1 = gettime();
@@ -466,10 +466,10 @@ void streamCluster( PStream* stream, long kmin, long kmax, int dim,
   }
   long IDoffset = 0;
   long kfinal;
-  while(1) {
+  while (1) {
     size_t numRead  = stream->read(block, dim, chunksize ); 
     fprintf(stderr,"read %ld points\n",numRead);
-    if( stream->ferror() || numRead < (unsigned int)chunksize && !stream->feof() ) {
+    if ( stream->ferror() || (numRead < (unsigned int)chunksize && !stream->feof()) ) {
       fprintf(stderr, "error reading data!\n");
       exit(1);
     }

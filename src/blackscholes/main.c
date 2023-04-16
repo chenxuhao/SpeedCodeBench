@@ -88,6 +88,7 @@ int main (int argc, char **argv) {
 
   printf("Size of data: %ld\n", numOptions * (sizeof(OptionData) + sizeof(int)));
   int nErrors = BlackScholes(numOptions, data, otype, sptprice, strike, rate, volatility, otime, prices);
+  printf("NUmber of errors: %d\n", nErrors);
 
   //Write prices to output file
   file = fopen(outputFile, "w");

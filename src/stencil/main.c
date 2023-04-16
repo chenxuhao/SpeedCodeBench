@@ -29,7 +29,8 @@ static int read_data(float *A0, int nx,int ny,int nz,FILE *fp) {
   for (i=0; i<nz; i++) {
     for (j=0; j<ny; j++) {
       for (k=0; k<nx; k++) {
-        fread(A0+s, sizeof(float), 1, fp);
+        if (fread(A0+s, sizeof(float), 1, fp) != 1)
+          printf("WARNING: reading file error\n");
         s++;
       }
     }

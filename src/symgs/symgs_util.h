@@ -46,16 +46,16 @@ bool check_almost_equal(const T * A, const T * B, const size_t N) {
 }
 
 template <typename T = float>
-void gs_serial(eidType *Ap, vidType *Aj, int *indices, T *Ax, T *x, T *b, 
+void gs_serial(eidType *Ap, vidType *Aj, vidType *indices, T *Ax, T *x, T *b, 
                int row_start, int row_stop, int row_step) {
   for (int i = row_start; i != row_stop; i += row_step) {
-    int inew = indices[i];
-    IndexT row_begin = Ap[inew];
-    IndexT row_end = Ap[inew+1];
+    auto inew = indices[i];
+    auto row_begin = Ap[inew];
+    auto row_end = Ap[inew+1];
     T rsum = 0;
     T diag = 0;
-    for (IndexT jj = row_begin; jj < row_end; jj++) {
-      const IndexT j = Aj[jj];  //column index
+    for (auto jj = row_begin; jj < row_end; jj++) {
+      auto j = Aj[jj];  //column index
       if (inew == j) diag = Ax[jj];
       else rsum += x[j] * Ax[jj];
     }
@@ -64,7 +64,7 @@ void gs_serial(eidType *Ap, vidType *Aj, int *indices, T *Ax, T *x, T *b,
 }
 
 template <typename T = float>
-void SymGSVerifier(GraphF &g, int *indices, T *test_x, T *x_host, T *b, std::vector<int> color_offsets) {
+void SymGSVerifier(GraphF &g, vidType *indices, T *test_x, T *x_host, T *b, std::vector<int> color_offsets) {
   printf("Verifying...\n");
   auto num_rows = g.V();
   auto Ap = g.in_rowptr();

@@ -227,21 +227,6 @@ void LBM_showGridStatistics( LBM_Grid grid ) {
       sqrt( minU2 ), sqrt( maxU2 ) );
 }
 
-static void storeValue( FILE* file, OUTPUT_PRECISION* v ) {
-  const int litteBigEndianTest = 1;
-  if( (*((unsigned char*) &litteBigEndianTest)) == 0 ) {         /* big endian */
-    const char* vPtr = (char*) v;
-    char buffer[sizeof( OUTPUT_PRECISION )];
-    int i;
-    for (i = 0; i < sizeof( OUTPUT_PRECISION ); i++)
-      buffer[i] = vPtr[sizeof( OUTPUT_PRECISION ) - i - 1];
-
-    fwrite( buffer, sizeof( OUTPUT_PRECISION ), 1, file );
-  } else {                                                     /* little endian */
-    fwrite( v, sizeof( OUTPUT_PRECISION ), 1, file );
-  }
-}
-
 extern "C"
 void LBM_storeVelocityField( LBM_Grid grid, const char* filename, const int binary ) {
   OUTPUT_PRECISION rho, ux, uy, uz;
@@ -290,5 +275,3 @@ extern "C"
 void LBM_initializeSpecialCellsForChannel( LBM_Grid grid ) {}
 extern "C"
 void LBM_handleInOutFlow( LBM_Grid srcGrid ) {}
-extern "C"
-void LBM_compareVelocityField( LBM_Grid grid, const char* filename, const BOOL binary ) {}

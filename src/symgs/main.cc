@@ -7,12 +7,13 @@
 #include <thrust/sequence.h>
 #include <thrust/reduce.h>
 #include <thrust/sort.h>
+//#include <numeric>
 
 typedef float T;
 
 int ColorSolver(GraphF &g, int *colors);
 
-void SymGSSolver(GraphF &g, int *indices, T *x, T *b, std::vector<int> color_offsets);
+void SymGSSolver(GraphF &g, vidType *indices, T *x, T *b, std::vector<int> color_offsets);
 
 int main(int argc, char *argv[]) {
   std::cout << "Symmetric Gauss-Seidel smoother by Xuhao Chen\n"
@@ -27,7 +28,6 @@ int main(int argc, char *argv[]) {
   g.print_meta_data();
 
   auto m = g.V();
-  auto nnz = g.E();
   auto h_x = custom_alloc_global<T>(m);
   auto h_b = custom_alloc_global<T>(m);
   auto x_host = custom_alloc_global<T>(m);
@@ -42,24 +42,32 @@ int main(int argc, char *argv[]) {
   for(vidType i = 0; i < m; i++) 
     h_b[i] = rand() / (RAND_MAX + 1.0);
 
+  //VertexList ordering(m);
+  //thrust::sequence(ordering.begin(), ordering.end());
+  vidType *ordering = (vidType *)malloc(m * sizeof(vidType));
+  #pragma omp parallel for
+  for(vidType i = 0; i < m; i++)
+    ordering[i] = i;
+
   // identify parallelism using vertex coloring
-  int *ordering = (int *)malloc(m * sizeof(int));
-  //for(int i = 0; i < m; i++) ordering[i] = i;
-  thrust::sequence(ordering, ordering+m);
   int *colors = (int *)malloc(m * sizeof(int));
-  for (vidType i = 0; i < m; i ++) colors[i] = MAX_COLOR;
+  #pragma omp parallel for
+  for (vidType i = 0; i < m; i ++)
+    colors[i] = MAX_COLOR;
   int num_colors = ColorSolver(g, colors);
-  thrust::sort_by_key(colors, colors+m, ordering);
+  thrust::sort_by_key(colors, colors+m, &ordering[0]);
   int *temp = (int *)malloc((num_colors+1) * sizeof(int));
   thrust::reduce_by_key(colors, colors+m,
-      thrust::constant_iterator<int>(1), 
-      thrust::make_discard_iterator(), temp);
+                        thrust::constant_iterator<int>(1), 
+                        thrust::make_discard_iterator(), temp);
   thrust::exclusive_scan(temp, temp+num_colors+1, temp, 0);
+  //std::exclusive_scan(temp, temp+num_colors+1, temp, 0);
   std::vector<int> color_offsets(num_colors+1);
   #pragma omp parallel for
   for (size_t i = 0; i < color_offsets.size(); i ++)
     color_offsets[i] = temp[i];
-  SymGSSolver(g, ordering, h_x, h_b, color_offsets);
-  SymGSVerifier<T>(g, ordering, h_x, x_host, h_b, color_offsets);
+  SymGSSolver(g, &ordering[0], h_x, h_b, color_offsets);
+  SymGSVerifier<T>(g, &ordering[0], h_x, x_host, h_b, color_offsets);
   return 0;
 }
+
