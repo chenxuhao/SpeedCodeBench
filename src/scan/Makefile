@@ -10,5 +10,9 @@ scan_omp_base: $(OBJS) omp_base.o
 	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lgomp -lm
 	mv $@ $(BIN)
 
+scan_gpu_base: $(OBJS) gpu_base.o
+	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ $(NVLIBS) -lgomp -lm
+	mv $@ $(BIN)
+
 clean:
 	rm *.o

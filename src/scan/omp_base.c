@@ -7,7 +7,7 @@ typedef unsigned OutTy;
 typedef unsigned size_type;
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-void prefix_sum(unsigned length, const InTy* in, OutTy *prefix) {
+void prefix_sum(size_type length, const InTy* in, OutTy *prefix) {
   const size_type block_size = 1 << 20;
   const size_type num_blocks = (length + block_size - 1) / block_size;
   OutTy* local_sums = (OutTy*)malloc(num_blocks*sizeof(OutTy));
