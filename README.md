@@ -59,6 +59,7 @@ To control the number of threads, set the following environment variable:
 - [x] Reduction (Sum / Maximum Finding / MinMax)
 - [x] Convolution
 - [x] Merge / Merge Sort
+- [x] Radix Sort
 - [x] Scan a.k.a. Prefix Sum
 - [x] Barnes-Hut for N-Body simulation
 - [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
