@@ -1,14 +1,23 @@
 include ../common.mk
-OBJS = main.o 
-all: rt_omp_base
+INCLUDES += -I./cpu_headers -I./gpu_headers
 
-rt_cpu_base: $(OBJS) cpu_base.o
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@
+all: rt_cpu_base
+
+rt_cpu_base: main.o cpu_base.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) main.o cpu_base.o -o $@
 	mv $@ $(BIN)
 
-rt_omp_base: $(OBJS) 
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) -o $@ -lgomp
+rt_gpu_base: main.o gpu_base.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) main.o gpu_base.o -o $@ $(NVLIBS)
 	mv $@ $(BIN)
+
+out.ppm: rt
+	rm -f out.ppm
+	time ./rt_cpu_base > out.ppm
+
+out.jpg: out.ppm
+	rm -f out.jpg
+	ppmtojpeg out.ppm > out.jpg
 
 clean:
-	rm *.o
+	rm -f *.o *.ppm *.jpg

@@ -1,31 +1,58 @@
-Name: raytrace
+Ray Tracing in One Weekend in CUDA
+==================================
 
-Description
+This is yet another _Ray Tracing in One Weekend_ clone, but this time using CUDA instead of C++.  CUDA can be used to speed up the code.  For example, on my machine, the C++ code renders the test image in 90 seconds.  The CUDA accelerated code renders the image in about 7 seconds.
 
-Raytracing is a technique that generates a visually realistic image by tracing
-the path of light through a scene. It leverages the physical property that the
-path of light is always reversible to reduce the computational requirements by
-following the light rays from the eye point through the image plane to the
-source of the light. This way only light rays that contribute to the image are
-considered.
+Initial coding started in May, 2018 and was posted to the NVIDIA Developer blog November 5, 2018: https://devblogs.nvidia.com/accelerated-ray-tracing-cuda/
 
-The raytrace benchmark program uses a variety of the raytracing method that
-would typically be employed for real-time animations such as computer games.
-It is optimized for speed rather than realism. The computational complexity
-of the algorithm depends on the resolution of the output image and the scene.
+Background
+----------
 
-=======================================
-Input/Output:
+Peter Shirley has written a few ebooks about Ray Tracing.  You can find out more at http://in1weekend.blogspot.com/2016/01/ray-tracing-in-one-weekend.html  Note that as of April, 2018 the books are *pay what you wish* and 50% of the proceeds go towards not-for-profit programming education organizations.  They are also available for $3 each on Amazon as a Kindle download.
 
-The input for raytrace is a data file describing a scene that is composed of
-a single, complex object. The program automatically rotates the camera around
-the object to simulate movement. The output is a video stream that is displayed
-in a video. For the benchmark version output has been disabled.
+This repository contains code for converting the first ray tracer ebook "Ray Tracing in one Weekend" from C++ to CUDA.  By changing to CUDA, depending on your CPU and GPU you can see speedups of 10x or more!  _UPDATE: see [Issue #2](https://github.com/rogerallen/raytracinginoneweekendincuda/issues/2) for a further 2x improvement!_
 
+Before coding the ray tracer in CUDA, I recommend that you code the ray tracer in C++, first.  You should understand the concepts presented in a serial language well, then translate this knowledge to CUDA.  In fact, since CUDA uses C++, much of your code can be reused.
 
-This program generates a 2D image of a sphere using ray tracing. 
-The image is stored as a 2D array of doubles, 
-where each element represents the distance from the camera to the point of intersection between the ray and the sphere. 
-The program uses the OpenMP parallel for directive to parallelize the loops that iterate over the image pixels.
-The schedule(dynamic) clause tells OpenMP to assign iterations to threads dynamically as they become available, 
-which can help balance the workload across threads.
+The C++ code that this repository is based on is at https://github.com/petershirley/raytracinginoneweekend.  As of January, 2020, the book and code are being updated and improved at https://github.com/RayTracing/raytracing.github.io/.  This repository has not been changed to match these changes.  The code matches the original book from 2016 which you can still download from http://in1weekend.blogspot.com/2016/01/ray-tracing-in-one-weekend.html.  Further, I am basing this on the repo at https://github.com/pfranz/raytracinginoneweekend which has each chapter as a separate git branch.  This is very handy for checking out the code at each chapter.
+
+Chapter List
+------------
+
+Here are links to the git branch for each Chapter.  If you look at the README.md you'll see some hints about what needed to be done.  See the Makefile for the standard targets.  Note that you'll want to adjust the GENCODE_FLAGS in the CUDA Makefiles for your specific graphics card architecture.
+
+The master branch has the code as Peter Shirley presented it in C++.  I added a Makefile so you can `make out.jpg` and compare the runtime to CUDA.  To build variants that use CUDA, check out one of these branches.  E.g. `git checkout ch01_output_cuda`
+
+* [Chapter 1 - Basic Output](https://github.com/rogerallen/raytracinginoneweekend/tree/ch01_output_cuda): `git checkout ch01_output_cuda`
+* [Chapter 2 - Vectors](https://github.com/rogerallen/raytracinginoneweekend/tree/ch02_vec3_cuda): `git checkout ch02_vec3_cuda`
+* [Chapter 3 - Rays](https://github.com/rogerallen/raytracinginoneweekend/tree/ch03_rays_cuda): `git checkout ch03_rays_cuda`
+* [Chapter 4 - Spheres](https://github.com/rogerallen/raytracinginoneweekend/tree/ch04_sphere_cuda): `git checkout ch04_sphere_cuda`
+* [Chapter 5 - Normals](https://github.com/rogerallen/raytracinginoneweekend/tree/ch05_normals_cuda): `git checkout ch05_normals_cuda`
+* [Chapter 6 - Antialiasing](https://github.com/rogerallen/raytracinginoneweekend/tree/ch06_antialiasing_cuda): `git checkout ch06_antialiasing_cuda`
+* [Chapter 7 - Diffuse](https://github.com/rogerallen/raytracinginoneweekend/tree/ch07_diffuse_cuda): `git checkout ch07_diffuse_cuda`
+* [Chapter 8 - Metal](https://github.com/rogerallen/raytracinginoneweekend/tree/ch08_metal_cuda): `git checkout ch08_metal_cuda`
+* [Chapter 9 - Dielectrics](https://github.com/rogerallen/raytracinginoneweekend/tree/ch09_dielectrics_cuda): `git checkout ch09_dielectrics_cuda`
+* [Chapter 10 - Camera](https://github.com/rogerallen/raytracinginoneweekend/tree/ch10_camera_cuda): `git checkout ch10_camera_cuda`
+* [Chapter 11 - Defocus Blur](https://github.com/rogerallen/raytracinginoneweekend/tree/ch11_defocus_blur_cuda): `git checkout ch11_defocus_blur_cuda`
+* [Chapter 12 - Where Next](https://github.com/rogerallen/raytracinginoneweekend/tree/ch12_where_next_cuda): `git checkout ch12_where_next_cuda`
+
+Colophon
+--------
+
+Basic process (after Chapter 3) was:
+
+```
+# checkout original code & create a cuda branch
+git checkout origin/chyy_yyy
+git checkout chyy_yyy
+git branch -m chyy_yyy_cuda
+git mv main.cc main.cu
+<checkin>
+# grab previous chapters code as a starting point
+cp chapterxx/* .
+# edit & fix code
+# checkin code
+# save current code for next chapter
+mkdir chapteryy
+cp * chapteryy
+```
