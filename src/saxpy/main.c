@@ -26,14 +26,15 @@ int main(int argc, char *argv[]) {
     y_ref[i] = a * x[i] + y[i];
     y2[i] = 0.0f;
   }
-  printf("total size of x and y is %9.1f MB\n", 2.0 * nbytes / (1 << 20));
+  printf("total size of x and y is %f MB\n", 2.0 * nbytes / (1 << 20));
   memcpy(y2, y, nbytes);
 
   saxpy(n, a, x, y2, 0);
   maxabserr = -1.0f;
+  #pragma omp parallel for reduction(max: maxabserr)
   for (i = 0; i < n; ++i) {
-    maxabserr = fabsf(y2[i] - y_ref[i]) > maxabserr?
-      fabsf(y2[i] - y_ref[i]) : maxabserr;
+    float error =  fabsf(y2[i] - y_ref[i]);
+    maxabserr = error > maxabserr? error : maxabserr;
   }
 
   saxpy(n, a, x, y2, 0);
@@ -44,6 +45,6 @@ int main(int argc, char *argv[]) {
   }
   double end = omp_get_wtime();
   double wt = end - start;
-  printf("saxpy: %9.1f MB/s maxabserr = %9.1f\n",
-      NLUP * 3.0 * nbytes / ((1 << 20) * wt), maxabserr);
+  printf("saxpy running time: %f sec\n", wt);
+  printf("saxpy: %f MB/s maxabserr = %f\n", NLUP * 3.0 * nbytes / ((1 << 20) * wt), maxabserr);
 }

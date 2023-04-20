@@ -26,5 +26,9 @@ sgemm_gpu_tiled: $(OBJS) gpu_tiled.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_tiled.o -o $@ -lm $(NVLIBS)
 	mv $@ $(BIN)
 
+sgemm_cilk_base: $(OBJS) cilk_base.o 
+	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	mv $@ $(BIN)
+
 clean:
 	rm *.o
