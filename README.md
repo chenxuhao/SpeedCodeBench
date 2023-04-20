@@ -44,42 +44,45 @@ To control the number of threads, set the following environment variable:
 
 ## Benchmarks
 
-- [x] AES Encryption
-- [x] Black-Scholes a differential equation to price options contracts
-- [x] CRC64 checksum
-- [x] Stencil
-- [x] Jaccard index, a.k.a, Jaccard similarity coefficient
-- [x] Haversine distance for Geospatial Data Analysis
-- [x] Saxpy: Single-Precision A X Plus Y
+### Kernels (Parallel Patterns)
+- [x] Single-Precision A X Plus Y (SAXPY)
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
-- [x] Symmetric Gauss-seidel Smoother (SymGS) 
-- [x] Histogram
-- [x] Inversek2j for Robotics
-- [x] Reduction (Sum / Maximum Finding / MinMax)
+- [x] Stencil
 - [x] Convolution
+- [x] Scan a.k.a. Prefix Sum
+- [x] Histogram
+- [x] Reduction (Sum / Maximum Finding / MinMax)
 - [x] Merge / Merge Sort
 - [x] Radix Sort
-- [x] Scan a.k.a. Prefix Sum
-- [x] Barnes-Hut for N-Body simulation
+- [x] Graph Traversal / Breadth-First Search (BFS)
+
+### Applications & Algorithms
+- [x] Advanced Encryption Standard (AES), a specification for the encryption of electronic data
+- [x] B+ tree (B+T) used in file systems and database systems
+- [x] Barnes-Hut (BH) for N-Body simulation
+- [x] Black-Scholes (BS), a differential equation to price options contracts in finance
+- [x] CRC64 checksum (CRC), an error-detecting code used in digital networks and storage devices
+- [x] Jaccard index (JI), a statistic used for gauging the similarity and diversity of sample sets
+- [x] Haversine Distance (HD) for Geospatial Data Analysis
+- [x] Symmetric Gauss-seidel Smoother (SymGS) for numerical linear algebra 
+- [x] Inversek2j (IK2J) Inverse kinematics for 2-joint arm used in Robotics
 - [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
-- [x] Fast Fourier transform (FFT)
-- [x] Betweenness Centrality (BC)
-- [x] Breadth-First Search (BFS)
-- [x] Connected Components (CC)
-- [x] PageRank (PR) 
-- [x] Single-Source Shortest Paths (SSSP)
-- [x] Triangle Counting (TC)
-- [x] Minimum Spanning Tree (MST) 
-- [x] Vertex Coloring (VC)
-- [x] Collaborative Filtering (CF) for Stochastic Gradient Descent (SGD)
-- [x] B+ tree
-- [x] K-means clustering
-- [x] Ray Tracing (RT)
-- [x] k-nearest neighbor (k-NN)
+- [x] Fast Fourier transform (FFT) for digital signal processing
+- [x] Collaborative Filtering (CF), a Stochastic Gradient Descent (SGD) algorithm for recommender systems
+- [x] K-means clustering (K-MEANS), a method of vector quantization for signal processing
+- [x] Ray Tracing (RT) for 3D computer graphics
+- [x] k-nearest neighbor (k-NN), a supervised learning method for classification and regression
 - [x] Locality sensitive hashing (LSH) for finding approximate nearest neighbors
 - [x] StreamCluster (SC) for online clustering of an input stream
-- [x] DAPHNE points2image for Automotive
+- [x] DAPHNE points2image (P2I) for Automotive
+- [x] PageRank (PR) for ranking web pages in a search engine
+- [x] Triangle Counting (TC) for social network analysis
+- [x] Betweenness Centrality (BC), a measure of centrality in a graph (from graph theory)
+- [x] Connected Components (CC) (from graph theory)
+- [x] Single-Source Shortest Paths (SSSP) finding the shortest paths (from graph theory)
+- [x] Minimum Spanning Tree (MST) (from graph theory)
+- [x] Vertex Coloring (VC) (from graph theory)
 
 ## Sources
 
