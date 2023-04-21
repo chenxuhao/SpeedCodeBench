@@ -1,12 +1,16 @@
 #include <omp.h>
+#include <stdio.h>
 
 int reduction(int n, int *arr, int *max, int *min) {
   int i, sum = 0;
+  double start = omp_get_wtime();
   // Compute sum in parallel using OpenMP
   #pragma omp parallel for reduction(+: sum)
   for (i = 0; i < n; i++) {
     sum += arr[i];
   }
+  double end = omp_get_wtime();
+  printf("OpenMP runtime = %f sec\n", end - start);
 
   int max_num = arr[0];
   int min_num = arr[0];
