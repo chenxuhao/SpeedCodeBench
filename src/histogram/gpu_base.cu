@@ -49,17 +49,18 @@ __global__ void histo_final_kernel (
 * the final result.
 ******************************************************************************/
 extern "C" 
-void histogram(int n,
-               unsigned int img_width, unsigned int img_height,
+void histogram(unsigned int img_width,
+               unsigned int img_height,
                unsigned int* image,
-               unsigned int histo_width, unsigned int histo_height,
+               unsigned int histo_width,
+               unsigned int histo_height,
                unsigned char* histo) {
   char *prescans = "PreScanKernel";
   char *postpremems = "PostPreMems";
   char *intermediates = "IntermediatesKernel";
   char *mains = "MainKernel";
   char *finals = "FinalKernel";
-  
+ 
   int even_width = ((img_width+1)/2)*2;
   unsigned int* input;
   unsigned int* ranges;
@@ -81,37 +82,35 @@ void histogram(int n,
     cudaMemcpy(&(((unsigned int*)input)[y*even_width]),&image[y*img_width],img_width*sizeof(unsigned int), cudaMemcpyHostToDevice);
   }
   unsigned int *zeroData = (unsigned int *) calloc(img_width*histo_height, sizeof(unsigned int));
-  for (int iter = 0; iter < n; iter++) {
-    unsigned int ranges_h[2] = {UINT32_MAX, 0};
-    cudaMemcpy(ranges,ranges_h, 2*sizeof(unsigned int), cudaMemcpyHostToDevice);
-    histo_prescan_kernel<<<dim3(PRESCAN_BLOCKS_X),dim3(PRESCAN_THREADS)>>>((unsigned int*)input, img_height*img_width, ranges);
-    cudaMemcpy(ranges_h,ranges, 2*sizeof(unsigned int), cudaMemcpyDeviceToHost);
-    cudaMemcpy(global_subhisto,zeroData, img_width*histo_height*sizeof(unsigned int), cudaMemcpyHostToDevice);
-    histo_intermediates_kernel<<<dim3((img_height + UNROLL-1)/UNROLL), dim3((img_width+1)/2)>>>(
-                (uint2*)(input),
-                (unsigned int)img_height,
-                (unsigned int)img_width,
-                (img_width+1)/2,
-                (uchar4*)(sm_mappings)
-    );
-    histo_main_kernel<<<dim3(BLOCK_X, ranges_h[1]-ranges_h[0]+1), dim3(THREADS)>>>(
-                (uchar4*)(sm_mappings),
-                img_height*img_width,
-                ranges_h[0], ranges_h[1],
-                histo_height, histo_width,
-                (unsigned int*)(global_subhisto),
-                (unsigned int*)(global_histo),
-                (unsigned int*)(global_overflow)
-    );
-    histo_final_kernel<<<dim3(BLOCK_X*3), dim3(512)>>>(
-                ranges_h[0], ranges_h[1],
-                histo_height, histo_width,
-                (unsigned int*)(global_subhisto),
-                (unsigned int*)(global_histo),
-                (unsigned int*)(global_overflow),
-                (unsigned int*)(final_histo)
-    );
-  }
+
+  unsigned int ranges_h[2] = {UINT32_MAX, 0};
+  cudaMemcpy(ranges,ranges_h, 2*sizeof(unsigned int), cudaMemcpyHostToDevice);
+  histo_prescan_kernel<<<dim3(PRESCAN_BLOCKS_X),dim3(PRESCAN_THREADS)>>>((unsigned int*)input, img_height*img_width, ranges);
+  cudaMemcpy(ranges_h, ranges, 2*sizeof(unsigned int), cudaMemcpyDeviceToHost);
+  cudaMemcpy(global_subhisto, zeroData, img_width*histo_height*sizeof(unsigned int), cudaMemcpyHostToDevice);
+  histo_intermediates_kernel<<<dim3((img_height + UNROLL-1)/UNROLL), dim3((img_width+1)/2)>>>(
+              (uint2*)(input),
+              (unsigned int)img_height,
+              (unsigned int)img_width,
+              (img_width+1)/2,
+              (uchar4*)(sm_mappings)
+  );
+  histo_main_kernel<<<dim3(BLOCK_X, ranges_h[1]-ranges_h[0]+1), dim3(THREADS)>>>(
+              (uchar4*)(sm_mappings),
+              img_height*img_width,
+              ranges_h[0], ranges_h[1],
+              histo_height, histo_width,
+              (unsigned int*)(global_subhisto),
+              (unsigned int*)(global_histo),
+              (unsigned int*)(global_overflow));
+  histo_final_kernel<<<dim3(BLOCK_X*3), dim3(512)>>>(
+              ranges_h[0], ranges_h[1],
+              histo_height, histo_width,
+              (unsigned int*)(global_subhisto),
+              (unsigned int*)(global_histo),
+              (unsigned int*)(global_overflow),
+              (unsigned int*)(final_histo));
+
   cudaMemcpy(histo,final_histo, histo_height*histo_width*sizeof(unsigned char), cudaMemcpyDeviceToHost);
   cudaFree(input);
   cudaFree(ranges);

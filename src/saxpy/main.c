@@ -6,7 +6,7 @@
 
 #define NLUP  (32)
 #define TWO26 (1 << 20)
-void saxpy(const int n, const float a, const float *x, float *y, const int ial);
+void saxpy(const int n, const float a, const float *x, float *y);
 
 int main(int argc, char *argv[]) {
   int64_t nbytes = 0;
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
   printf("total size of x and y is %f MB\n", 2.0 * nbytes / (1 << 20));
   memcpy(y2, y, nbytes);
 
-  saxpy(n, a, x, y2, 0);
+  saxpy(n, a, x, y2);
   maxabserr = -1.0f;
   #pragma omp parallel for reduction(max: maxabserr)
   for (i = 0; i < n; ++i) {
@@ -37,11 +37,11 @@ int main(int argc, char *argv[]) {
     maxabserr = error > maxabserr? error : maxabserr;
   }
 
-  saxpy(n, a, x, y2, 0);
+  saxpy(n, a, x, y2);
 
   double start = omp_get_wtime();
   for (int i = 0; i < NLUP; ++i) {
-    saxpy(n, a, x, y2, 0);
+    saxpy(n, a, x, y2);
   }
   double end = omp_get_wtime();
   double wt = end - start;

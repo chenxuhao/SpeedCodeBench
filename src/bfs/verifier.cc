@@ -1,15 +1,9 @@
 // Copyright 2020 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
-#include <queue>
 
-void BFSVerifier(Graph &g, vidType source, vidType *depth_to_test) {
-  std::cout << "Verifying BFS...\n";
-  std::vector<vidType> depth(g.V(), MYINFINITY);
+void BFS(Graph &g, vidType source, vidType* depth) {
   std::vector<vidType> to_visit;
-  int iter = 0;
-  Timer t;
-  t.Start();
   depth[source] = 0;
   to_visit.reserve(g.V());
   to_visit.push_back(source);
@@ -21,12 +15,13 @@ void BFSVerifier(Graph &g, vidType source, vidType *depth_to_test) {
         to_visit.push_back(dst);
       }
     }
-    iter ++;
   }
-  t.Stop();
-  //std::cout << "iterations = " << iter << "\n";
-  std::cout << "runtime [serial] = " << t.Seconds() << " sec\n";
+}
 
+void BFSVerifier(Graph &g, vidType source, vidType *depth_to_test) {
+  std::cout << "Verifying BFS...\n";
+  std::vector<vidType> depth(g.V(), MYINFINITY);
+  BFS(g, source, depth.data());
   // Report any mismatches
   bool all_ok = true;
   for (vidType n = 0; n < g.V(); n ++) {
@@ -35,7 +30,7 @@ void BFSVerifier(Graph &g, vidType source, vidType *depth_to_test) {
       all_ok = false;
     }
   }
-  if(all_ok) std::cout << "Correct\n";
+  if (all_ok) std::cout << "Correct\n";
   else std::cout << "Wrong\n";
 }
 

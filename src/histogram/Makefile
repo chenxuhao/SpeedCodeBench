@@ -10,8 +10,8 @@ histo_omp_base: $(OBJS) omp_base.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lm -lgomp
 	mv $@ $(BIN)
 
-histo_omp: $(OBJS) omp.o
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp.o -o $@ -lm -lgomp
+histo_cilk_base: $(OBJS) cilk_base.o 
+	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@ -lm
 	mv $@ $(BIN)
 
 histo_gpu_base: $(OBJS) gpu_base.o gpu_kernels_base.o

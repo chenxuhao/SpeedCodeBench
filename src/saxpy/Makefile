@@ -1,6 +1,10 @@
 include ../common.mk
 OBJS = main.o
-all: saxpy_omp_base 
+all: saxpy_cpu_base saxpy_omp_base 
+
+saxpy_cpu_base: $(OBJS) cpu_base.o 
+	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@ -lgomp
+	mv $@ $(BIN)
 
 saxpy_omp_base: $(OBJS) omp_base.o 
 	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lgomp

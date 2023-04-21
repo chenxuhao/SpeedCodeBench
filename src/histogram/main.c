@@ -9,8 +9,7 @@
 * use of a temporary pointer for each row.
 ******************************************************************************/
 
-void histogram(int n,
-               unsigned int img_width, unsigned int img_height, unsigned int* image,
+void histogram(unsigned int img_width, unsigned int img_height, unsigned int* image,
                unsigned int width, unsigned int height, unsigned char* histo);
  
 void dump_histo_img(unsigned char* histo, unsigned int height, unsigned int width, const char *filename);
@@ -44,7 +43,10 @@ int main(int argc, char* argv[]) {
     return -1;
   }
   double start = omp_get_wtime();
-  histogram(numIterations, img_width, img_height, img, histo_width, histo_height, histo);
+  memset(histo, 0, histo_height*histo_width*sizeof(unsigned char));
+  for (int i = 0; i < numIterations; i++) {
+    histogram(img_width, img_height, img, histo_width, histo_height, histo);
+  }
   if (outFile) {
     printf("writing outputs to file %s\n", outFile);
     dump_histo_img(histo, histo_height, histo_width, outFile);

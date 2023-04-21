@@ -8,7 +8,7 @@ __global__ void saxpy_kernel(const int n, const float a, const float *x, float *
 }
 
 extern "C"
-void saxpy(const int n, const float a, const float *x, float *y, const int) {
+void saxpy(const int n, const float a, const float *x, float *y) {
   // Size, in bytes, of each vector
   int64_t bytes = int64_t(n) * sizeof(float);
 

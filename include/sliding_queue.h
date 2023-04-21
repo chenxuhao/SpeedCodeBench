@@ -6,9 +6,6 @@
 
 #include <iostream>
 #include "platform_atomics.h"
-#ifdef SIM
-#include "sim.h"
-#endif
 
 /*
 GAP Benchmark Suite
@@ -35,12 +32,6 @@ class SlidingQueue {
  public:
   explicit SlidingQueue(size_t shared_size) {
     shared = new T[shared_size];
-#ifdef SIM
-	T* baseVisitAddress = shared;
-	T* endVisitAddress = &shared[shared_size];
-	set_addr_bounds(0,(uint64_t)baseVisitAddress,(uint64_t)endVisitAddress,8);
-	std::cout << "Worklist address from" << baseVisitAddress << "to" << endVisitAddress << std::endl;
-#endif
     reset();
   }
 
