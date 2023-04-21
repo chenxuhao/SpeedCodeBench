@@ -49,7 +49,7 @@ To control the number of threads, set the following environment variable:
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
 - [x] Stencil
-- [x] Convolution
+- [x] Convolution (CONV)
 - [x] Scan a.k.a. Prefix Sum
 - [x] Histogram
 - [x] Reduction (Sum / Maximum Finding / MinMax)
@@ -62,12 +62,13 @@ To control the number of threads, set the following environment variable:
 |   SAXPY     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   SGEMM     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   SpMV      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-|   Conv      | :heavy_check_mark: |  :heavy_check_mark: | | |
+|   Stencil   | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|   CONV      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Scan      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Histo     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Reduce    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-|   Merge      | | | |  |
-|   Radix      | | | | :heavy_check_mark: |
+|   Merge     | | | |  |
+|   Radix     | | | | :heavy_check_mark: |
 |   BFS       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
 ### Applications & Algorithms
