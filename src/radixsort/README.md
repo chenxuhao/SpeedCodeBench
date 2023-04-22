@@ -1,3 +1,10 @@
+
+# CPU Radix Sort
+
+[Radix sort](https://en.wikipedia.org/wiki/Radix_sort)
+
+[Radix Tricks](http://stereopsis.com/radix.html)
+
 # GPU Radix Sort
 
 CUDA implementation of parallel radix sort using Blelloch scan

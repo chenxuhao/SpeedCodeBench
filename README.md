@@ -68,8 +68,8 @@ To control the number of threads, set the following environment variable:
 |   Histo     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Reduce    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Merge     | | | |  |
-|   Radix     | | | | :heavy_check_mark: |
-|   BFS       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|   Radix     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|   BFS       | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
 ### Applications & Algorithms
 - [x] Advanced Encryption Standard (AES), a specification for the encryption of electronic data
