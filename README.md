@@ -3,7 +3,13 @@
 Benchmark Suite for SpeedCode (Software Performance Engineering Education via Coding Of Didactic Exercises).
 This repository covers representative benchmarks in a wide range of application domains 
 that can benefit from high performance parallel computing technology. 
-
+The benchmarks are implemented using OpenMP and [OpenCilk](https://www.opencilk.org/)
+for shared-memory multicore CPUs, and CUDA for GPUs.
+This is useful if you are interested in comparing different aspects of each parallel language's approach to,
+and ability to facilitate, parallel programming, including:
+ease of use, compile time, performance and efficiency,
+fine-grained control, and proneness to bugs such as deadlocks and race conditions.
+It is also useful for evaluating newly designed and implemented CPU, GPU, accelerator, compiler, or operating system.
 
 ## Quick Start
 
@@ -67,7 +73,7 @@ To control the number of threads, set the following environment variable:
 |   Scan      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Histo     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Reduce    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-|   Merge     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: |  |
+|   Merge     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Radix     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   BFS       | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
@@ -97,6 +103,19 @@ To control the number of threads, set the following environment variable:
 - [x] Single-Source Shortest Paths (SSSP) finding the shortest paths (from graph theory)
 - [x] Minimum Spanning Tree (MST) (from graph theory)
 - [x] Vertex Coloring (VC) (from graph theory)
+
+|             |       Serial       |    OpenMP           |        Cilk        |      CUDA          |
+|-------------|-------------------:|--------------------:|-------------------:|-------------------:|
+|     BS      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     FFT     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     CF      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     PR      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     TC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     BC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     CC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|    SSSP     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     MST     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     VC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 
 ## Sources
 

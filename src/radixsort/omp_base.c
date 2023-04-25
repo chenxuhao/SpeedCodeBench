@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+// http://www.cs.cmu.edu/afs/cs/academic/class/15418-s19/www/lectures/rec_04.pdf
+//
 typedef uint32_t data_t;
 typedef uint32_t index_t;
 #define BASE 8

@@ -44,3 +44,42 @@ void verify(unsigned int* out, unsigned int* const in, unsigned int num_elems) {
   delete[] h_out_cpu;
 }
 
+#include <string.h>
+typedef uint32_t data_t;
+typedef uint32_t index_t;
+#define BASE 8
+#define BASE_BITS 3
+#define DIGITS(x,y) (x >> y & 0x7)
+
+void seq_radix_sort(data_t* outdata,
+                    data_t* const indata,
+                    index_t N) {
+  data_t *scratchdata = (data_t*) malloc(N * sizeof(data_t));
+  data_t *src = indata;
+  data_t *dest = scratchdata;
+  index_t count[BASE];
+  index_t offset[BASE];
+  index_t total_digits = sizeof(data_t) * 8;
+  for (index_t shift = 0; shift < total_digits; shift += BASE_BITS) {
+    // Accumulate count for each key value
+    memset(count, 0, BASE*sizeof(index_t));
+    for (index_t i = 0; i < N; i++) {
+      data_t key = DIGITS(src[i], shift);
+      count[key]++;
+    }
+    // Compute offsets
+    offset[0] = 0;
+    for (index_t b = 1; b < BASE; b++)
+      offset[b] = offset[b-1] + count[b-1];
+    // Distribute data
+    for (index_t i = 0; i < N; i++) {
+      data_t key = DIGITS(src[i], shift);
+      index_t pos = offset[key]++;
+      dest[pos] = src[i];
+    }
+    // Swap src/dest (only keep two buffers)
+    src = dest;
+    dest = (dest == outdata) ? scratchdata : outdata;
+  }
+}
+
