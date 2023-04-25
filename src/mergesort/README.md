@@ -7,3 +7,5 @@ This directive splits the parallel region into multiple sections, and each secti
 The two recursive calls to mergeSort() are made inside the #pragma omp section directives, which ensures that each call runs in a separate thread.
 
 Note that this program assumes that the input array is of type int. You can modify it to work with other data types if needed.
+
+[CUDA merge sort](https://onezork.wordpress.com/2014/08/29/gpu-mergesort/)
