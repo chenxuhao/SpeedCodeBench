@@ -1,15 +1,6 @@
 # SpeedCodeBench
 
 Benchmark Suite for SpeedCode (Software Performance Engineering Education via Coding Of Didactic Exercises).
-This repository covers representative benchmarks in a wide range of application domains 
-that can benefit from high performance parallel computing technology. 
-The benchmarks are implemented using OpenMP and [OpenCilk](https://www.opencilk.org/)
-for shared-memory multicore CPUs, and CUDA for GPUs.
-This is useful if you are interested in comparing different aspects of each parallel language's approach to,
-and ability to facilitate, parallel programming, including:
-ease of use, compile time, performance and efficiency,
-fine-grained control, and proneness to bugs such as deadlocks and race conditions.
-It is also useful for evaluating newly designed and implemented CPU, GPU, accelerator, compiler, or operating system.
 
 ## Benchmarks
 
@@ -17,6 +8,7 @@ It is also useful for evaluating newly designed and implemented CPU, GPU, accele
 - [x] Single-Precision A X Plus Y (SAXPY)
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
+- [x] Sparse Matrix Dense Matrix Multiplication (SpMDM)
 - [x] Stencil
 - [x] Convolution (CONV)
 - [x] Scan a.k.a. Prefix Sum
@@ -31,6 +23,7 @@ It is also useful for evaluating newly designed and implemented CPU, GPU, accele
 |   SAXPY     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   SGEMM     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   SpMV      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|   SpMDM     | :heavy_check_mark: |   |  |  |
 |   Stencil   | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   CONV      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Scan      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |

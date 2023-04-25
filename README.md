@@ -54,6 +54,7 @@ To control the number of threads, set the following environment variable:
 - [x] Single-Precision A X Plus Y (SAXPY)
 - [x] Single Precision General Matrix Multiplication (SGEMM) 
 - [x] Sparse Matrix-Vector Multiplication (SpMV)
+- [x] Sparse Matrix Dense Matrix Multiplication (SpMDM)
 - [x] Stencil
 - [x] Convolution (CONV)
 - [x] Scan a.k.a. Prefix Sum
@@ -68,6 +69,7 @@ To control the number of threads, set the following environment variable:
 |   SAXPY     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   SGEMM     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   SpMV      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|   SpMDM     | :heavy_check_mark: |   |  |  |
 |   Stencil   | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   CONV      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Scan      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
