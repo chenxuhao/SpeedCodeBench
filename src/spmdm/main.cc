@@ -5,16 +5,18 @@ typedef float T;
 bool readColMajorMatrixFile(std::string fn, int &nr_row, int &nr_col, std::vector<T>&v);
 bool randomInitMatrix(int nrow, int ncol, std::vector<T>&v);
 
-// sparse matrix A dense matrix B multiply
-void SpmDm(GraphF &g, const T *B, int matBcol, T *C);
+extern "C" {
+//void SpmDm(GraphF &g, const T *B, int matBcol, T *C);
 
+// Inputs: sparse matrix A, dense matrix B
+// Output: dense matrix C
 void SpmDm(char transa, char transb, 
            vidType m, eidType nnz, int k, 
            T alpha, const eidType *A_rowptr,
            const vidType *A_colidx, const T *A_values, 
            int lda, const T *B, int ldb, 
            T beta, T *C, int ldc);
-
+}
 int main(int argc, char *argv[]) {
   printf("Sparse Matrix-Vector Multiplication\n");
   if (argc < 2) {

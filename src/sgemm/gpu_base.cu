@@ -11,24 +11,25 @@
 
 // Parameters of tile sizes
 #define TILE_SZ 16 
+typedef float DType;
 
-__global__ void sgemm_kernel(const float *A, int lda, const float *B, int ldb,
-                             float* C, int ldc, int k, float alpha, float beta ) {
-  float c = 0.0f;
+__global__ void sgemm_kernel(const DType *A, int lda, const DType *B, int ldb,
+                             DType* C, int ldc, int k, DType alpha, DType beta ) {
+  DType c = 0.0f;
   int m = blockIdx.x * blockDim.x + threadIdx.x;
   int n = blockIdx.y * blockDim.y + threadIdx.y;
   for (int i = 0; i < k; ++i) {
-    float a = A[m + i * lda]; 
-    float b = B[n + i * ldb];
+    DType a = A[m + i * lda]; 
+    DType b = B[n + i * ldb];
     c += a * b;
   }
   C[m+n*ldc] = C[m+n*ldc] * beta + alpha * c;
 }
 
 void sgemm(char transa, char transb, 
-           int m, int n, int k, float alpha, 
-           const float *A, int lda, const float *B, int ldb,
-           float beta, float *C, int ldc ) {
+           int m, int n, int k, DType alpha, 
+           const DType *A, int lda, const DType *B, int ldb,
+           DType beta, DType *C, int ldc ) {
   if ((transa != 'N') && (transa != 'n')) {
     std::cerr << "unsupported value of 'transa' in regtileSgemm()" << std::endl;
     return;
@@ -42,8 +43,23 @@ void sgemm(char transa, char transb,
     std::cerr << "unsupported size of matrix. m should be multiple of " << TILE_SZ
       << "; n should be multiple of " << TILE_SZ << std::endl;
   }
-  dim3 grid( m/TILE_SZ, n/TILE_SZ ), threads( TILE_SZ, TILE_SZ );
-  sgemm_kernel<<<grid, threads>>>( A, lda, B, ldb, C, ldc, k, alpha, beta);
+
+  DType *d_A, *d_B, *d_C;
+  cudaMalloc(&d_A, sizeof(DType)*m*k);
+  cudaMalloc(&d_B, sizeof(DType)*k*n);
+  cudaMalloc(&d_C, sizeof(DType)*m*n);
+  cudaMemcpy(d_A, A, sizeof(DType)*m*k, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, B, sizeof(DType)*k*n, cudaMemcpyHostToDevice);
+
+  dim3 grid(m/TILE_SZ, n/TILE_SZ);
+  dim3 threads(TILE_SZ, TILE_SZ);
+  sgemm_kernel<<<grid, threads>>>(d_A, lda, d_B, ldb, d_C, ldc, k, alpha, beta);
+  cudaDeviceSynchronize();
   CHECK_ERROR("mySgemm");
+
+  cudaMemcpy(C, d_C, m*n*sizeof(DType), cudaMemcpyDeviceToHost);
+  cudaFree(d_A);
+  cudaFree(d_B);
+  cudaFree(d_C);
 }
 

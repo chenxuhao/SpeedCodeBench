@@ -11,6 +11,7 @@
 #define TILE_N 16 
 #define TILE_TB_HEIGHT 8
 #define TILE_M (TILE_N*TILE_TB_HEIGHT)
+typedef float DType;
 
 __global__ void sgemm_kernel(const float *A, int lda,
                              const float *B, int ldb,
@@ -60,8 +61,22 @@ void sgemm(char transa, char transb,
     std::cerr << "unsupported size of matrix. m should be multiple of " << TILE_M
       << "; n should be multiple of " << TILE_N << std::endl;
   }
+
+  DType *d_A, *d_B, *d_C;
+  cudaMalloc(&d_A, sizeof(DType)*m*k);
+  cudaMalloc(&d_B, sizeof(DType)*k*n);
+  cudaMalloc(&d_C, sizeof(DType)*m*n);
+  cudaMemcpy(d_A, A, sizeof(DType)*m*k, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, B, sizeof(DType)*k*n, cudaMemcpyHostToDevice);
+
   dim3 grid( m/TILE_M, n/TILE_N ), threads( TILE_N, TILE_TB_HEIGHT );
   sgemm_kernel<<<grid, threads>>>( A, lda, B, ldb, C, ldc, k, alpha, beta);
+  cudaDeviceSynchronize();
   CHECK_ERROR("mySgemm");
+
+  cudaMemcpy(C, d_C, m*n*sizeof(DType), cudaMemcpyDeviceToHost);
+  cudaFree(d_A);
+  cudaFree(d_B);
+  cudaFree(d_C);
 }
 
