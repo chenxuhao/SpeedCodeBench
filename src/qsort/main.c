@@ -5,7 +5,7 @@
 
 void cpu_sort(int* out, int* in, size_t len);
 void compare_results(int* out_test, int* const out, int n);
-void MergeSort(int n, int *data);
+void QuickSort(int n, int *data);
 
 void printArray(int arr[], int size) {
   for (int i = 0; i < size; i++) {
@@ -32,13 +32,11 @@ int main(int argc, char* argv[]) {
 
   for (int j = 0; j < 1; ++j) {
     printf("*****Descending order*****\n");
-    MergeSort(num_elems, in);
+    QuickSort(num_elems, in);
     compare_results(in, out, num_elems);
 
     printf("*****Random order*****\n");
-    //start = omp_get_wtime();
-    MergeSort(num_elems, in_rand);
-    //end = omp_get_wtime();
+    QuickSort(num_elems, in_rand);
     compare_results(in_rand, out_rand, num_elems);
   }
   free(in);

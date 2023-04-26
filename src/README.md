@@ -62,7 +62,9 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 
 |             |       Serial       |    OpenMP           |        Cilk        |      CUDA          |
 |-------------|-------------------:|--------------------:|-------------------:|-------------------:|
+|     BH      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     BS      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     LBM     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     FFT     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     CF      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     PR      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
@@ -72,6 +74,10 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 |    SSSP     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     MST     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     VC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+
+### MISC
+- [x] Quick Sort
+- [x] [N-Queens](https://leetcode.com/problems/n-queens/)
 
 ## Sources
 

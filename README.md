@@ -108,7 +108,9 @@ To control the number of threads, set the following environment variable:
 
 |             |       Serial       |    OpenMP           |        Cilk        |      CUDA          |
 |-------------|-------------------:|--------------------:|-------------------:|-------------------:|
+|     BH      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     BS      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     LBM     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     FFT     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     CF      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     PR      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
