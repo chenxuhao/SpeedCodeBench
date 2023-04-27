@@ -1,9 +1,13 @@
 include ../common.mk
 OBJS = main.o
-all: fft_cpu_base 
+all: fft_cpu_base fft_omp_base
 
 fft_cpu_base: $(OBJS) cpu_base.o
 	$(CXX) $(INCLUDES) $(OBJS) cpu_base.o -o $@ -lgomp -lm
+	mv $@ $(BIN)
+
+fft_omp_base: $(OBJS) omp_base.o
+	$(CXX) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lgomp -lm
 	mv $@ $(BIN)
 
 fft_gpu_base: $(OBJS) gpu_base.o

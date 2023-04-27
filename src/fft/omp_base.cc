@@ -9,10 +9,10 @@ void fft(float2 *dst, float2 *src, int batch, int n) {
   float2 *X = (float2*) malloc(n*sizeof(float2));
   float2 *Y = (float2*) malloc(n*sizeof(float2));
   for (int ibatch = 0; ibatch < batch; ibatch++) {
-    // go to double precision
+    #pragma omp parallel for
     for (int i = 0; i < n; i++)
       X[i] = make_float2(src[i].x, src[i].y);
-    // butterfly computation in double precision
+    // butterfly computation
     for (int kmax = 1, jmax = n/2; kmax < n; kmax *= 2, jmax /= 2) {
       for (int k = 0; k < kmax; k++ ) {
         double phi = -2.*M_PI*k/(2.*kmax);
@@ -27,7 +27,7 @@ void fft(float2 *dst, float2 *src, int batch, int n) {
       X = Y;
       Y = Z;
     }
-    // return to single precision
+    #pragma omp parallel for
     for (int i = 0; i < n; i++)
       dst[i] = make_float2((float)X[i].x, (float)X[i].y);
     src += n;

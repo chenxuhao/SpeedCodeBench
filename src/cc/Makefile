@@ -10,6 +10,10 @@ cc_omp_afforest: omp_afforest.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) omp_afforest.o $(OBJS) -o $@ -lgomp
 	mv $@ $(BIN)
 
+cc_cilk_base: $(OBJS) cilk_base.o 
+	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	mv $@ $(BIN)
+
 cc_gpu_base: gpu_base.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ $(NVLIBS)
 	mv $@ $(BIN)

@@ -31,7 +31,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 |   Reduce    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Merge     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Radix     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-|   BFS       | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|   BFS       | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 
 ### Applications & Algorithms
 - [x] Advanced Encryption Standard (AES), a specification for the encryption of electronic data
@@ -65,12 +65,12 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 |     BH      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     BS      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     LBM     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
-|     FFT     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
-|     CF      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
-|     PR      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
-|     TC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     FFT     | :heavy_check_mark: |   |  | :heavy_check_mark: |
+|     CF      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|     PR      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|     TC      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|     CC      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |     BC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
-|     CC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |    SSSP     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     MST     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     VC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
