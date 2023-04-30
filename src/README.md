@@ -34,31 +34,31 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 |   BFS       | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 
 ### Applications & Algorithms
-- [x] Advanced Encryption Standard (AES), a specification for the encryption of electronic data
-- [x] B+ tree (B+T) used in file systems and database systems
 - [x] Barnes-Hut (BH) for N-Body simulation
 - [x] Black-Scholes (BS), a differential equation to price options contracts in finance
+- [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
+- [x] Fast Fourier transform (FFT) for digital signal processing
+- [x] Collaborative Filtering (CF), a Stochastic Gradient Descent (SGD) algorithm for recommender systems
+- [x] PageRank (PR) for ranking web pages in a search engine
+- [x] Triangle Counting (TC) for social network analysis
+- [x] Connected Components (CC) (from graph theory)
+- [x] Betweenness Centrality (BC), a measure of centrality in a graph (from graph theory)
+- [x] Single-Source Shortest Paths (SSSP) finding the shortest paths (from graph theory)
+- [x] Minimum Spanning Tree (MST) (from graph theory)
+- [x] Vertex Coloring (VC) (from graph theory)
+- [x] Advanced Encryption Standard (AES), a specification for the encryption of electronic data
+- [x] B+ tree (B+T) used in file systems and database systems
 - [x] CRC64 checksum (CRC), an error-detecting code used in digital networks and storage devices
 - [x] Jaccard index (JI), a statistic used for gauging the similarity and diversity of sample sets
 - [x] Haversine Distance (HD) for Geospatial Data Analysis
 - [x] Symmetric Gauss-seidel Smoother (SymGS) for numerical linear algebra 
 - [x] Inversek2j (IK2J) Inverse kinematics for 2-joint arm used in Robotics
-- [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
-- [x] Fast Fourier transform (FFT) for digital signal processing
-- [x] Collaborative Filtering (CF), a Stochastic Gradient Descent (SGD) algorithm for recommender systems
 - [x] K-means clustering (K-MEANS), a method of vector quantization for signal processing
 - [x] Ray Tracing (RT) for 3D computer graphics
 - [x] k-nearest neighbor (k-NN), a supervised learning method for classification and regression
 - [x] Locality sensitive hashing (LSH) for finding approximate nearest neighbors
 - [x] StreamCluster (SC) for online clustering of an input stream
 - [x] DAPHNE points2image (P2I) for Automotive
-- [x] PageRank (PR) for ranking web pages in a search engine
-- [x] Triangle Counting (TC) for social network analysis
-- [x] Betweenness Centrality (BC), a measure of centrality in a graph (from graph theory)
-- [x] Connected Components (CC) (from graph theory)
-- [x] Single-Source Shortest Paths (SSSP) finding the shortest paths (from graph theory)
-- [x] Minimum Spanning Tree (MST) (from graph theory)
-- [x] Vertex Coloring (VC) (from graph theory)
 
 |             |       Serial       |    OpenMP           |        Cilk        |      CUDA          |
 |-------------|-------------------:|--------------------:|-------------------:|-------------------:|
@@ -74,6 +74,19 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 |    SSSP     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     MST     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     VC      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     AES     |  |  :heavy_check_mark: |  |  |
+|     B+T     |  |  :heavy_check_mark: |  |  |
+|     CRC     |  |  :heavy_check_mark: |  |  |
+|     JI      |  |  :heavy_check_mark: |  |  |
+|     HD      |  |  :heavy_check_mark: |  | :heavy_check_mark: |
+|    SymGS    |  |  :heavy_check_mark: |  |  |
+|    IK2J     | :heavy_check_mark: |  :heavy_check_mark: |  |  |
+|   KMEANS    | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     RT      | :heavy_check_mark: |   |  | :heavy_check_mark: |
+|     kNN     |  |   |  |  |
+|     LSH     |  |   |  |  |
+|     SC      |  |  :heavy_check_mark: |  | :heavy_check_mark: |
+|     P2I     |  |  :heavy_check_mark: |  |  |
 
 ### MISC
 - [x] Quick Sort
