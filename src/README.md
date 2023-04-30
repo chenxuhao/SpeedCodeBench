@@ -91,6 +91,16 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 ### MISC
 - [x] Quick Sort
 - [x] [N-Queens](https://leetcode.com/problems/n-queens/)
+- [x] samplesort : a sample-based sort (can be though of as quicksort with many pivots). This is the fastest of the sorts.
+- [x] kth_smallest : randomized algorithm to report the kth smallest element of an unsorted sequence
+- [x] word_counts : given a string, count the number of occurrences of each token in the string
+- [x] tokens : given a string, break into a sequence of tokens given separator characters
+- [x] huffman_tree : Build a Huffman tree from a sequence of probabilities
+- [x] knuth_morris_pratt : string search using the KMP algorithm
+- [x] longest_repeated_substring : find the LRS in a string
+- [x] suffix_tree : for a string generate its suffix tree
+primes : returns the primes up to n.
+
 
 ## Sources
 
