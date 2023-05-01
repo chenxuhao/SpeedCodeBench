@@ -13,6 +13,7 @@ void fft(float2 *dst, float2 *src, int batch, int n) {
     for (int i = 0; i < n; i++)
       X[i] = make_float2(src[i].x, src[i].y);
     // butterfly computation
+    #pragma omp parallel for collapse(2)
     for (int kmax = 1, jmax = n/2; kmax < n; kmax *= 2, jmax /= 2) {
       for (int k = 0; k < kmax; k++ ) {
         double phi = -2.*M_PI*k/(2.*kmax);
