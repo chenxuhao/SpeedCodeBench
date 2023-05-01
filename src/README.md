@@ -37,7 +37,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Barnes-Hut (BH) for N-Body simulation
 - [x] Black-Scholes (BS), a differential equation to price options contracts in finance
 - [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
-- [x] Fast Fourier transform (FFT) for digital signal processing
+- [x] [Fast Fourier transform](https://people.sc.fsu.edu/~jburkardt/c_src/fft_openmp/fft_openmp.html) (FFT) for digital signal processing
 - [x] Collaborative Filtering (CF), a Stochastic Gradient Descent (SGD) algorithm for recommender systems
 - [x] PageRank (PR) for ranking web pages in a search engine
 - [x] Triangle Counting (TC) for social network analysis
@@ -91,15 +91,25 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 ### MISC
 - [x] Quick Sort
 - [x] [N-Queens](https://leetcode.com/problems/n-queens/)
-- [x] samplesort : a sample-based sort (can be though of as quicksort with many pivots). This is the fastest of the sorts.
-- [x] kth_smallest : randomized algorithm to report the kth smallest element of an unsorted sequence
-- [x] word_counts : given a string, count the number of occurrences of each token in the string
-- [x] tokens : given a string, break into a sequence of tokens given separator characters
-- [x] huffman_tree : Build a Huffman tree from a sequence of probabilities
-- [x] knuth_morris_pratt : string search using the KMP algorithm
-- [x] longest_repeated_substring : find the LRS in a string
-- [x] suffix_tree : for a string generate its suffix tree
-primes : returns the primes up to n.
+- [x] [primes](https://people.sc.fsu.edu/~jburkardt/c_src/prime/prime.html) : returns the primes up to n.
+- [ ] [dijkstra](https://people.sc.fsu.edu/~jburkardt/c_src/dijkstra/dijkstra.html) : implements a simple version of the Dijkstra minimum distance algorithm for graphs
+- [ ] [heated_plate](https://people.sc.fsu.edu/~jburkardt/c_src/heated_plate/heated_plate.html) : solves the steady state heat equation in a 2D rectangular region
+- [ ] [image_denoise](https://people.sc.fsu.edu/~jburkardt/c_src/image_denoise/image_denoise.html) : applies simple filtering operations to a noisy image.
+- [ ] [jacobi](https://people.sc.fsu.edu/~jburkardt/c_src/jacobi/jacobi.html) :  implements the Jacobi iteration for the iterative solution of linear systems A*x=b.
+- [ ] [julia_set](https://people.sc.fsu.edu/~jburkardt/c_src/julia_set/julia_set.html) : generates a TGA or TARGA graphics file of a Julia set.
+- [ ] [mandelbrot](https://people.sc.fsu.edu/~jburkardt/c_src/mandelbrot/mandelbrot.html) : generates an ASCII Portable Pixel Map (PPM) image of the Mandelbrot set
+- [ ] [md](https://people.sc.fsu.edu/~jburkardt/c_src/md/md.html) : carries out a molecular dynamics (MD) simulation
+- [ ] [poisson](https://people.sc.fsu.edu/~jburkardt/c_src/poisson_openmp/poisson_openmp.html) : computes a solution to the Poisson equation in a rectangle, using the Jacobi iteration to solve the linear system.
+- [ ] [quad](https://people.sc.fsu.edu/~jburkardt/c_src/quad_openmp/quad_openmp.html) : applies a quadrature rule to estimate an integral over a 1D interval
+- [ ] [satisfy](https://people.sc.fsu.edu/~jburkardt/c_src/satisfy_openmp/satisfy_openmp.html) : demonstrates, for a particular circuit, an exhaustive search for solutions of the circuit satisfy problem
+- [ ] samplesort : a sample-based sort (can be though of as quicksort with many pivots). This is the fastest of the sorts.
+- [ ] kth_smallest : randomized algorithm to report the kth smallest element of an unsorted sequence
+- [ ] word_counts : given a string, count the number of occurrences of each token in the string
+- [ ] tokens : given a string, break into a sequence of tokens given separator characters
+- [ ] huffman_tree : Build a Huffman tree from a sequence of probabilities
+- [ ] knuth_morris_pratt : string search using the KMP algorithm
+- [ ] longest_repeated_substring : find the LRS in a string
+- [ ] suffix_tree : for a string generate its suffix tree
 
 
 ## Sources
