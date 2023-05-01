@@ -54,7 +54,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Symmetric Gauss-seidel Smoother (SymGS) for numerical linear algebra 
 - [x] Inversek2j (IK2J) Inverse kinematics for 2-joint arm used in Robotics
 - [x] K-means clustering (K-MEANS), a method of vector quantization for signal processing
-- [x] Ray Tracing (RT) for 3D computer graphics
+- [x] [Ray Tracing](https://raytracing.github.io/books/RayTracingInOneWeekend.html) (RT) for 3D computer graphics
 - [x] k-nearest neighbor (k-NN), a supervised learning method for classification and regression
 - [x] Locality sensitive hashing (LSH) for finding approximate nearest neighbors
 - [x] StreamCluster (SC) for online clustering of an input stream
