@@ -5,18 +5,19 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 ## Benchmarks
 
 ### Kernels (Parallel Patterns)
-- [x] Single-Precision A X Plus Y (SAXPY)
-- [x] Single Precision General Matrix Multiplication (SGEMM) 
-- [x] Sparse Matrix-Vector Multiplication (SpMV)
-- [x] Sparse Matrix Dense Matrix Multiplication (SpMDM)
-- [x] Stencil
-- [x] Convolution (CONV)
-- [x] Scan a.k.a. Prefix Sum
-- [x] Histogram
-- [x] Reduction (Sum / Maximum Finding / MinMax)
-- [x] Merge / Merge Sort
-- [x] Radix Sort
-- [x] Graph Traversal / Breadth-First Search (BFS)
+- [x] Single-Precision A X Plus Y ([SAXPY](https://developer.nvidia.com/blog/six-ways-saxpy/))
+- [x] Single Precision General Matrix Multiplication ([SGEMM](https://netlib.org/lapack/explore-html/db/dc9/group__single__blas__level3_gafe51bacb54592ff5de056acabd83c260.html)) 
+- [x] Sparse Matrix-Vector Multiplication ([SpMV](https://en.wikipedia.org/wiki/Sparse_matrix%E2%80%93vector_multiplication))
+- [x] Sparse Matrix Dense Matrix Multiplication ([SpMDM](https://developer.nvidia.com/blog/accelerating-matrix-multiplication-with-block-sparse-format-and-nvidia-tensor-cores/))
+- [x] [Stencil](https://en.wikipedia.org/wiki/Iterative_Stencil_Loops)
+- [x] [Convolution](https://en.wikipedia.org/wiki/Convolution) (CONV)
+- [x] [Prefix Sum](https://en.wikipedia.org/wiki/Prefix_sum<F10>) a.k.a. Scan
+- [x] [Histogram](https://en.wikipedia.org/wiki/Histogram<F9>)
+- [x] [Reduction](https://en.wikipedia.org/wiki/Reduction_operator) (Sum / Maximum Finding / MinMax)
+- [x] Merge / [Merge Sort](https://en.wikipedia.org/wiki/Merge_sort<F10>)
+- [x] [Radix Sort](https://en.wikipedia.org/wiki/Radix_sort<F10>)
+- [x] [Jacobi method](https://en.wikipedia.org/wiki/Jacobi_method)
+- [x] Graph Traversal / [Breadth-First Search](https://en.wikipedia.org/wiki/Breadth-first_search) (BFS)
 
 |             |       Serial       |    OpenMP           |        Cilk        |      CUDA          |
 |-------------|-------------------:|--------------------:|-------------------:|-------------------:|
@@ -31,6 +32,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 |   Reduce    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Merge     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Radix     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+|   Jacobi    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   BFS       | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 
 ### Applications & Algorithms

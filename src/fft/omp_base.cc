@@ -4,7 +4,14 @@
 #include <stdlib.h>
 #include "float2.h"
 
-void fft(float2 *dst, float2 *src, int batch, int n) {   
+void fft(float2 *dst, float2 *src, int batch, int n) {
+  int num_threads = 1;
+  #pragma omp parallel
+  {
+    num_threads = omp_get_num_threads();
+  }
+  printf("OpenMP FFT solver (%d threads) ...\n", num_threads);
+ 
   double start_time = omp_get_wtime();
   float2 *X = (float2*) malloc(n*sizeof(float2));
   float2 *Y = (float2*) malloc(n*sizeof(float2));
@@ -37,5 +44,5 @@ void fft(float2 *dst, float2 *src, int batch, int n) {
   free(X);
   free(Y);
   double end_time = omp_get_wtime();
-  printf("runtime [base] = %f \n", end_time - start_time);
+  printf("runtime [omp_base] = %f \n", end_time - start_time);
 }
