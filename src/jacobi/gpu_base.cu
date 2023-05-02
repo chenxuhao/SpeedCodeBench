@@ -68,7 +68,7 @@ void jacobi(int iter, int n, double *A, double *b, double *x0, double *x1) {
 
   DataTy *d_x_old = d_x0;
   DataTy *d_x_new = d_x1;
-  for (int k = 0; k < iter; k ++) {
+  for (int k = 0; k <= iter; k ++) {
     jacobi_kernel<<< nTiles, tileSize >>>(d_A, d_b, d_x_old, d_x_new, Ni, Nj);
     cudaMemcpy(x1, d_x_new, sizeof(DataTy)*Ni, cudaMemcpyDeviceToHost);
     // swap pointers
