@@ -11,13 +11,15 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [x] Sparse Matrix Dense Matrix Multiplication ([SpMDM](https://developer.nvidia.com/blog/accelerating-matrix-multiplication-with-block-sparse-format-and-nvidia-tensor-cores/))
 - [x] [Stencil](https://en.wikipedia.org/wiki/Iterative_Stencil_Loops)
 - [x] [Convolution](https://en.wikipedia.org/wiki/Convolution) (CONV)
-- [x] [Prefix Sum](https://en.wikipedia.org/wiki/Prefix_sum<F10>) a.k.a. Scan
-- [x] [Histogram](https://en.wikipedia.org/wiki/Histogram<F9>)
+- [x] [Prefix Sum](https://en.wikipedia.org/wiki/Prefix_sum) a.k.a. Scan
+- [x] [Histogram](https://en.wikipedia.org/wiki/Histogram)
 - [x] [Reduction](https://en.wikipedia.org/wiki/Reduction_operator) (Sum / Maximum Finding / MinMax)
-- [x] Merge / [Merge Sort](https://en.wikipedia.org/wiki/Merge_sort<F10>)
-- [x] [Radix Sort](https://en.wikipedia.org/wiki/Radix_sort<F10>)
-- [x] [Jacobi method](https://en.wikipedia.org/wiki/Jacobi_method)
-- [x] Graph Traversal / [Breadth-First Search](https://en.wikipedia.org/wiki/Breadth-first_search) (BFS)
+- [x] [Merge Sort](https://en.wikipedia.org/wiki/Merge_sort)
+- [x] [Radix Sort](https://en.wikipedia.org/wiki/Radix_sort)
+- [x] [Jacobi method](https://en.wikipedia.org/wiki/Jacobi_method) for solving linear systems $Ax=b$
+- [x] [Breadth-First Search](https://en.wikipedia.org/wiki/Breadth-first_search) (BFS) / Graph Traversal
+- [x] [Fast Fourier transform](https://people.sc.fsu.edu/~jburkardt/c_src/fft_openmp/fft_openmp.html) (FFT) for digital signal processing
+
 
 |             |       Serial       |    OpenMP           |        Cilk        |      CUDA          |
 |-------------|-------------------:|--------------------:|-------------------:|-------------------:|
@@ -34,12 +36,12 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 |   Radix     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Jacobi    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   BFS       | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|   FFT       | :heavy_check_mark: |   |  | :heavy_check_mark: |
 
 ### Applications & Algorithms
 - [x] Barnes-Hut (BH) for N-Body simulation
 - [x] Black-Scholes (BS), a differential equation to price options contracts in finance
 - [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
-- [x] [Fast Fourier transform](https://people.sc.fsu.edu/~jburkardt/c_src/fft_openmp/fft_openmp.html) (FFT) for digital signal processing
 - [x] Collaborative Filtering (CF), a Stochastic Gradient Descent (SGD) algorithm for recommender systems
 - [x] PageRank (PR) for ranking web pages in a search engine
 - [x] Triangle Counting (TC) for social network analysis
@@ -67,7 +69,6 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 |     BH      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     BS      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     LBM     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
-|     FFT     | :heavy_check_mark: |   |  | :heavy_check_mark: |
 |     CF      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |     PR      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |     TC      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
@@ -97,7 +98,6 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 - [ ] [dijkstra](https://people.sc.fsu.edu/~jburkardt/c_src/dijkstra/dijkstra.html) : implements a simple version of the Dijkstra minimum distance algorithm for graphs
 - [ ] [heated_plate](https://people.sc.fsu.edu/~jburkardt/c_src/heated_plate/heated_plate.html) : solves the steady state heat equation in a 2D rectangular region
 - [ ] [image_denoise](https://people.sc.fsu.edu/~jburkardt/c_src/image_denoise/image_denoise.html) : applies simple filtering operations to a noisy image.
-- [ ] [jacobi](https://people.sc.fsu.edu/~jburkardt/c_src/jacobi/jacobi.html) :  implements the Jacobi iteration for the iterative solution of linear systems A*x=b.
 - [ ] [julia_set](https://people.sc.fsu.edu/~jburkardt/c_src/julia_set/julia_set.html) : generates a TGA or TARGA graphics file of a Julia set.
 - [ ] [mandelbrot](https://people.sc.fsu.edu/~jburkardt/c_src/mandelbrot/mandelbrot.html) : generates an ASCII Portable Pixel Map (PPM) image of the Mandelbrot set
 - [ ] [md](https://people.sc.fsu.edu/~jburkardt/c_src/md/md.html) : carries out a molecular dynamics (MD) simulation

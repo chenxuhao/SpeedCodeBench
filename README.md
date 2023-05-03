@@ -57,13 +57,14 @@ To control the number of threads, set the following environment variable:
 - [x] Sparse Matrix Dense Matrix Multiplication ([SpMDM](https://developer.nvidia.com/blog/accelerating-matrix-multiplication-with-block-sparse-format-and-nvidia-tensor-cores/))
 - [x] [Stencil](https://en.wikipedia.org/wiki/Iterative_Stencil_Loops)
 - [x] [Convolution](https://en.wikipedia.org/wiki/Convolution) (CONV)
-- [x] [Prefix Sum](https://en.wikipedia.org/wiki/Prefix_sum<F10>) a.k.a. Scan
-- [x] [Histogram](https://en.wikipedia.org/wiki/Histogram<F9>)
+- [x] [Prefix Sum](https://en.wikipedia.org/wiki/Prefix_sum) a.k.a. Scan
+- [x] [Histogram](https://en.wikipedia.org/wiki/Histogram)
 - [x] [Reduction](https://en.wikipedia.org/wiki/Reduction_operator) (Sum / Maximum Finding / MinMax)
-- [x] Merge / [Merge Sort](https://en.wikipedia.org/wiki/Merge_sort<F10>)
-- [x] [Radix Sort](https://en.wikipedia.org/wiki/Radix_sort<F10>)
-- [x] [Jacobi method](https://en.wikipedia.org/wiki/Jacobi_method)
-- [x] Graph Traversal / [Breadth-First Search](https://en.wikipedia.org/wiki/Breadth-first_search) (BFS)
+- [x] [Merge Sort](https://en.wikipedia.org/wiki/Merge_sort)
+- [x] [Radix Sort](https://en.wikipedia.org/wiki/Radix_sort)
+- [x] [Jacobi method](https://en.wikipedia.org/wiki/Jacobi_method) for solving linear systems $Ax=b$
+- [x] [Breadth-First Search](https://en.wikipedia.org/wiki/Breadth-first_search) (BFS) / Graph Traversal
+- [x] [Fast Fourier transform](https://people.sc.fsu.edu/~jburkardt/c_src/fft_openmp/fft_openmp.html) (FFT) for digital signal processing
 
 
 |             |       Serial       |    OpenMP           |        Cilk        |      CUDA          |
@@ -81,6 +82,7 @@ To control the number of threads, set the following environment variable:
 |   Radix     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Jacobi    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   BFS       | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|   FFT       | :heavy_check_mark: |   |  | :heavy_check_mark: |
 
 ### Applications & Algorithms
 - [x] Advanced Encryption Standard (AES), a specification for the encryption of electronic data
@@ -93,7 +95,6 @@ To control the number of threads, set the following environment variable:
 - [x] Symmetric Gauss-seidel Smoother (SymGS) for numerical linear algebra 
 - [x] Inversek2j (IK2J) Inverse kinematics for 2-joint arm used in Robotics
 - [x] Lattice Boltzmann methods (LBM) for Computational Fluid Dynamics (CFD)
-- [x] Fast Fourier transform (FFT) for digital signal processing
 - [x] Collaborative Filtering (CF), a Stochastic Gradient Descent (SGD) algorithm for recommender systems
 - [x] K-means clustering (K-MEANS), a method of vector quantization for signal processing
 - [x] Ray Tracing (RT) for 3D computer graphics
@@ -114,7 +115,6 @@ To control the number of threads, set the following environment variable:
 |     BH      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     BS      | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
 |     LBM     | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
-|     FFT     | :heavy_check_mark: |   |  | :heavy_check_mark: |
 |     CF      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |     PR      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |     TC      | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |

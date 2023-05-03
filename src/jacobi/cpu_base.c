@@ -10,6 +10,7 @@
 //    Input,  double X[N], the current solution estimate.
 //    Output, double X[N], the solution estimate updated by
 void jacobi(int m, int n, double *a, double *b, double *x0, double *x1) {
+  printf("Serial Jacobi solver\n");
   ctimer_t t;
   ctimer_start(&t);
  

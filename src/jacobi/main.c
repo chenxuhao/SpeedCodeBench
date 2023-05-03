@@ -4,12 +4,10 @@
 # include <time.h>
 
 double *dif2 ( int m, int n );
-double *jacobi1 ( int n, double a[], double b[], double x[] );
-double *r8mat_mv_new ( int m, int n, double a[], double x[] );
-void r8vec_copy ( int n, double a1[], double a2[] );
-double r8vec_diff_norm_squared ( int n, double a[], double b[] );
-void r8vec_print ( int n, double a[], char *title );
-void timestamp ( );
+//double r8vec_diff_norm_squared ( int n, double a[], double b[] );
+//void r8vec_copy ( int n, double a1[], double a2[] );
+//void r8vec_print ( int n, double a[], char *title );
+
 void jacobi(int m, int n, double *a, double *b, double *x, double *x_new);
 
 int main (int argc, char *argv[]) {
@@ -18,67 +16,41 @@ int main (int argc, char *argv[]) {
   if (argc > 1) n = atoi(argv[1]);
   if (argc > 2) it_num = atoi(argv[2]);
   printf("n = %d, niter = %d\n", n, it_num);
+
   // Set the matrix A.
   double *a = dif2 ( n, n );
-  // Determine the right hand side vector B.
+
+  // Generate the vector X as ground truth
   double *x_exact = ( double * ) malloc ( n * sizeof ( double ) );
   for (int i = 0; i < n; i++ ) {
     double t = ( double ) i / ( double ) ( n - 1 );
     x_exact[i] = exp ( t ) * ( t - 1 ) * t;
   }
-  double *b = r8mat_mv_new ( n, n, a, x_exact );
-  // Carry out the iteration.
+
+  // Determine the right hand side vector B.
+  double *b = ( double * ) malloc ( n * sizeof ( double ) );
+  for (int i = 0; i < n; i++ ) {
+    b[i] = 0.0;
+    for (int j = 0; j < n; j++ ) {
+      b[i] += a[i+j*n] * x_exact[j];
+    }
+  }
+
   double *x_old = ( double * ) malloc ( n * sizeof ( double ) );
   double *x = ( double * ) malloc ( n * sizeof ( double ) );
   #pragma omp parallel for
   for (int i = 0; i < n; i++ )
     x[i] = 0.0;
+
+  // Carry out the Jacobi iterations
   jacobi(it_num, n, a, b, x_old, x);
+
+  free ( a );
+  free ( b );
   free ( x );
   free ( x_old );
+  free ( x_exact );
   return 0;
-}
-
-void timestamp ( void ) {
-# define TIME_SIZE 40
-  static char time_buffer[TIME_SIZE];
-  const struct tm *tm;
-  time_t now;
-  now = time ( NULL );
-  tm = localtime ( &now );
-  strftime ( time_buffer, TIME_SIZE, "%d %B %Y %I:%M:%S %p", tm );
-  fprintf ( stdout, "%s\n", time_buffer );
-  return;
-# undef TIME_SIZE
-}
-
-void r8vec_print ( int n, double a[], char *title ) {
-  int i;
-  fprintf ( stdout, "\n" );
-  fprintf ( stdout, "%s\n", title );
-  fprintf ( stdout, "\n" );
-  for ( i = 0; i < n; i++ ) {
-    fprintf ( stdout, "  %8d: %14g\n", i, a[i] );
-  }
-  return;
-}
-
-/*
-  Purpose:
-    R8VEC_DIFF_NORM_SQUARED: square of the L2 norm of the difference of R8VEC's.
-  Discussion:
-    An R8VEC is a vector of R8's.
-    The square of the L2 norm of the difference of A and B is:
-      R8VEC_DIFF_NORM_SQUARED = sum ( 1 <= I <= N ) ( A[I] - B[I] )^2.
-*/
-double r8vec_diff_norm_squared ( int n, double a[], double b[] ) {
-  int i;
-  double value;
-  value = 0.0;
-  for ( i = 0; i < n; i++ ) {
-    value = value + ( a[i] - b[i] ) * ( a[i] - b[i] );
-  }
-  return value;
 }
 
 /*
@@ -209,16 +181,12 @@ double r8vec_diff_norm_squared ( int n, double a[], double b[] ) {
   Parameters:
 
     Input, int M, N, the order of the matrix.
-
     Output, double DIF2[M*N], the matrix.
 */
 double *dif2 ( int m, int n ) {
-  double *a;
-  int i;
-  int j;
-  a = ( double * ) malloc ( m * n * sizeof ( double ) );
-  for ( j = 0; j < n; j++ ) {
-    for ( i = 0; i < m; i++ ) {
+  double *a = ( double * ) malloc ( m * n * sizeof ( double ) );
+  for (int j = 0; j < n; j++ ) {
+    for (int i = 0; i < m; i++ ) {
       if ( j == i - 1 ) {
         a[i+j*m] = -1.0;
       } else if ( j == i ) {
@@ -233,50 +201,27 @@ double *dif2 ( int m, int n ) {
   return a;
 }
 
-/*
-  Purpose:
-    R8MAT_MV_NEW multiplies a matrix times a vector.
-  Discussion:
-    An R8MAT is a doubly dimensioned array of R8 values, stored as a vector
-    in column-major order.
-    For this routine, the result is returned as the function value.
-  Licensing:
-    This code is distributed under the GNU LGPL license.
-  Parameters:
-    Input, int M, N, the number of rows and columns of the matrix.
-    Input, double A[M,N], the M by N matrix.
-    Input, double X[N], the vector to be multiplied by A.
-    Output, double R8MAT_MV_NEW[M], the product A*X.
-*/
-double *r8mat_mv_new ( int m, int n, double a[], double x[] ) {
-  int i;
-  int j;
-  double *y;
-  y = ( double * ) malloc ( m * sizeof ( double ) );
-  for ( i = 0; i < m; i++ ) {
-    y[i] = 0.0;
-    for ( j = 0; j < n; j++ ) {
-      y[i] = y[i] + a[i+j*m] * x[j];
-    }
-  }
-  return y;
+void r8vec_copy ( int n, double a1[], double a2[] ) {
+  for (int i = 0; i < n; i++ )
+    a2[i] = a1[i];
 }
 
-/*
-  Purpose:
-    R8VEC_COPY copies an R8VEC.
-  Discussion:
-    An R8VEC is a vector of R8's.
-  Parameters:
-    Input, int N, the number of entries in the vectors.
-    Input, double A1[N], the vector to be copied.
-    Input, double A2[N], the copy of A1.
-*/
-void r8vec_copy ( int n, double a1[], double a2[] ) {
-  int i;
-  for ( i = 0; i < n; i++ ) {
-    a2[i] = a1[i];
+void r8vec_print ( int n, double a[], char *title ) {
+  fprintf ( stdout, "\n" );
+  fprintf ( stdout, "%s\n", title );
+  fprintf ( stdout, "\n" );
+  for (int i = 0; i < n; i++ ) {
+    fprintf ( stdout, "  %8d: %14g\n", i, a[i] );
   }
   return;
+}
+
+double r8vec_diff_norm_squared ( int n, double a[], double b[] ) {
+  double value;
+  value = 0.0;
+  for (int i = 0; i < n; i++ ) {
+    value = value + ( a[i] - b[i] ) * ( a[i] - b[i] );
+  }
+  return value;
 }
 
