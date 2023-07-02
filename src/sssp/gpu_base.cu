@@ -88,4 +88,3 @@ void SSSPSolver(Graph &g, vidType source, ValueT *h_dist, int delta) {
   return;
 }
 
-void BFSSolver(Graph &g, vidType source, vidType *dist) {}

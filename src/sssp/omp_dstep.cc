@@ -5,13 +5,14 @@
 
 //[1] Ulrich Meyer and Peter Sanders. "δ-stepping: a parallelizable shortest path
 //    algorithm." Journal of Algorithms, 49(1):114--152, 2003.
-void SSSPSolver(Graph &g, vidType source, int *dist, int delta) {
+void SSSPSolver(Graph &g, vidType source, int *dist) {
+  int delta = 4;
   int num_threads = 1;
-#pragma omp parallel
+  #pragma omp parallel
   {
     num_threads = omp_get_num_threads();
   }
-  printf("Launching OpenMP SSSP solver (%d threads) ...\n", num_threads);
+  printf("OpenMP SSSP solver (%d threads) ...\n", num_threads);
   Timer t;
   dist[source] = 0;
   VertexList frontier(g.E());
@@ -84,8 +85,7 @@ void SSSPSolver(Graph &g, vidType source, int *dist, int delta) {
   }
   t.Stop();
   //std::cout << "iterations = " << iter << "\n";
-  std::cout << "runtime [omp_base] = " << t.Seconds() << "sec\n";
+  std::cout << "runtime [omp_dstep] = " << t.Seconds() << "sec\n";
   return;
 }
 
-void BFSSolver(Graph &g, vidType source, vidType *dist) {}

@@ -16,4 +16,13 @@ bool compare_and_swap(T &x, U old_val, V new_val) {
   return __atomic_compare_exchange_n(&x, &old_val, new_val, false, std::memory_order_relaxed, std::memory_order_relaxed);
 }
 
+template <typename ET>
+inline bool atomicMin(ET &a, ET b) {
+  ET c;
+  bool r=0;
+  do {
+    c = a;
+  } while (c > b && !(r=compare_and_swap(a,c,b)));
+  return r;
+}
 #endif  // PLATFORM_ATOMICS_H_

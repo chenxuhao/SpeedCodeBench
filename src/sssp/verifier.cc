@@ -38,8 +38,9 @@ void SSSPVerifier(Graph &g, vidType source, int *dist_to_test) {
   bool all_ok = true;
   for (vidType n = 0; n < g.V(); n ++) {
     if (dist_to_test[n] != oracle_dist[n]) {
-      //std::cout << n << ": " << dist_to_test[n] << " != " << oracle_dist[n] << std::endl;
+      std::cout << n << ": " << dist_to_test[n] << " != " << oracle_dist[n] << std::endl;
       all_ok = false;
+      break;
     }
   }
   if(all_ok) printf("Correct\n");
