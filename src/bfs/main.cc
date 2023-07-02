@@ -2,8 +2,8 @@
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
 
-void BFSSolver(Graph &g, vidType source, vidType *dist);
-void BFSVerifier(Graph &g, vidType source, vidType *depth_to_test);
+void BFSSolver(Graph &g, vidType source, int *dist);
+void BFSVerifier(Graph &g, vidType source, int *depth_to_test);
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -13,16 +13,13 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   vidType source = 0;
-  if (argc > 2) source = atoi(argv[2]);
-  std::cout << "Source vertex: " << source << "\n";
   int reverse = 0;
+  if (argc > 2) source = atoi(argv[2]);
   if (argc > 3) reverse = atoi(argv[3]);
-  std::cout << "Using reverse graph\n";
-  std::cout << "Breadth-first Search\n";
   Graph g(argv[1], 0, 1, 0, 0, reverse);
   g.print_meta_data();
   assert(source >=0 && source < g.V());
-  std::vector<vidType> distances(g.V(), MYINFINITY);
+  std::vector<int> distances(g.V(), -1);
   BFSSolver(g, source, &distances[0]);
   BFSVerifier(g, source, &distances[0]);
   return 0;

@@ -3,7 +3,7 @@
 #include "graph.h"
 #include "bitmap.h"
 #include "sliding_queue.h"
-#include "platform_atomics.h"
+
 int64_t BUStep(Graph &g, int *depths, Bitmap &front, Bitmap &next);
 int64_t TDStep(Graph &g, int *depths, SlidingQueue<vidType> &queue);
 
@@ -28,7 +28,7 @@ void BitmapToQueue(vidType nv, const Bitmap &bm, SlidingQueue<vidType> &queue) {
   queue.slide_window();
 }
 
-void BFSSolver(Graph &g, vidType source, vidType *dist) {
+void BFSSolver(Graph &g, vidType source, int *depths) {
   if (!g.has_reverse_graph()) {
     std::cout << "This algorithm requires the reverse graph constructed for directed graph\n";
     std::cout << "Please set reverse to 1 in the command line\n";
@@ -43,7 +43,7 @@ void BFSSolver(Graph &g, vidType source, vidType *dist) {
   int alpha = 15, beta = 18;
   //std::vector<int> parent(nv);
   //parent[source] = source;
-  std::vector<int> depths(nv);
+  //std::vector<int> depths(nv);
   #pragma omp parallel for
   for (vidType v = 0; v < nv; v++) {
     int deg = int(g.get_degree(v));
@@ -94,8 +94,7 @@ void BFSSolver(Graph &g, vidType source, vidType *dist) {
   std::cout << "runtime [omp_direction] = " << t.Seconds() << " sec\n";
   #pragma omp parallel for
   for (vidType i = 0; i < nv; i ++) {
-    if (depths[i]>=0) dist[i] = depths[i]; 
-    else dist[i] = MYINFINITY;
+    if (depths[i] < -1) depths[i] = -1; 
   }
   return;
 }
@@ -148,4 +147,3 @@ int64_t TDStep(Graph &g, int *depths, SlidingQueue<vidType> &queue) {
   return scout_count;
 }
 
-void SSSPSolver(Graph &g, vidType source, elabel_t *dist, int delta) {}

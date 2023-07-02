@@ -3,9 +3,31 @@
 #include "graph.h"
 #include "bitmap.h"
 #include "sliding_queue.h"
-#include "platform_atomics.h"
 
-void bfs_step(Graph &g, vidType *depth, SlidingQueue<vidType> &queue) {
+void bfs_step(Graph &g, int *depth, SlidingQueue<vidType> &queue) {
+  int num_threads = 1;
+  #pragma omp parallel
+  {
+    num_threads = omp_get_num_threads();
+  }
+  LocalBuffer<vidType> lqueue(queue, num_threads);
+  #pragma omp parallel for
+  for (auto q_iter = queue.begin(); q_iter < queue.end(); q_iter++) {
+    auto tid = omp_get_thread_num();
+    auto src = *q_iter;
+    for (auto dst : g.N(src)) {
+      auto curr_val = depth[dst];
+      if (curr_val == -1) { // not visited
+        if (compare_and_swap(depth[dst], curr_val, depth[src] + 1)) {
+          lqueue.push_back(tid, dst);
+        }
+      }
+    }
+  }
+  lqueue.collect();
+}
+/*
+void bfs_step(Graph &g, int *depth, SlidingQueue<vidType> &queue) {
   #pragma omp parallel
   {
     QueueBuffer<vidType> lqueue(queue);
@@ -15,7 +37,7 @@ void bfs_step(Graph &g, vidType *depth, SlidingQueue<vidType> &queue) {
       for (auto dst : g.N(src)) {
         //int curr_val = parent[dst];
         auto curr_val = depth[dst];
-        if (curr_val == MYINFINITY) { // not visited
+        if (curr_val == -1) { // not visited
           //if (compare_and_swap(parent[dst], curr_val, src)) {
           if (compare_and_swap(depth[dst], curr_val, depth[src] + 1)) {
             lqueue.push_back(dst);
@@ -26,15 +48,14 @@ void bfs_step(Graph &g, vidType *depth, SlidingQueue<vidType> &queue) {
     lqueue.flush();
   }
 }
-
-void BFSSolver(Graph &g, vidType source, vidType* dist) {
+*/
+void BFSSolver(Graph &g, vidType source, int* depth) {
   int num_threads = 1;
   #pragma omp parallel
   {
     num_threads = omp_get_num_threads();
   }
   std::cout << "OpenMP BFS (" << num_threads << " threads)\n";
-  VertexList depth(g.V(), MYINFINITY);
   depth[source] = 0;
   int iter = 0;
   Timer t;
@@ -45,14 +66,11 @@ void BFSSolver(Graph &g, vidType source, vidType* dist) {
   while (!queue.empty()) {
     ++ iter;
     std::cout << "iteration=" << iter << ", frontier_size=" << queue.size() << "\n";
-    bfs_step(g, depth.data(), queue);
+    bfs_step(g, depth, queue);
     queue.slide_window();
   }
   t.Stop();
   std::cout << "iterations = " << iter << "\n";
   std::cout << "runtime [omp_base] = " << t.Seconds() << " sec\n";
-  #pragma omp parallel for
-  for (vidType i = 0; i < g.V(); i ++)
-    dist[i] = depth[i];
 }
 

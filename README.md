@@ -81,7 +81,7 @@ To control the number of threads, set the following environment variable:
 |   Merge     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Radix     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Jacobi    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-|   BFS       | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|   BFS       | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   FFT       | :heavy_check_mark: |   |  | :heavy_check_mark: |
 
 ### Applications & Algorithms

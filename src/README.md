@@ -35,7 +35,7 @@ Benchmark Suite for SpeedCode (Software Performance Engineering Education via Co
 |   Merge     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Radix     | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   Jacobi    | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-|   BFS       | :heavy_check_mark: |  :heavy_check_mark: |  | :heavy_check_mark: |
+|   BFS       | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 |   FFT       | :heavy_check_mark: |   |  | :heavy_check_mark: |
 
 ### Applications & Algorithms

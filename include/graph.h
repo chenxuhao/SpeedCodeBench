@@ -1,7 +1,34 @@
 #pragma once
 #include "VertexSet.h"
 
+typedef uint8_t vlabel_t;  // vertex label type
+typedef float   feat_t;    // vertex feature type
+
 using namespace std;
+
+template <typename T_>
+class RangeIter {
+  T_ x_;
+ public:
+  explicit RangeIter(T_ x) : x_(x) {}
+  bool operator!=(RangeIter const& other) const { return x_ != other.x_; }
+  T_ const& operator*() const { return x_; }
+  RangeIter& operator++() {
+    ++x_;
+    return *this;
+  }
+};
+
+template <typename T_>
+class Range{
+  T_ from_;
+  T_ to_;
+ public:
+  explicit Range(T_ to) : from_(0), to_(to) {}
+  Range(T_ from, T_ to) : from_(from), to_(to) {}
+  RangeIter<T_> begin() const { return RangeIter<T_>(from_); }
+  RangeIter<T_> end() const { return RangeIter<T_>(to_); }
+};
 
 template <bool map_vertices=false, bool map_edges=false, typename elabel_t=int32_t>
 class GraphT {
@@ -39,7 +66,6 @@ protected:
   VertexList labels_frequency_; // vertex count of each label
   VertexList sizes;             // neighbor count of each source vertex in the edgelist
   VertexList reverse_index_;    // indices to vertices grouped by vertex label
-  std::vector<nlf_map> nlf_;    // neighborhood label frequency
   std::vector<eidType> reverse_index_offsets_; // pointers to each vertex group
   std::vector<vidType> degrees;
 
@@ -89,11 +115,13 @@ public:
                        bool need_reverse = false);
   void deallocate();
   void load_row_pointers(std::string prefix);
+  void load_edge_labels(std::string prefix);
 
   // get methods for graph meta information
   vidType V() const { return n_vertices; }
   eidType E() const { return n_edges; }
   vidType V(int type) const { if (type == 0) return n_vert0; else return n_vert1; }
+  Range<vidType> Vertices() const { return Range<vidType>(V()); }
   eidType get_num_tasks() const { return nnz; }
   vidType num_vertices() const { return n_vertices; }
   eidType num_edges() const { return n_edges; }
@@ -122,6 +150,7 @@ public:
   vidType* out_colidx() { return edges; }            // get column indices array
   eidType* in_rowptr() { return reverse_vertices; }  // get incoming row pointers array
   vidType* in_colidx() { return reverse_edges; }     // get incoming column indices array
+  bool is_neighbor(vidType v, vidType u) const;      // is vertex u an out-going neighbor of vertex v
   bool is_connected(vidType v, vidType u) const;     // is vertex v and u connected by an edge
   bool is_connected(std::vector<vidType> sg) const;  // is the subgraph sg a connected one
   VertexSet out_neigh(vidType v, vidType off = 0) const; // get the outgoing neighbor list of vertex v
@@ -154,8 +183,6 @@ public:
   bool has_label() { return vlabels != NULL || elabels != NULL; }
   bool has_vlabel() { return vlabels != NULL; }
   bool has_elabel() { return elabels != NULL; }
-  int getCoreValue(const vidType vid) const { return core_table[vid]; }
-  int get2CoreSize() const { return core_length_; }
 
   // edgelist or COO
   vidType* get_src_ptr() { return &src_list[0]; }
@@ -165,46 +192,14 @@ public:
   std::vector<vidType> get_sizes() const { return sizes; }
   eidType init_edgelist(bool sym_break = false, bool ascend = false);
 
-  // build auxiliary structures for vertex label frequency
-  void BuildNLF();               // NLF: neighborhood label frequency
-  void BuildReverseIndex();      // reverse index
-  void computeLabelsFrequency();
-  void buildCoreTable();
-  void computeKCore();
   void sort_neighbors(); // sort the neighbor lists
   void sort_and_clean_neighbors(std::string outfile = ""); // sort the neighbor lists and remove selfloops and redundant edges
   void symmetrize(); // symmetrize a directed graph
   void write_to_file(std::string outfilename, bool v=1, bool e=1, bool vl=0, bool el=0);
-  bool is_freq_vertex(vidType v, int minsup);
-  vidType get_max_label_frequency() const { return max_label_frequency_; }
-  const nlf_map* getVertexNLF(const vidType id) const { return &nlf_[id]; }
-  vidType *get_label_freq_ptr() { return labels_frequency_.data(); }
-  vidType getLabelsFrequency(vlabel_t label) const { return labels_frequency_.at(label); }
-  const vidType* getVerticesByLabel(vlabel_t vl, vidType& count) const {
-    auto start = reverse_index_offsets_[vl];
-    count = reverse_index_offsets_[vl+1] - start;
-    return &reverse_index_[start];
-  }
 
   void compute_max_degree();
   void orientation(std::string outfile = ""); // edge orientation: convert the graph from undirected to directed
   void degree_histogram(int bin_width = 100, std::string outfile = ""); // compute the degree distribution
-  vidType intersect_num(vidType v, vidType u);
-  vidType intersect_num(vidType v, vidType u, vlabel_t label);
-  vidType intersect_num(VertexSet& vs, vidType u, vlabel_t label);
-  vidType intersect_set(vidType v, vidType u, VertexSet& result);
-  vidType intersect_set(vidType v, vidType u, vlabel_t label, VertexSet& result);
-  vidType intersect_set(VertexSet& vs, vidType u, vlabel_t label, VertexSet& result);
-  vidType difference_num(vidType v, vidType u);
-  vidType difference_num(vidType v, vidType u, vlabel_t label);
-  vidType difference_num(VertexSet& vs, vidType u, vlabel_t label);
-  vidType difference_set(vidType v, vidType u, VertexSet& result);
-  vidType difference_set(vidType v, vidType u, vlabel_t label, VertexSet& result);
-  vidType difference_set(VertexSet& vs, vidType u, vlabel_t label, VertexSet& result);
-  vidType difference_num_edgeinduced(vidType v, vidType u, vlabel_t label);
-  vidType difference_num_edgeinduced(VertexSet& vs, vidType u, vlabel_t label);
-  vidType difference_set_edgeinduced(vidType v, vidType u, vlabel_t label, VertexSet& result);
-  vidType difference_set_edgeinduced(VertexSet& vs, vidType u, vlabel_t label, VertexSet& result);
 
   // print graph information
   void print_meta_data() const;

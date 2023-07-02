@@ -1,4 +1,4 @@
-// Copyright 2020, MIT
+// Copyright 2023, MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
 #include <cilk/cilk.h>
@@ -7,7 +7,8 @@
 void CCSolver(Graph &g, comp_t *comp) {
   int num_threads = __cilkrts_get_nworkers();
   std::cout << "Cilk Connected Components (" << num_threads << " threads)\n";
-  cilk_for (vidType n = 0; n < g.V(); n ++) comp[n] = n;
+  const vidType bound = g.V();
+  cilk_for (vidType n = 0; n < bound; n ++) comp[n] = n;
   bool change = true;
   int iter = 0;
 
@@ -17,7 +18,8 @@ void CCSolver(Graph &g, comp_t *comp) {
     change = false;
     iter++;
     //printf("Executing iteration %d ...\n", iter);
-    cilk_for (vidType src = 0; src < g.V(); src ++) {
+    #pragma cilk grainsize 64
+    cilk_for (vidType src = 0; src < bound; src ++) {
       auto comp_src = comp[src];
       for (auto dst : g.N(src)) {
         auto comp_dst = comp[dst];
@@ -26,12 +28,13 @@ void CCSolver(Graph &g, comp_t *comp) {
         int high_comp = comp_src > comp_dst ? comp_src : comp_dst;
         int low_comp = comp_src + (comp_dst - high_comp);
         if (high_comp == comp[high_comp]) {
-          change = true;
+          if (!change) change = true;
           comp[high_comp] = low_comp;
         }
       }
     }
-    cilk_for (vidType n = 0; n < g.V(); n++) {
+    #pragma cilk grainsize 64
+    cilk_for (vidType n = 0; n < bound; n++) {
       while (comp[n] != comp[comp[n]]) {
         comp[n] = comp[comp[n]];
       }

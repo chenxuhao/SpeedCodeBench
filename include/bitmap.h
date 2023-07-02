@@ -4,10 +4,12 @@
 #ifndef BITMAP_H_
 #define BITMAP_H_
 
-//#include <algorithm>
-#include <cstddef>
+#include <algorithm>
+#include <cinttypes>
+
 #include "platform_atomics.h"
-typedef unsigned long uint64_t;
+
+
 /*
 GAP Benchmark Suite
 Class:  Bitmap
@@ -22,11 +24,7 @@ class Bitmap {
  public:
   explicit Bitmap(size_t size) {
     uint64_t num_words = (size + kBitsPerWord - 1) / kBitsPerWord;
-#ifdef SIM
-    start_ = (uint64_t *)aligned_alloc(PAGE_SIZE, num_words*sizeof(uint64_t));
-#else
     start_ = new uint64_t[num_words];
-#endif
     end_ = start_ + num_words;
   }
 
@@ -35,9 +33,7 @@ class Bitmap {
   }
 
   void reset() {
-    //std::fill(start_, end_, 0);
-	uint64_t *ptr = start_;
-	for(; ptr != end_; ++ ptr) *ptr = 0;
+    std::fill(start_, end_, 0);
   }
 
   void set_bit(size_t pos) {
@@ -57,20 +53,14 @@ class Bitmap {
   }
 
   void swap(Bitmap &other) {
-    //std::swap(start_, other.start_);
-    //std::swap(end_, other.end_);
-	uint64_t *temp = start_;
-	start_ = other.start_;
-	other.start_ = temp;
-	temp = end_;
-	end_ = other.end_;
-	other.end_ = temp;
+    std::swap(start_, other.start_);
+    std::swap(end_, other.end_);
   }
 
+ private:
   uint64_t *start_;
   uint64_t *end_;
 
- private:
   static const uint64_t kBitsPerWord = 64;
   static uint64_t word_offset(size_t n) { return n / kBitsPerWord; }
   static uint64_t bit_offset(size_t n) { return n & (kBitsPerWord - 1); }

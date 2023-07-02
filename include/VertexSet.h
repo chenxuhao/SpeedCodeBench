@@ -22,7 +22,7 @@ class VertexSet {
 private: // memory managed regions for per-thread intermediates
   vidType *ptr;
   vidType set_size, vid;
-  const bool pooled;
+  bool pooled;
   static thread_local std::vector<vidType*> buffers_exist, buffers_avail;
 
 public:

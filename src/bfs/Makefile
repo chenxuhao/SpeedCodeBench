@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS += verifier.o main.o
-all: bfs_cpu_base bfs_omp_base 
+all: bfs_cpu_base bfs_omp_base bfs_omp_direction bfs_cilk_base bfs_cilk_direction
 
 bfs_cpu_base: cpu_base.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@
@@ -20,6 +20,10 @@ bfs_omp_direction: omp_direction.o $(OBJS)
 
 bfs_cilk_base: $(OBJS) cilk_base.o 
 	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	mv $@ $(BIN)
+
+bfs_cilk_direction: $(OBJS) cilk_direction.o 
+	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_direction.o -o $@
 	mv $@ $(BIN)
 
 # data-driven BFS baseline

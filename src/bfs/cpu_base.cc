@@ -2,7 +2,7 @@
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
 
-void BFSSolver(Graph &g, vidType source, vidType* depth) {
+void BFSSolver(Graph &g, vidType source, int* depth) {
   std::cout << "Queue (FIFO) based serial BFS\n";
   std::vector<vidType> to_visit;
   Timer t;
@@ -13,7 +13,7 @@ void BFSSolver(Graph &g, vidType source, vidType* depth) {
   for (std::vector<vidType>::iterator it = to_visit.begin(); it != to_visit.end(); it++) {
     auto src = *it;
     for (auto dst : g.N(src)) {
-      if (depth[dst] == MYINFINITY) {
+      if (depth[dst] == -1) {
         depth[dst] = depth[src] + 1;
         to_visit.push_back(dst);
       }
