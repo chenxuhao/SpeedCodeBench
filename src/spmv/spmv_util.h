@@ -4,13 +4,22 @@
 #include <algorithm>
 
 template <typename T = float>
-inline size_t bytes_per_spmv(int m, int nnz) {
+inline size_t bytes_per_spmv(vidType m, eidType nnz) {
   size_t bytes = 0;
   bytes += 2*sizeof(T) * m;    // row pointer
   bytes += 1*sizeof(T) * nnz;  // column index
   bytes += 2*sizeof(T) * nnz;  // A[i,j] and x[j]
   bytes += 2*sizeof(T) * m;    // y[i] = y[i] + ...
   return bytes;
+}
+
+inline void print_throughput(int64_t m, int64_t nnz, double time) {
+  assert(time > 0.);
+  int64_t bytes = 12*nnz + 20*m;
+  //printf("Bytes: %.2f \n", bytes);
+  double GFLOPs = 2*double(nnz) / time / 10e9;
+  double GBYTEs = double(bytes) / time / 10e9;
+  std::cout << "Throughput: compute " << GFLOPs << " GFLOP/s, memory " << GBYTEs << " GB/s\n";
 }
 
 template <typename T = float>

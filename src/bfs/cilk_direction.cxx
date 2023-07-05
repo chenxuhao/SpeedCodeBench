@@ -23,11 +23,9 @@ void BFSSolver(Graph &g, vidType source, outType *depths) {
 
   Timer t;
   t.Start();
-  for (vidType v = 0; v < nv; v++) {
+  cilk_for (vidType v = 0; v < nv; v++) {
     int deg = int(g.get_degree(v));
-    //assert(deg >= 0);
     depths[v] = (deg != 0) ? -deg : -1;
-    //assert(depths[v] < 0);
   }
   depths[source] = 0;
   SlidingQueue<vidType> queue(nv);
@@ -41,7 +39,6 @@ void BFSSolver(Graph &g, vidType source, outType *depths) {
   int64_t scout_count = g.get_degree(source);
   int iter = 0;
   while (!queue.empty()) {
-    //if (0) {
     if (scout_count > edges_to_check / alpha) {
       int64_t awake_count, old_awake_count;
       QueueToBitmap(queue, front);
@@ -76,6 +73,7 @@ int64_t BUStep(Graph &g, outType* depths, Bitmap &front, Bitmap &next) {
   int64_t awake_count = 0;
   cilk::opadd_reducer<int64_t> counter = 0;
   next.reset();
+  #pragma cilk grainsize 1024
   cilk_for (vidType u = 0; u < g.V(); u ++) {
     if (depths[u] < 0) { // not visited
       for (auto v : g.in_neigh(u)) {
@@ -83,7 +81,7 @@ int64_t BUStep(Graph &g, outType* depths, Bitmap &front, Bitmap &next) {
           assert(depths[v]+1 > 0);
           depths[u] = depths[v] + 1;
           counter ++;
-          next.set_bit_atomic(u);
+          next.set_bit(u);
           break;
         }
       }
@@ -99,6 +97,7 @@ int64_t TDStep(Graph &g, outType *depths, SlidingQueue<vidType> &queue) {
   auto nthreads = __cilkrts_get_nworkers();
   LocalBuffer<vidType> lqueues(queue, nthreads);
   vidType* ptr = queue.begin();
+  //#pragma cilk grainsize 64
   cilk_for (int i = 0; i < queue.size(); i++) {
     auto tid = __cilkrts_get_worker_number();
     auto u = ptr[i];
@@ -107,8 +106,6 @@ int64_t TDStep(Graph &g, outType *depths, SlidingQueue<vidType> &queue) {
       int curr_val = depths[v];
       if (curr_val < 0) {
         if (compare_and_swap(depths[v], curr_val, depths[u] + 1)) {
-        //if (std::atomic_compare_exchange_strong(&depths[v], &curr_val, depths[u] + 1)) {
-        //if (__atomic_compare_exchange_n(&depths[v], &curr_val, depths[u] + 1, false, std::memory_order_seq_cst, std::memory_order_seq_cst)) {
           lqueues.push_back(tid, v);
           counter += -curr_val;
         }

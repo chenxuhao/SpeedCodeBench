@@ -22,6 +22,7 @@ void SSSPSolver(Graph &g, vidType source, int *distances) {
     LocalBuffer<vidType> lqueues(queue, nthreads);
     vidType* ptr = queue.begin();
     //std::cout << "iteration=" << iter << ", frontier_size=" << queue.size() << "\n";
+    #pragma cilk grainsize 64
     cilk_for (int i = 0; i < queue.size(); i++) {
       auto tid = __cilkrts_get_worker_number();
       auto v = ptr[i];
@@ -42,7 +43,7 @@ void SSSPSolver(Graph &g, vidType source, int *distances) {
     queue.slide_window();
   }
   t.Stop();
-  //std::cout << "iterations = " << iter << "\n";
+  std::cout << "iterations = " << iter << "\n";
   std::cout << "runtime [cilk_base] = " << t.Seconds() << " sec\n";
 }
 

@@ -12,7 +12,7 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
   {
     num_threads = omp_get_num_threads();
   }
-  printf("OpenMP SSSP solver (%d threads) ...\n", num_threads);
+  printf("OpenMP SSSP solver (%d threads)\n", num_threads);
   Timer t;
   dist[source] = 0;
   VertexList frontier(g.E());
@@ -82,9 +82,10 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
       iter++;
       #pragma omp barrier
     }
+    #pragma omp single
+    std::cout << "iterations = " << iter << "\n";
   }
   t.Stop();
-  //std::cout << "iterations = " << iter << "\n";
   std::cout << "runtime [omp_dstep] = " << t.Seconds() << "sec\n";
   return;
 }

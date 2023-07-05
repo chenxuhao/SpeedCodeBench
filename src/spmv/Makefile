@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS += main.o
-all: spmv_cpu_base spmv_omp_base
+all: spmv_cpu_base spmv_omp_base spmv_cilk_base
 
 spmv_cpu_base: $(OBJS) cpu_base.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@
@@ -8,6 +8,10 @@ spmv_cpu_base: $(OBJS) cpu_base.o
 
 spmv_omp_base: $(OBJS) omp_base.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lgomp
+	mv $@ $(BIN)
+
+spmv_omp_unroll: $(OBJS) omp_unroll.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_unroll.o -o $@ -lgomp
 	mv $@ $(BIN)
 
 spmv_gpu_base: gpu_base.o $(OBJS)

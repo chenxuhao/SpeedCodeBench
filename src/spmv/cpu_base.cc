@@ -26,12 +26,7 @@ void SpmvSolver(GraphF &g, const T *x, T *y) {
   }
   t.Stop();
   double time = t.Seconds();
-  float gbyte = bytes_per_spmv(m, nnz) / 10e9;
-  assert(time > 0.);
-  float GFLOPs = 2*nnz / time / 10e9;
-  float GBYTEs = gbyte / time;
   std::cout << "runtime [serial] = " << t.Seconds() << " sec\n";
-  printf("Throughput: compute %5.2f GFLOP/s, memory %5.1f GB/s\n", GFLOPs, GBYTEs);
-  return;
+  print_throughput(m, nnz, time);
 }
 

@@ -19,6 +19,7 @@ void SpmvSolver(GraphF &g, const T *x, T *y) {
  
   Timer t;
   t.Start();
+  #pragma cilk grainsize 64
   cilk_for (vidType i = 0; i < m; i++) {
     auto row_begin = Ap[i];
     auto row_end   = Ap[i+1];
@@ -32,12 +33,7 @@ void SpmvSolver(GraphF &g, const T *x, T *y) {
   t.Stop();
 
   double time = t.Seconds();
-  float gbyte = bytes_per_spmv(m, nnz) / 10e9;
-  assert(time > 0.);
-  float GFLOPs = 2*nnz / time / 10e9;
-  float GBYTEs = gbyte / time;
   std::cout << "runtime [cilk_base] = " << t.Seconds() << " sec\n";
-  printf("Throughput: compute %5.2f GFLOP/s, memory %5.1f GB/s\n", GFLOPs, GBYTEs);
-  return;
+  print_throughput(m, nnz, time);
 }
 

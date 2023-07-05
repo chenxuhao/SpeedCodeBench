@@ -9,7 +9,7 @@ void SSSPSolver(Graph &g, vidType source, int *distances) {
   {
     num_threads = omp_get_num_threads();
   }
-  printf("OpenMP SSSP solver (%d threads) ...\n", num_threads);
+  printf("OpenMP SSSP solver (%d threads)\n", num_threads);
   distances[source] = 0;
 
   Timer t;
