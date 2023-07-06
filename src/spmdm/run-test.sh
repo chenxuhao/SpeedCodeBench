@@ -1,9 +1,9 @@
 #DATAPATH=../../inputs
 DATAPATH=~/OpenCilk/speedcode-problems/sssp/problem_data/sssp
 DATASET=web-Google
-DATASET=soc-LiveJournal1
 DATASET=twitter40-adj-ordered
 DATASET=citeseer
+DATASET=soc-LiveJournal1
 BENCH=spmdm
 
 echo "../../bin/$BENCH\_cpu_base $DATAPATH/$DATASET/graph"

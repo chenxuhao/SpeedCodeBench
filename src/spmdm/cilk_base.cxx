@@ -24,6 +24,7 @@ void SpmDm(char transa, char transb,
   printf("Cilk SpMDM (%d threads)\n", num_threads);
   ctimer_t t;
   ctimer_start(&t);
+  //#pragma cilk grainsize 1024
   cilk_for (vidType i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
       T sum = 0;

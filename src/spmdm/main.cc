@@ -16,8 +16,15 @@ void SpmDm(char transa, char transb,
            const vidType *A_colidx, const T *A_values, 
            int lda, const T *B, int ldb, 
            T beta, T *C, int ldc);
-}
 
+void SpmDmVerifier(char transa, char transb, 
+                   vidType m, eidType nnz, int n,
+                   T alpha, const eidType *Ap,
+                   const vidType *Aj, const T *Ax, 
+                   int lda, const T *BT, int ldb, 
+                   T beta, T *C_test, int ldc);
+}
+ 
 int main(int argc, char *argv[]) {
   printf("Sparse Matrix Dense Matrix Multiplication\n");
   if (argc < 2) {
@@ -55,6 +62,8 @@ int main(int argc, char *argv[]) {
   // C: m x matBcol
   SpmDm('N', 'T', m, nnz, matBcol, 1.0f, Ap, Aj, Ax, m,
         &matBT.front(), matBcol, 0.0f, &matC.front(), m);
+  SpmDmVerifier('N', 'T', m, nnz, matBcol, 1.0f, Ap, Aj, Ax, m,
+                &matBT.front(), matBcol, 0.0f, &matC.front(), m);
   return 0;
 }
 

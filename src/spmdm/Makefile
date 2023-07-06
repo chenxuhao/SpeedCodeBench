@@ -1,5 +1,5 @@
 include ../common.mk
-OBJS += main.o
+OBJS += main.o verifier.o
 all: spmdm_cpu_base spmdm_omp_base spmdm_cilk_base
 
 spmdm_cpu_base: $(OBJS) cpu_base.o
