@@ -1,5 +1,5 @@
 #pragma once
-#include "common.h"
+
 #include <cub/cub.cuh>
 #ifdef USE_DEVICE_SORT
 #include <cub/device/dispatch/dispatch_segmented_sort.cuh>
@@ -94,14 +94,11 @@ inline __device__ bool cta_sort(OffsetT num_items, cub::detail::device_double_bu
   return is_num_passes_odd;
 }
 
-template <typename KeyT = vidType, typename ValueT = cub::NullType, typename OffsetT = vidType>
-//inline __device__ vidType* cta_sort(OffsetT num_items, KeyT *src, KeyT *buffer, KeyT **result) {
-inline __device__ vidType* cta_sort(OffsetT num_items, KeyT *src, KeyT *buffer) {
-  __shared__ vidType *result;
+template <typename KeyT, typename ValueT = cub::NullType, typename OffsetT>
+inline __device__ KeyT* cta_sort(OffsetT num_items, KeyT *src, KeyT *buffer) {
+  __shared__ KeyT *result;
   cub::detail::device_double_buffer<KeyT> keys(src, buffer);
   bool is_num_passes_odd = cta_sort<KeyT,ValueT,OffsetT>(num_items, keys);
-  //*result = keys.current();
-  //return is_num_passes_odd;
   result = keys.current();
   __syncthreads();
   return result;

@@ -1,8 +1,26 @@
 #pragma once
-#include "defines.h"
-#include "common.h"
-#include "timer.h"
+
+#include <stdio.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/mman.h>
+
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <cassert>
+#include <iostream>
+#include <iterator>
+#include <algorithm>
+
 #include "custom_alloc.h"
+
+typedef uint32_t vidType;  // vertex ID type
+typedef int64_t eidType;   // edge ID type
+typedef std::vector<vidType> VertexList; // vertex ID list
+
 constexpr vidType VID_MIN = 0;
 constexpr vidType VID_MAX = std::numeric_limits<vidType>::max();
 

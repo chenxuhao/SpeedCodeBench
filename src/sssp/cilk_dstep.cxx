@@ -1,5 +1,6 @@
 // Copyright 2023 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
+#include "sssp.h"
 #include "graph.h"
 #include "platform_atomics.h"
 #include <cilk/cilk.h>

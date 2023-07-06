@@ -2,6 +2,7 @@
 #include <limits>
 #include <cmath>
 #include <algorithm>
+#include "timer.h"
 
 template <typename T = float>
 inline size_t bytes_per_spmv(vidType m, eidType nnz) {

@@ -1,8 +1,6 @@
 // Copyright 2020 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
-
-typedef int outType;
+#include "sssp.h"
 
 void SSSPSolver(Graph &g, vidType source, outType *dist);
 void SSSPVerifier(Graph &g, vidType source, outType *dist);

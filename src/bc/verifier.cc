@@ -1,6 +1,8 @@
 // Copyright 2020 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
+#include <math.h>
+#include <vector>
 /*
 static ValueT DEFAULT_RELATIVE_TOL = 1e-4;
 static ValueT DEFAULT_ABSOLUTE_TOL = 1e-4;
@@ -64,7 +66,7 @@ bool check_equal(int m, const T * A, const T * B) {
 void BCVerifier(Graph &g, int source, int num_iters, score_t *scores_to_test) {
   printf("Verifying...\n");
   auto m = g.V();
-  vector<score_t> scores(m, 0);
+  std::vector<score_t> scores(m, 0);
   //std::cout << setiosflags(ios::fixed);
   int max_depth = 0;
 
@@ -72,15 +74,15 @@ void BCVerifier(Graph &g, int source, int num_iters, score_t *scores_to_test) {
   t.Start();
   for (int iter=0; iter < num_iters; iter++) {
     // BFS phase, only records depth & path_counts
-    vector<int> depths(m, -1);
+    std::vector<int> depths(m, -1);
     depths[source] = 0;
-    vector<int> path_counts(m, 0);
+    std::vector<int> path_counts(m, 0);
     path_counts[source] = 1;
-    vector<IndexT> to_visit;
+    std::vector<vidType> to_visit;
     to_visit.reserve(m);
     to_visit.push_back(source);
-    for (vector<IndexT>::iterator it = to_visit.begin(); it != to_visit.end(); it++) {
-      IndexT src = *it;
+    for (std::vector<vidType>::iterator it = to_visit.begin(); it != to_visit.end(); it++) {
+      vidType src = *it;
       for (auto dst : g.N(src)) {
         if (depths[dst] == -1) {
           depths[dst] = depths[src] + 1;
@@ -91,7 +93,7 @@ void BCVerifier(Graph &g, int source, int num_iters, score_t *scores_to_test) {
       }
     }
     // Get lists of vertices at each depth
-    vector<vector<int> > verts_at_depth;
+    std::vector<std::vector<int> > verts_at_depth;
     for (vidType n = 0; n < m; n ++) {
       if (depths[n] != -1) {
         if (depths[n] >= static_cast<int>(verts_at_depth.size()))
@@ -101,7 +103,7 @@ void BCVerifier(Graph &g, int source, int num_iters, score_t *scores_to_test) {
     }
     max_depth = static_cast<int>(verts_at_depth.size());
     // Going from farthest to clostest, compute "depencies" (deltas)
-    vector<score_t> deltas(m, 0);
+    std::vector<score_t> deltas(m, 0);
     for (int depth = max_depth - 1; depth >= 0; depth --) {
       for (unsigned id = 0; id < verts_at_depth[depth].size(); id ++) {
         int src = verts_at_depth[depth][id];

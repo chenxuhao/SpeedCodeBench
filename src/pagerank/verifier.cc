@@ -2,6 +2,8 @@
 // Authors: Xuhao Chen <cxh@mit.edu>
 // Verifies by asserting a single serial iteration in push direction has
 //   error < target_error
+#include <math.h>
+#include "pr.h"
 #include "graph.h"
 
 void PRVerifier(Graph &g, score_t *scores_to_test, double target_error) {

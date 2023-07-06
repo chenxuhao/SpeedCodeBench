@@ -1,6 +1,7 @@
 // Copyright 2022
 // Author: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "cf.h"
+#include <omp.h>
 
 inline score_t rmse_par(int nv, int ne, score_t *errors) {
   score_t total_error = 0.0;

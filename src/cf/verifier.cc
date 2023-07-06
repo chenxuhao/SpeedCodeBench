@@ -1,6 +1,6 @@
 // Copyright 2022 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "cf.h"
 
 // calculate RMSE
 inline score_t rmse(vidType nv, eidType ne, score_t *errors) {

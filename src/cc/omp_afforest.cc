@@ -3,6 +3,7 @@
 #include "graph.h"
 #include "platform_atomics.h"
 #include <random>
+#include <omp.h>
 
 comp_t SampleFrequentElement(vidType m, comp_t *comp, int64_t num_samples = 1024);
 void Link(vidType u, vidType v, comp_t *comp);

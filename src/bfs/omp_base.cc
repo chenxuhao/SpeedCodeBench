@@ -1,5 +1,6 @@
 // Copyright 2020 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
+#include <omp.h>
 #include "graph.h"
 #include "bitmap.h"
 #include "sliding_queue.h"

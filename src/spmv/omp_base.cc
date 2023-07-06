@@ -3,6 +3,8 @@
 #include "graph.h"
 #include "timer.h"
 #include "spmv_util.h"
+#include <omp.h>
+
 typedef float T;
 
 void SpmvSolver(GraphF &g, const T *x, T *y) {

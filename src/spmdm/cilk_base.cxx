@@ -6,8 +6,8 @@
 #include <cilk/cilk_api.h>
 
 typedef float T;
-typedef int64_t vidType;
-typedef uint32_t eidType;
+typedef uint32_t vidType;
+typedef int64_t eidType;
 
 // A: m x m 
 // B: m x n
@@ -22,16 +22,14 @@ void SpmDm(char transa, char transb,
            T beta, T *C, int ldc) {
   int num_threads = __cilkrts_get_nworkers();
   printf("Cilk SpMDM (%d threads)\n", num_threads);
- 
   ctimer_t t;
   ctimer_start(&t);
-  for (vidType i = 0; i < m; i++) {
+  cilk_for (vidType i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
-      int sum = 0;
-      for (int off = Ap[i]; off < Ap[i+1]; off++) {
-        vidType k = Aj[off];
-        T value = Ax[off]; // A[i][k]
-        //sum += value * B[k*n + j]; // A[i][k] * B[k][j]
+      T sum = 0;
+      for (auto off = Ap[i]; off < Ap[i+1]; off++) {
+        auto k = Aj[off];
+        auto value = Ax[off]; // A[i][k]
         sum += value * BT[j*m + k]; // A[i][k] * BT[j][k]
       }
       C[i*n + j] = sum; // C[i][j]
@@ -39,10 +37,6 @@ void SpmDm(char transa, char transb,
   }
   ctimer_stop(&t);
   ctimer_measure(&t);
-  ctimer_print(t, "SpmDm");
-  //float gbyte = bytes_per_spmdm(m, nnz) / 10e9;
-  //float GFLOPs = 2*nnz / time / 10e9;
-  //float GBYTEs = gbyte / time;
-  //printf("Throughput: compute %5.2f GFLOP/s, memory %5.1f GB/s\n", GFLOPs, GBYTEs);
+  ctimer_print(t, "SpMDM-cilk_base");
 }
 

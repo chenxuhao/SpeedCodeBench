@@ -1,5 +1,6 @@
 #pragma once
-#include "common.h"
+
+typedef uint32_t vidType;   // vertex ID type
 
 template <typename T = vidType>
 __device__ T linear_search(T key, const T* bin, T len) {

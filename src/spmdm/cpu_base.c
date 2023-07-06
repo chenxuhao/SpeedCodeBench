@@ -2,9 +2,11 @@
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "ctimer.h"
 #include <stdint.h>
+#include <assert.h>
+
 typedef float T;
-typedef int64_t vidType;
-typedef uint32_t eidType;
+typedef uint32_t vidType;
+typedef int64_t eidType;
 
 // A: m x m 
 // B: m x n
@@ -16,16 +18,16 @@ void SpmDm(char transa, char transb,
            const vidType *Aj, const T *Ax, 
            int lda, const T *BT, int ldb, 
            T beta, T *C, int ldc) {
-  printf("Serial SpMDM solver\n");
   ctimer_t t;
   ctimer_start(&t);
   for (vidType i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
-      int sum = 0;
-      for (int off = Ap[i]; off < Ap[i+1]; off++) {
+      T sum = 0;
+      for (eidType off = Ap[i]; off < Ap[i+1]; off++) {
         vidType k = Aj[off];
+        if (k >= m) printf("k=%u, off=%ld, i=%u, j=%d\n", k, off, i, j);
+        assert(k < m);
         T value = Ax[off]; // A[i][k]
-        //sum += value * B[k*n + j]; // A[i][k] * B[k][j]
         sum += value * BT[j*m + k]; // A[i][k] * BT[j][k]
       }
       C[i*n + j] = sum; // C[i][j]
@@ -33,10 +35,6 @@ void SpmDm(char transa, char transb,
   }
   ctimer_stop(&t);
   ctimer_measure(&t);
-  ctimer_print(t, "SpmDm");
-  //float gbyte = bytes_per_spmdm(m, nnz) / 10e9;
-  //float GFLOPs = 2*nnz / time / 10e9;
-  //float GBYTEs = gbyte / time;
-  //printf("Throughput: compute %5.2f GFLOP/s, memory %5.1f GB/s\n", GFLOPs, GBYTEs);
+  ctimer_print(t, "SpMDM-serial");
 }
 

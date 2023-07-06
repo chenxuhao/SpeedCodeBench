@@ -1,8 +1,11 @@
 // Copyright 2022 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph.h"
+#include "timer.h"
+#include <map>
 #include <stack>
 #include <random>
+#include <unordered_map>
 
 comp_t SampleFrequentElement(vidType m, comp_t *comp, int64_t num_samples) {
   // Sample elements from 'comp'

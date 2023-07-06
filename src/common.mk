@@ -9,9 +9,9 @@ MPICXX := mpicxx
 CLANG := $(CILK_HOME)/bin/clang
 CLANGXX := $(CILK_HOME)/bin/clang++
 
-CFLAGS    := -O3 -Wall -fopenmp
+CFLAGS    := -Wall -fopenmp
 CXXFLAGS  := -Wall -fopenmp -std=c++17
-ICPCFLAGS := -O3 -Wall -qopenmp
+ICPCFLAGS := -Wall -qopenmp
 
 GENCODE_SM30 := -gencode arch=compute_30,code=sm_30
 GENCODE_SM35 := -gencode arch=compute_35,code=sm_35
@@ -32,7 +32,7 @@ NVFLAGS += -DUSE_GPU
 NVLIBS = -L$(CUDA_HOME)/lib64 -L$(CUDA_HOME)/lib64/stubs -lcuda -lcudart
 MPI_LIBS = -L$(MPI_HOME)/lib -lmpi
 #CILKFLAGS = -O3 -fopenmp=libiomp5 -fopencilk
-CILKFLAGS = -O3 -fopencilk -std=c++17
+CILKFLAGS = -fopencilk -std=c++17
 CILK_INC = -I$(GCC_HOME)/include -I$(CILK_CLANG)/include
 CUINC = -I$(CUDA_HOME)/include
 INCLUDES = -I../../include
@@ -40,10 +40,16 @@ VPATH += ../common
 OBJS = VertexSet.o graph.o
 
 ifeq ($(DEBUG), 1)
+	CFLAGS += -g -O0
 	CXXFLAGS += -g -O0
+	ICPCFLAGS += -g -O0
+	CILKFLAGS += -g -O0
 	NVFLAGS += -G
 else
+	CFLAGS += -O3
 	CXXFLAGS += -O3
+	ICPCFLAGS += -O3
+	CILKFLAGS += -O3
 	NVFLAGS += -O3 -w
 endif
 

@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS += main.o
-all: tc_omp_base 
+all: tc_omp_base tc_cilk_base
 
 tc_omp_base: $(OBJS) omp_base.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lgomp

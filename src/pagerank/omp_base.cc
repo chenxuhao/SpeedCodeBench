@@ -1,6 +1,7 @@
 // Copyright 2020 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include <omp.h>
+#include "pr.h"
 
 void PRSolver(Graph &g, score_t *scores) {
   if (!g.has_reverse_graph()) {

@@ -1,6 +1,6 @@
 // Copyright 2022 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "cf.h"
 #include <random>
 
 // CF parameters

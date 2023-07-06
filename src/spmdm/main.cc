@@ -17,8 +17,9 @@ void SpmDm(char transa, char transb,
            int lda, const T *B, int ldb, 
            T beta, T *C, int ldc);
 }
+
 int main(int argc, char *argv[]) {
-  printf("Sparse Matrix-Vector Multiplication\n");
+  printf("Sparse Matrix Dense Matrix Multiplication\n");
   if (argc < 2) {
     std::cout << "Usage: " << argv[0] << " <graph-prefix>\n";
     std::cout << "Example: " << argv[0] << " inputs/citeseer\n";
@@ -26,8 +27,8 @@ int main(int argc, char *argv[]) {
   }
   GraphF g(argv[1], 0, 0, 0, 1, 1, 0, 0);
   g.print_meta_data();
-  int m = g.V();
-  int nnz = g.E();
+  vidType m = g.V();
+  eidType nnz = g.E();
 
   int matBrow, matBcol;
   std::vector<T> matBT;
@@ -47,6 +48,7 @@ int main(int argc, char *argv[]) {
   auto Ap = g.in_rowptr();
   auto Aj = g.in_colidx();
   auto Ax = g.get_elabel_ptr();
+  for (eidType i = 0; i < g.E(); i++) assert(Aj[i] < m);
   std::vector<T> matC(m*matBcol);
   // A: m x m
   // B: m x matBcol

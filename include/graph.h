@@ -1,8 +1,11 @@
 #pragma once
 #include "VertexSet.h"
+#include "timer.h"
 
 typedef uint8_t vlabel_t;  // vertex label type
 typedef float   feat_t;    // vertex feature type
+typedef float   score_t;   // vertex label for PageRank and BC
+typedef int     comp_t;    // connected components
 
 using namespace std;
 

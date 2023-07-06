@@ -1,6 +1,7 @@
 // Copyright 2022 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include <omp.h>
+#include "pr.h"
 #include "platform_atomics.h"
 
 void PRSolver(Graph &g, score_t *scores) {

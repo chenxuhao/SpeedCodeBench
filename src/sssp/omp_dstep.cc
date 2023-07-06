@@ -1,6 +1,7 @@
 // Copyright 2020 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include <omp.h>
+#include "sssp.h"
 #include "platform_atomics.h"
 
 //[1] Ulrich Meyer and Peter Sanders. "δ-stepping: a parallelizable shortest path
