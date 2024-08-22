@@ -25,9 +25,23 @@ For a weighted directed graph, the shortest path problem finds the path with the
 
 ## Example
 
+Input: src = 0, the graph is shown below.
+
 <p align="center">
   <img src="sssp.jpg" />
 </p>
+
+Output: 0 4 12 19 21 11 9 8 14
+
+Explanation: 
+  - The distance from 0 to 1 = 4.
+  - The minimum distance from 0 to 2 = 12. 0->1->2
+  - The minimum distance from 0 to 3 = 19. 0->1->2->3
+  - The minimum distance from 0 to 4 = 21. 0->7->6->5->4
+  - The minimum distance from 0 to 5 = 11. 0->7->6->5
+  - The minimum distance from 0 to 6 = 9. 0->7->6
+  - The minimum distance from 0 to 7 = 8. 0->7
+  - The minimum distance from 0 to 8 = 14. 0->1->2->8
 
 ## Constraints
 
