@@ -1,7 +1,67 @@
-## SSSP
+# SSSP
 
-Kernel: Single-source Shortest Paths (SSSP)
-Returns array of distances for all vertices from given source vertex
+Single-source Shortest Paths (SSSP)
+
+Returns array of distances for all vertices from a given source vertex `v` in a graph `G=(V,E)`
+
+# Single Source Shortest Path
+
+## Description
+
+The Single-Source Shortest Path (SSSP) problem consists of finding the shortest paths between a given vertex v and all other vertices in the graph. 
+Algorithms such as Breadth-First-Search (BFS) for unweighted graphs or Dijkstra solve this problem.
+
+For a weighted directed graph, the shortest path problem finds the path with the lowest total weight between two vertices.
+
+## Input
+
+* The input graph `G=(V,E)` is a weighted directed graph.
+
+* The sourse vertex id `v`.
+
+## Output
+
+* The distances between `v` and all the vertices in the graph.
+
+## Example
+
+<p align="center">
+  <img src="sssp.jpg" />
+</p>
+
+## Constraints
+
+* Your code must be written in C/C++.
+
+## Explanation 
+
+* You are given the input graph as an object of the class `Graph g`, 
+  here is the API to use this class:
+
+  - `g.V()` returns the number of nodes in the graph
+  - `g.E()` returns the number of edges in the graph
+  - `g.N(v)` returns the neighbor set (in the type of `VertexSet`) of node `v` in the graph
+  - `vidType` is the data type of the node ID in the graph
+
+* You can use the public member functions of the `VertexSet` class:
+
+  - `size()` returns the size of the `VertexSet`, i.e., the number of nodes in the `VertexSet`.
+  - `operator[]`: `[i]` returns a reference to the element at position `i`.
+  - `begin()` returns an iterator pointing to the first element in the `VertexSet`.
+  - `end()` returns an iterator referring to the past-the-end element in the `VertexSet` container.
+  - `data()` returns a direct pointer to the memory array used internally by the `VertexSet` to store its owned elements.
+
+* Please contact the author for further explanation.
+
+* Author: Xuhao Chen <cxh@mit.edu>
+
+## Hints
+
+* Parallel algorithm Bellman-Ford
+
+* Use delta stepping instead of Bellman-Ford
+
+## More Details
 
 Two parallel algorithms are often used for SSSP: 
 (1) Bellman Ford;
@@ -33,7 +93,11 @@ redundant work that this is faster than removing the vertex from older bins.
 	of the IEEE 28th International Parallel and Distributed Processing
 	Symposium (IPDPS), pp. 349--359, May 2014
 
+## Reference Solutions
+
 * sssp_omp_base: OpenMP implementation using Bellman-Ford algorithm, one thread per vertex
 * sssp_omp_dstep: OpenMP implementation using delta-stepping algorithm, one thread per vertex
+* sssp_cilk_base: OpenCilk implementation using Bellman-Ford algorithm, one thread per vertex
+* sssp_cilk_dstep: OpenCilk implementation using delta-stepping algorithm, one thread per vertex
 * sssp_gpu_base: data-driven GPU implementation using Bellman-Ford algorithm, one thread per vertex
 * sssp_gpu_dstep: data-driven GPU using delta stepping algorithm, one thread per edge
