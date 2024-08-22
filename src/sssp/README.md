@@ -33,11 +33,7 @@ redundant work that this is faster than removing the vertex from older bins.
 	of the IEEE 28th International Parallel and Distributed Processing
 	Symposium (IPDPS), pp. 349--359, May 2014
 
-* sssp_omp_base: OpenMP implementation using delta-stepping algorithm, one thread per vertex
-* sssp_topo_base: topology-driven GPU implementation, one thread per vertex using CUDA
-* sssp_topo_twc: topology-driven GPU implementation, one thread per edge using CUDA
-* sssp_gpu_base: data-driven GPU implementation, one thread per vertex using CUDA
-* sssp_gpu_twc: data-driven GPU using TWC load balancing, one thread per edge using CUDA
-* sssp_gpu_dstep: data-driven GPU using delta stepping algorithm, one thread per edge using CUDA
-
-
+* sssp_omp_base: OpenMP implementation using Bellman-Ford algorithm, one thread per vertex
+* sssp_omp_dstep: OpenMP implementation using delta-stepping algorithm, one thread per vertex
+* sssp_gpu_base: data-driven GPU implementation using Bellman-Ford algorithm, one thread per vertex
+* sssp_gpu_dstep: data-driven GPU using delta stepping algorithm, one thread per edge
