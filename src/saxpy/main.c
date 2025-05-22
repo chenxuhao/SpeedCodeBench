@@ -6,7 +6,7 @@
 #include <ctimer.h>
 
 #define NLUP  (32)
-#define TWO26 (1 << 20)
+#define TWO26 (1 << 25)
 void saxpy(const int n, const float a, const float *x, float *y);
 
 int main(int argc, char *argv[]) {

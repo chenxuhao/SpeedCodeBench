@@ -2,7 +2,13 @@ include ../common.mk
 
 OBJS = main.o
 
-all: bs_omp_base bs_cilk_base
+CILK_SRCS = cilk_base.c
+CILK_OBJS = $(CILK_SRCS:.c=.o)
+
+all: bs_omp_base bs_omp_simd bs_cilk_base
+
+$(CILK_OBJS): %.o: %.c
+	$(CILKCC) $(CILKCFLAGS) -c $< -o $@
 
 bs_omp_base: $(OBJS) blackscholes.o omp_base.o
 	$(CC) $(CFLAGS) $(OBJS) blackscholes.o omp_base.o -o $@ -lm
@@ -17,7 +23,7 @@ bs_gpu_base: $(OBJS) gpu_base.o
 	mv $@ $(BIN)
 
 bs_cilk_base: $(OBJS) cilk_base.o blackscholes.o
-	$(CLANG) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o blackscholes.o -o $@ -lm
+	$(CLANG) $(CILKCFLAGS) $(CILK_INC) $(OBJS) blackscholes.o cilk_base.o -o $@ -lm
 	mv $@ $(BIN)
 
 clean:

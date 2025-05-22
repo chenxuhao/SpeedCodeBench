@@ -1,4 +1,5 @@
 #include "blackscholes.h"
+#include <ctimer.h>
 
 int BlackScholes(int numOptions, 
                  OptionData* data,
@@ -87,7 +88,13 @@ int main (int argc, char **argv) {
   }
 
   printf("Size of data: %ld\n", numOptions * (sizeof(OptionData) + sizeof(int)));
+
+  ctimer_t t;
+  ctimer_start(&t);
   int nErrors = BlackScholes(numOptions, data, otype, sptprice, strike, rate, volatility, otime, prices);
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "blackscholes");
   printf("NUmber of errors: %d\n", nErrors);
 
   //Write prices to output file
