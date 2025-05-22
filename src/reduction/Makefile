@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS = main.o 
-all: reduce_cpu_base reduce_omp_base
+all: reduce_cpu_base reduce_omp_base reduce_cilk_base
 
 reduce_cpu_base: $(OBJS) cpu_base.o
 	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@ -lgomp
@@ -12,6 +12,10 @@ reduce_omp_base: $(OBJS) omp_base.o
 
 reduce_gpu_base: $(OBJS) gpu_base.o
 	$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ $(NVLIBS)
+	mv $@ $(BIN)
+
+reduce_cilk_base: $(OBJS) cilk_base.o 
+	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
 	mv $@ $(BIN)
 
 clean:

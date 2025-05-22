@@ -1,8 +1,9 @@
-#include <omp.h>
+//#include <omp.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctimer.h>
 
 #define NLUP  (32)
 #define TWO26 (1 << 20)
@@ -19,7 +20,7 @@ int main(int argc, char *argv[]) {
   y_ref = (float *) malloc(nbytes);
   y2 = (float *) malloc(nbytes);
 
-  #pragma omp parallel for default(none) shared(a, x, y, y_ref, y2, n) private(i)
+  //#pragma omp parallel for default(none) shared(a, x, y, y_ref, y2, n) private(i)
   for (i = 0; i < n; ++i) {
     x[i]     = rand() % 32 / 32.0f;
     y[i]     = rand() % 32 / 32.0f;
@@ -31,7 +32,7 @@ int main(int argc, char *argv[]) {
 
   saxpy(n, a, x, y2);
   maxabserr = -1.0f;
-  #pragma omp parallel for reduction(max: maxabserr)
+  //#pragma omp parallel for reduction(max: maxabserr)
   for (i = 0; i < n; ++i) {
     float error =  fabsf(y2[i] - y_ref[i]);
     maxabserr = error > maxabserr? error : maxabserr;
@@ -39,12 +40,14 @@ int main(int argc, char *argv[]) {
 
   saxpy(n, a, x, y2);
 
-  double start = omp_get_wtime();
+  ctimer_t t;
+  ctimer_start(&t);
+  //double start = omp_get_wtime();
   for (int i = 0; i < NLUP; ++i) {
     saxpy(n, a, x, y2);
   }
-  double end = omp_get_wtime();
-  double wt = end - start;
-  printf("saxpy running time: %f sec\n", wt);
-  printf("saxpy: %f MB/s maxabserr = %f\n", NLUP * 3.0 * nbytes / ((1 << 20) * wt), maxabserr);
+  //double end = omp_get_wtime();
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "saxpy");
 }

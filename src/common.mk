@@ -33,7 +33,7 @@ NVLIBS = -L$(CUDA_HOME)/lib64 -L$(CUDA_HOME)/lib64/stubs -lcuda -lcudart
 MPI_LIBS = -L$(MPI_HOME)/lib -lmpi
 #CILKFLAGS = -O3 -fopenmp=libiomp5 -fopencilk
 CILKFLAGS = -fopencilk -std=c++17
-CILK_INC = -I$(GCC_HOME)/include -I$(CILK_CLANG)/include
+CILK_INC = -I$(CILK_HOME)/include
 CUINC = -I$(CUDA_HOME)/include
 INCLUDES = -I../../include
 VPATH += ../common
