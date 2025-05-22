@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <omp.h>
 
 //Precision to use for calculations
 #define fptype float

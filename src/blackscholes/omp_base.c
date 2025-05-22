@@ -4,6 +4,7 @@
 // Reference Source: Options, Futures, and Other Derivatives, 3rd Edition, Prentice  Hall, John C. Hull,
 
 #include "blackscholes.h"
+#include <omp.h>
 
 int BlackScholes(int numOptions, 
                  OptionData* data,
