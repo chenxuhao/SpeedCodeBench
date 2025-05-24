@@ -1,8 +1,8 @@
 // Copyright 2020, MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "BaseGraph.hh"
 
-void TCSolver(Graph &g, uint64_t &total);
+void TCSolver(BaseGraph &g, uint64_t &total);
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -11,12 +11,10 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   std::cout << "Triangle Counting: assuming the neighbor lists are sorted.\n";
-  int oriented = 0;
+  int oriented = 1;
   if (argc > 2) oriented = atoi(argv[2]);
-  bool need_orientation = true;
-  if (oriented) need_orientation = false;
-  Graph g(argv[1], need_orientation, oriented);
-  g.print_meta_data();
+  BaseGraph g(argv[1]);
+  if (oriented) g.orientation();
   uint64_t total = 0;
   TCSolver(g, total);
   std::cout << "total_num_triangles = " << total << "\n";

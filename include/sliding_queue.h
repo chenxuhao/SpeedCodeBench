@@ -28,7 +28,7 @@ class LocalBuffer;
 
 template <typename T>
 class SlidingQueue {
-  T *shared;
+  std::vector<T> shared;
   size_t shared_in;
   size_t shared_out_start;
   size_t shared_out_end;
@@ -37,12 +37,11 @@ class SlidingQueue {
 
  public:
   explicit SlidingQueue(size_t shared_size) {
-    shared = new T[shared_size];
+    shared.resize(shared_size);
     reset();
   }
 
   ~SlidingQueue() {
-    delete[] shared;
   }
 
   void push_back(T to_add) {
@@ -65,13 +64,23 @@ class SlidingQueue {
   }
 
   typedef T* iterator;
+  typedef const T* const_iterator;
 
-  iterator begin() const {
-    return shared + shared_out_start;
+  iterator begin() {
+    T* ptr = shared.data();
+    return ptr + shared_out_start;
   }
 
-  iterator end() const {
-    return shared + shared_out_end;
+  iterator end() {
+    return shared.data() + shared_out_end;
+  }
+
+  const_iterator begin() const {
+    return shared.data() + shared_out_start;
+  }
+
+  const_iterator end() const {
+    return shared.data() + shared_out_end;
   }
 
   size_t size() const {
@@ -83,7 +92,7 @@ class SlidingQueue {
 template <typename T>
 class QueueBuffer {
   size_t in;
-  T *local_queue;
+  std::vector<T> local_queue;
   SlidingQueue<T> &sq;
   const size_t local_size;
 
@@ -91,12 +100,10 @@ class QueueBuffer {
   explicit QueueBuffer(SlidingQueue<T> &master, size_t given_size = 16384)
       : sq(master), local_size(given_size) {
     in = 0;
-    local_queue = new T[local_size];
+    local_queue.resize(local_size);
   }
 
-  ~QueueBuffer() {
-    delete[] local_queue;
-  }
+  ~QueueBuffer() { }
 
   void push_back(T to_add) {
     if (in == local_size)
@@ -105,9 +112,8 @@ class QueueBuffer {
   }
 
   void flush() {
-    T *shared_queue = sq.shared;
     size_t copy_start = fetch_and_add(sq.shared_in, in);
-    std::copy(local_queue, local_queue+in, shared_queue+copy_start);
+    std::copy(&local_queue[0], &local_queue[in], &(sq.shared[copy_start]));
     in = 0;
   }
 };
@@ -124,11 +130,11 @@ class LocalBuffer {
   int nthreads;
   const size_t max_size;
   SlidingQueue<T> &sq; // shared queue
-  VECTOR_PADDED<T>* buffers;
+  std::vector<VECTOR_PADDED<T>> buffers;
 public:
   LocalBuffer(SlidingQueue<T> &q, int nt, size_t local_buf_size = 16384) :
       nthreads(nt), max_size(local_buf_size), sq(q) {
-    buffers = new VECTOR_PADDED<T>[nthreads];
+    buffers.resize(nthreads);
     for(int i = 0; i < nthreads; i++) buffers[i].vec.clear();
     reserve(max_size);
   }
@@ -142,26 +148,22 @@ public:
     }
   }
   void flush(int wid) {
-    T *shared_queue = sq.shared;
     auto in = buffers[wid].vec.size();
     size_t copy_start = fetch_and_add(sq.shared_in, in);
-    std::copy(buffers[wid].vec.begin(), buffers[wid].vec.end(), shared_queue+copy_start);
+    std::copy(buffers[wid].vec.begin(), buffers[wid].vec.end(), &(sq.shared[0])+copy_start);
     buffers[wid].vec.clear();
   }
   void collect() {
-    int64_t* offsets = new int64_t[nthreads+1];
+    std::vector<int64_t> offsets(nthreads+1);
     offsets[0] = 0;
     for (int i = 1; i <= nthreads; i++) {
       offsets[i] = offsets[i-1] + buffers[i-1].vec.size();
     }
-    T *shared_queue = sq.shared + sq.shared_in;
     for (int i = 0; i < nthreads; i++) {
       int64_t off = offsets[i];
-      std::copy(buffers[i].vec.begin(), buffers[i].vec.end(), shared_queue+off);
+      std::copy(buffers[i].vec.begin(), buffers[i].vec.end(), &(sq.shared[sq.shared_in])+off);
     }
     sq.shared_in += offsets[nthreads];
-    delete[] offsets;
-    delete[] buffers;
   }
 };
 

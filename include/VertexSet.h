@@ -6,7 +6,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <stdint.h>
 
+#include <limits>
 #include <vector>
 #include <fstream>
 #include <sstream>

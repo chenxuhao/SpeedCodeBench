@@ -1,11 +1,9 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
 #include <omp.h>
-#include "graph.h"
+#include "BaseGraph.hh"
 #include "bitmap.h"
 #include "sliding_queue.h"
 
-void bfs_step(Graph &g, int *depth, SlidingQueue<vidType> &queue) {
+void bfs_step(BaseGraph &g, int *depth, SlidingQueue<vidType> &queue) {
   int num_threads = 1;
   #pragma omp parallel
   {
@@ -50,7 +48,7 @@ void bfs_step(Graph &g, int *depth, SlidingQueue<vidType> &queue) {
   }
 }
 */
-void BFSSolver(Graph &g, vidType source, int* depth) {
+void BFSSolver(BaseGraph &g, vidType source, int* depth) {
   int num_threads = 1;
   #pragma omp parallel
   {
@@ -59,8 +57,6 @@ void BFSSolver(Graph &g, vidType source, int* depth) {
   std::cout << "OpenMP BFS (" << num_threads << " threads)\n";
   depth[source] = 0;
   int iter = 0;
-  Timer t;
-  t.Start();
   SlidingQueue<vidType> queue(g.E());
   queue.push_back(source);
   queue.slide_window();
@@ -70,8 +66,6 @@ void BFSSolver(Graph &g, vidType source, int* depth) {
     bfs_step(g, depth, queue);
     queue.slide_window();
   }
-  t.Stop();
   std::cout << "iterations = " << iter << "\n";
-  std::cout << "runtime [omp_base] = " << t.Seconds() << " sec\n";
 }
 

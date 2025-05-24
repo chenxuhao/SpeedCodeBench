@@ -1,6 +1,6 @@
 // Copyright 2020 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "BaseGraph.hh"
 #include "bitmap.h"
 #include "sliding_queue.h"
 #include <cilk/cilk.h>
@@ -9,20 +9,18 @@
 
 typedef int outType;
 
-int64_t BUStep(Graph &g, outType *depths, Bitmap &front, Bitmap &next);
-int64_t TDStep(Graph &g, outType *depths, SlidingQueue<vidType> &queue);
+int64_t BUStep(BaseGraph &g, outType *depths, Bitmap &front, Bitmap &next);
+int64_t TDStep(BaseGraph &g, outType *depths, SlidingQueue<vidType> &queue);
 void QueueToBitmap(const SlidingQueue<vidType> &queue, Bitmap &bm);
 void BitmapToQueue(vidType nv, const Bitmap &bm, SlidingQueue<vidType> &queue);
 
-void BFSSolver(Graph &g, vidType source, outType *depths) {
+void BFSSolver(BaseGraph &g, vidType source, outType *depths) {
   int num_threads = __cilkrts_get_nworkers();
   std::cout << "Cilk BFS using direction (" << num_threads << " threads)\n";
-  assert(g.has_reverse_graph());
+  g.build_reverse_graph();
   auto nv = g.V();
   int alpha = 15, beta = 18;
 
-  Timer t;
-  t.Start();
   cilk_for (vidType v = 0; v < nv; v++) {
     int deg = int(g.get_degree(v));
     depths[v] = (deg != 0) ? -deg : -1;
@@ -64,12 +62,10 @@ void BFSSolver(Graph &g, vidType source, outType *depths) {
   }
   cilk_for (vidType i = 0; i < nv; i ++)
     if (depths[i] < -1) depths[i] = -1; 
-  t.Stop();
   std::cout << "iterations = " << iter << "\n";
-  std::cout << "runtime [cilk_direction] = " << t.Seconds() << " sec\n";
 }
 
-int64_t BUStep(Graph &g, outType* depths, Bitmap &front, Bitmap &next) {
+int64_t BUStep(BaseGraph &g, outType* depths, Bitmap &front, Bitmap &next) {
   int64_t awake_count = 0;
   cilk::opadd_reducer<int64_t> counter = 0;
   next.reset();
@@ -91,7 +87,7 @@ int64_t BUStep(Graph &g, outType* depths, Bitmap &front, Bitmap &next) {
   return awake_count;
 }
 
-int64_t TDStep(Graph &g, outType *depths, SlidingQueue<vidType> &queue) {
+int64_t TDStep(BaseGraph &g, outType *depths, SlidingQueue<vidType> &queue) {
   int64_t scout_count = 0;
   cilk::opadd_reducer<int64_t> counter = 0;
   auto nthreads = __cilkrts_get_nworkers();
@@ -102,7 +98,7 @@ int64_t TDStep(Graph &g, outType *depths, SlidingQueue<vidType> &queue) {
     auto tid = __cilkrts_get_worker_number();
     auto u = ptr[i];
     assert(depths[u]+1 > 0);
-    for (auto v : g.out_neigh(u)) {
+    for (auto v : g.N(u)) {
       int curr_val = depths[v];
       if (curr_val < 0) {
         if (compare_and_swap(depths[v], curr_val, depths[u] + 1)) {
@@ -118,7 +114,7 @@ int64_t TDStep(Graph &g, outType *depths, SlidingQueue<vidType> &queue) {
 }
 
 void QueueToBitmap(const SlidingQueue<vidType> &queue, Bitmap &bm) {
-  vidType* ptr = queue.begin();
+  const vidType* ptr = queue.begin();
   cilk_for (int i = 0; i < queue.size(); i++) {
     bm.set_bit_atomic(ptr[i]);
   }

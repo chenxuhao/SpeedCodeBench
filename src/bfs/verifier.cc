@@ -1,8 +1,6 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "BaseGraph.hh"
 
-void BFS(Graph &g, vidType source, int* depth) {
+void BFS(BaseGraph &g, vidType source, int* depth) {
   std::vector<vidType> to_visit;
   depth[source] = 0;
   to_visit.reserve(g.V());
@@ -18,7 +16,7 @@ void BFS(Graph &g, vidType source, int* depth) {
   }
 }
 
-void BFSVerifier(Graph &g, vidType source, int*depth_to_test) {
+void BFSVerifier(BaseGraph &g, vidType source, int*depth_to_test) {
   std::cout << "Verifying BFS...\n";
   std::vector<int> depth(g.V(), -1);
   BFS(g, source, depth.data());
