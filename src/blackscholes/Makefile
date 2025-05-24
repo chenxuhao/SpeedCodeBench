@@ -26,5 +26,9 @@ bs_cilk_base: $(OBJS) cilk_base.o blackscholes.o
 	$(CLANG) $(CILKCFLAGS) $(CILK_INC) $(OBJS) blackscholes.o cilk_base.o -o $@ -lm
 	mv $@ $(BIN)
 
+bs_zera_base: $(C_OBJS) zera_base.o 
+	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) zera_base.o -o $@
+	mv $@ $(BIN)
+
 clean:
 	rm *.o

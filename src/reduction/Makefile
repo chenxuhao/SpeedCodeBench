@@ -15,7 +15,11 @@ reduce_gpu_base: $(OBJS) gpu_base.o
 	mv $@ $(BIN)
 
 reduce_cilk_base: $(OBJS) cilk_base.o 
-	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	$(CILKCXX) $(CILKCXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	mv $@ $(BIN)
+
+reduce_zera_base: $(OBJS) zera_base.o 
+	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) zera_base.o -o $@
 	mv $@ $(BIN)
 
 clean:

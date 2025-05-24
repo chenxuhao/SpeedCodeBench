@@ -69,8 +69,8 @@ endif
 	$(NVCC) $(NVFLAGS) $(INCLUDES) $(CUINC) -c $<
 
 %.o: %.cxx
-	$(CLANGCXX) $(CILKCXXFLAGS) $(INCLUDES) $(CILK_INC) -c $<
+	$(CILKCXX) $(CILKCXXFLAGS) $(INCLUDES) $(CILK_INC) -c $<
 
 %.o: %.cpp
-	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(ZERA_INC) -c $<
+	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(ZERA_INC) -c $< -o $@
 

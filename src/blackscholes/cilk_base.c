@@ -12,7 +12,6 @@ int BlackScholes(int numOptions,
                  fptype * prices) {
   int numError = 0;
   for (int j = 0; j<NUM_RUNS; j++) {
-    int i;
     cilk_for (int i = 0; i<numOptions; i++) {
       // Calling main function to calculate option value based on Black & Scholes's equation.
       fptype price = BlkSchlsEqEuroNoDiv(sptprice[i], strike[i], rate[i], volatility[i], otime[i], otype[i], 0);
