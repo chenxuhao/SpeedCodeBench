@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS = verifier.o main.o BaseGraph.o VertexSet.o
-all: bfs_cpu_base bfs_omp_base bfs_cilk_base bfs_omp_direction bfs_cilk_direction
+all: bfs_cpu_base bfs_omp_base bfs_omp_sliding bfs_omp_direction 
 
 bfs_cpu_base: cpu_base.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@
@@ -10,8 +10,8 @@ bfs_omp_base: omp_base.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_base.o -o $@ -lgomp
 	mv $@ $(BIN)
 
-bfs_omp_topo: omp_topo.o $(OBJS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_topo.o -o $@ -lgomp
+bfs_omp_sliding: omp_sliding.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) omp_sliding.o -o $@ -lgomp
 	mv $@ $(BIN)
 
 bfs_omp_direction: omp_direction.o $(OBJS)
@@ -20,6 +20,10 @@ bfs_omp_direction: omp_direction.o $(OBJS)
 
 bfs_cilk_base: $(OBJS) cilk_base.o 
 	$(CILKCXX) $(CILKCXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	mv $@ $(BIN)
+
+bfs_cilk_sliding: $(OBJS) cilk_sliding.o 
+	$(CILKCXX) $(CILKCXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_sliding.o -o $@
 	mv $@ $(BIN)
 
 bfs_cilk_direction: $(OBJS) cilk_direction.o 
@@ -31,8 +35,8 @@ bfs_gpu_base: gpu_base.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_base.o -o $@ $(NVLIBS)
 	mv $@ $(BIN)
 
-bfs_zera_base: main.o zera_base.o VertexSet.o
-	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(CILK_INC) main.o zera_base.o VertexSet.o -o $@
+bfs_zera_base: main.o zera_base.o VertexSet.o verifier.o
+	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(CILK_INC) main.o zera_base.o VertexSet.o verifier.o -o $@
 	mv $@ $(BIN)
 
 clean:

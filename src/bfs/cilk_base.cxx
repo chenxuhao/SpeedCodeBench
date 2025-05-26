@@ -1,37 +1,40 @@
 // Copyright 2020 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include "BaseGraph.hh"
-#include "sliding_queue.h"
+#include "platform_atomics.h"
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 
 void BFSSolver(BaseGraph &g, vidType source, int *depths) {
-  int iter = 0;
   auto nthreads = __cilkrts_get_nworkers();
   std::cout << "Cilk BFS (" << nthreads << " threads)\n";
-  SlidingQueue<vidType> queue(g.V());
-  queue.push_back(source);
-  queue.slide_window();
+
+  int iter = 0;
   depths[source] = 0;
-  while (!queue.empty()) {
+  std::vector<vidType> frontier(g.V());
+  std::vector<vidType> next_frontier(g.V());
+  frontier[0] = source;
+  size_t frontier_size = 1;
+  
+  while (frontier_size > 0) {
     ++ iter;
-    LocalBuffer<vidType> lqueues(queue, nthreads);
-    vidType* ptr = queue.begin();
-    std::cout << "iteration=" << iter << ", frontier_size=" << queue.size() << "\n";
-    cilk_for (int i = 0; i < queue.size(); i++) {
-      auto tid = __cilkrts_get_worker_number();
-      auto u = ptr[i];
+    std::cout << "iteration=" << iter << ", frontier_size=" << frontier_size << "\n";
+    size_t index = 0;
+    cilk_for (size_t i = 0; i < frontier_size; i++) {
+      auto u = frontier[i];
       for (auto v : g.N(u)) {
-        int curr_val = depths[v];
-        if (curr_val == -1) {
+        if (depths[v] == -1) {
+          // make sure each unique neighbor is inserted to the frontier only once
           if (compare_and_swap(depths[v], -1, depths[u] + 1)) {
-            lqueues.push_back(tid, v);
+            // avoid data race on frontier insertion
+            size_t pos = fetch_and_add(index, 1);
+            next_frontier[pos] = v;
           }
         }
       }
     }
-    lqueues.collect();
-    queue.slide_window();
+    frontier_size = index;
+    std::swap(frontier, next_frontier);
   }
   std::cout << "iterations = " << iter << "\n";
 }
