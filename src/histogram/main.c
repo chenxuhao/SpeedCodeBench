@@ -1,13 +1,7 @@
-#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-/******************************************************************************
-* This implementations is a scalar, minimally optimized version. The only 
-* optimization, which reduces the number of pointer chasing operations is the 
-* use of a temporary pointer for each row.
-******************************************************************************/
+#include <ctimer.h>
 
 void histogram(unsigned int img_width, unsigned int img_height, unsigned int* image,
                unsigned int width, unsigned int height, unsigned char* histo);
@@ -15,11 +9,15 @@ void histogram(unsigned int img_width, unsigned int img_height, unsigned int* im
 void dump_histo_img(unsigned char* histo, unsigned int height, unsigned int width, const char *filename);
 
 int main(int argc, char* argv[]) {
-  printf("Base implementation of histogramming.\n");
+  if (argc < 2) {
+    printf("no input specified\n");
+    return 1;
+  }
+  char* inpFile = argv[1];
+  char* outFile = "out.bmp";
+  if (argc > 2) outFile = argv[2];
   int numIterations = 1;
   if (argc > 3) numIterations = atoi(argv[1]);
-  char* inpFile = argv[1];
-  char* outFile = argv[2];
   unsigned int img_width, img_height;
   unsigned int histo_width, histo_height;
   FILE* f = fopen(inpFile,"rb");
@@ -42,17 +40,23 @@ int main(int argc, char* argv[]) {
     fputs("Error reading input array from file\n", stderr);
     return -1;
   }
-  double start = omp_get_wtime();
+
   memset(histo, 0, histo_height*histo_width*sizeof(unsigned char));
+
+  ctimer_t t;
+  ctimer_start(&t);
   for (int i = 0; i < numIterations; i++) {
     histogram(img_width, img_height, img, histo_width, histo_height, histo);
   }
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "histogram");
+
   if (outFile) {
     printf("writing outputs to file %s\n", outFile);
     dump_histo_img(histo, histo_height, histo_width, outFile);
   }
-  double end = omp_get_wtime();
-  printf("runtime = %f sec\n", end - start);
+
   free(img);
   free(histo);
   return 0;

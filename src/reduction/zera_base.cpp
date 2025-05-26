@@ -2,8 +2,9 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 #include <cilk/opadd_reducer.h>
-//#include <cilk/opmax_reducer.h>
-//#include <cilk/opmin_reducer.h>
+#include <opmax_reducer.h>
+#include <opmin_reducer.h>
+#include <algorithm>
 
 extern "C"
 int reduction(int n, int *arr, int *max, int *min) {
@@ -16,21 +17,16 @@ int reduction(int n, int *arr, int *max, int *min) {
   }
   sum = psum;
 
-  int max_num = arr[0];
-  int min_num = arr[0];
-  /*
-  cilk::reducer<cilk::op_max<int>> max_val(arr[0]);
-  cilk::reducer<cilk::op_min<int>> min_val(arr[0]);
- 
-  [[tapir::target("cuda"), tapir::grain_size(1)]]
+  //int max_num = arr[0];
+  //int min_num = arr[0];
+  cilk::opmin_reducer<int> pmin = arr[0];
+  cilk::opmax_reducer<int> pmax = arr[0];
+  //[[tapir::target("cuda"), tapir::grain_size(1)]]
   cilk_for (int i = 1; i < n; i++) {
-  */
-  for (int i = 1; i < n; i++) {
-    if (myarr[i] > max_num) max_num = myarr[i];
-    if (myarr[i] < min_num) min_num = myarr[i];
+    pmin = std::min<int>(pmin, arr[i]);
+    pmax = std::max<int>(pmax, arr[i]);
   }
-  *max = max_num;
-  *min = min_num;
- 
+  *max = pmax;
+  *min = pmin;
   return sum;
 }
