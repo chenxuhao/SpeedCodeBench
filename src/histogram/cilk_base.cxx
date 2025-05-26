@@ -5,9 +5,9 @@
 #include <cilk/cilk_api.h>
 #include "opmin_reducer.h"
 #include "opmax_reducer.h"
+#include "platform_atomics.h"
 #include <vector>
 #include <algorithm>
-#include "platform_atomics.h"
 
 extern "C"
 void histogram(unsigned int img_width,

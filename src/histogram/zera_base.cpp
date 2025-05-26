@@ -5,6 +5,7 @@
 #include <cilk/cilk_api.h>
 #include "opmin_reducer.h"
 #include "opmax_reducer.h"
+#include "platform_atomics.h"
 #include <vector>
 #include <algorithm>
 
@@ -14,10 +15,11 @@ void histogram(unsigned int img_width,
                unsigned int* _image,
                unsigned int width,
                unsigned int height,
-               unsigned char* histo) {
+               unsigned char* _histo) {
   int num_threads = __cilkrts_get_nworkers();
   printf("Cilk Histogram (%d threads)\n", num_threads);
   std::vector<unsigned int> image(_image, _image + img_width*img_height);
+  std::vector<unsigned char> histo(_histo, _histo + width*height);
 
   [[tapir::target("cuda"), tapir::grain_size(1)]]
   cilk_for (int i = 0; i < img_width*img_height; i++) {
@@ -25,7 +27,7 @@ void histogram(unsigned int img_width,
     unsigned char old_val = histo[value];
     while (old_val < UINT8_MAX) {
       unsigned char new_val = old_val + 1;
-      if (histo[value] == old_val && uchar_cas(&histo[value], old_val, new_val)) {
+      if (histo[value] == old_val && compare_and_swap(histo[value], old_val, new_val)) {
         break;
       }
       // Reload old_val to retry if CAS failed
