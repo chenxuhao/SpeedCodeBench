@@ -7,8 +7,6 @@ const float kDamp = 0.85;
 const float epsilon = 0.0000001;
 const float epsilon2 = 0.001;
 
-#include "math.h"
-#include "graph.h"
 
 /*
 Kernel: PageRank (PR)

@@ -57,6 +57,8 @@ class BaseGraph {
   vidType* colidx() { return edges; }                // get column indices array
   const eidType* rowptr() const { return vertices; } // get row pointers array
   const vidType* colidx() const { return edges; }    // get column indices array
+  eidType* in_rowptr() { return reverse_vertices; }  // get incoming row pointers array
+  vidType* in_colidx() { return reverse_edges; }     // get incoming column indices array
   void orientation(std::string outfile = "");        // edge orientation: convert the graph from undirected to directed
   VertexSet N(vidType v) const;                      // get the neighbor list of vertex v
   VertexSet in_neigh(vidType v) const;               // get the ingoing neighbor list of vertex v

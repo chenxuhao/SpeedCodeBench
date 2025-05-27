@@ -1,15 +1,12 @@
 // Copyright 2022 MIT
 // Authors: Xuhao Chen <cxh@mit.edu>
 #include <omp.h>
+#include <math.h>
 #include "pr.h"
+#include "BaseGraph.hh"
 #include "platform_atomics.h"
 
-void PRSolver(Graph &g, score_t *scores) {
-  if (!g.has_reverse_graph()) {
-    std::cout << "This algorithm requires the reverse graph constructed for directed graph\n";
-    std::cout << "Please set reverse to 1 in the command line\n";
-    exit(1);
-  }
+void PRSolver(BaseGraph &g, score_t *scores) {
   int num_threads = 1;
   #pragma omp parallel
   {
@@ -20,8 +17,6 @@ void PRSolver(Graph &g, score_t *scores) {
   const score_t base_score = (1.0f - kDamp) / nv;
   std::vector<score_t> sums(nv, 0);
   int iter;
-  Timer t;
-  t.Start();
   for (iter = 0; iter < MAX_ITER; iter ++) {
     #pragma omp parallel for schedule(dynamic, 64)
     for (vidType src = 0; src < nv; src ++) {
@@ -44,9 +39,5 @@ void PRSolver(Graph &g, score_t *scores) {
     printf(" %2d    %lf\n", iter+1, error);
     if (error < EPSILON) break;
   }
-  t.Stop();
   std::cout << "iterations = " << iter+1 << ".\n";
-  std::cout << "runtime [omp_push] = " << t.Seconds() << " sec\n";
-  std::cout << "throughput = " << double(g.E()) / t.Seconds() / 1e9 << " billion Traversed Edges Per Second (TEPS)\n";
-  return;
 }

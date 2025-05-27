@@ -1,24 +1,17 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include <math.h>
+#include "pr.h"
+#include "BaseGraph.hh"
 #include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
+//#include <cilk/cilk_api.h>
 #include <cilk/opadd_reducer.h>
 
-void PRSolver(Graph &g, score_t *scores) {
-  if (!g.has_reverse_graph()) {
-    std::cout << "This algorithm requires the reverse graph constructed for directed graph\n";
-    std::cout << "Please set reverse to 1 in the command line\n";
-    exit(1);
-  }
-  int num_threads = __cilkrts_get_nworkers();
-  std::cout << "Cilk PangeRank (" << num_threads << " threads)\n";
+void PRSolver(BaseGraph &g, score_t *scores) {
+  //int num_threads = __cilkrts_get_nworkers();
+  //std::cout << "Cilk PangeRank (" << num_threads << " threads)\n";
   auto nv = g.V();
   const score_t base_score = (1.0f - kDamp) / nv;
   score_t *outgoing_contrib = (score_t *) malloc(nv * sizeof(score_t));
   int iter = 0;
-  Timer t;
-  t.Start();
   for (; iter < MAX_ITER; iter ++) {
     cilk::opadd_reducer<double> error = 0;
     cilk_for (vidType n = 0; n < nv; n ++)
@@ -34,10 +27,7 @@ void PRSolver(Graph &g, score_t *scores) {
     printf(" %2d    %lf\n", iter+1, error);
     if (error < EPSILON) break;
   }
-  t.Stop();
   std::cout << "iterations = " << iter+1 << ".\n";
-  std::cout << "runtime [cilk_pull_base] = " << t.Seconds() << " sec\n";
-  std::cout << "throughput = " << double(g.E()) / t.Seconds() / 1e9 << " billion Traversed Edges Per Second (TEPS)\n";
   return;
 }
 

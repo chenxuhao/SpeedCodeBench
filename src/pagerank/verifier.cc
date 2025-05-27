@@ -1,12 +1,9 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-// Verifies by asserting a single serial iteration in push direction has
-//   error < target_error
+// Verifies by asserting a single serial iteration in push direction has error < target_error
 #include <math.h>
 #include "pr.h"
-#include "graph.h"
+#include "BaseGraph.hh"
 
-void PRVerifier(Graph &g, score_t *scores_to_test, double target_error) {
+void PRVerifier(BaseGraph &g, score_t *scores_to_test, double target_error) {
   std::cout << "Verifying...\n";
   auto m = g.V();
   const score_t base_score = (1.0f - kDamp) / m;
@@ -16,8 +13,6 @@ void PRVerifier(Graph &g, score_t *scores_to_test, double target_error) {
   score_t *outgoing_contrib = (score_t *) malloc(m * sizeof(score_t));
   //for (int i = 0; i < m; i ++) outgoing_contrib[i] = 0;
   int iter;
-  Timer t;
-  t.Start();
   for (iter = 0; iter < MAX_ITER; iter ++) {
     double error = 0;
     for (vidType n = 0; n < m; n ++)
@@ -33,17 +28,15 @@ void PRVerifier(Graph &g, score_t *scores_to_test, double target_error) {
     printf(" %2d    %lf\n", iter+1, error);
     if (error < EPSILON) break;
   }
-  t.Stop();
   if (iter < MAX_ITER) iter ++;
   std::cout << "iterations = " << iter << ".\n";
-  std::cout << "runtime [serial] = " << t.Seconds() << " sec\n";
 
   score_t *incomming_sums = (score_t *)malloc(m * sizeof(score_t));
   for (vidType i = 0; i < m; i ++) incomming_sums[i] = 0;
   double error = 0;
   for (vidType src = 0; src < m; src ++) {
     score_t outgoing_contrib = scores_to_test[src] / g.get_degree(src);
-    for (auto dst : g.out_neigh(src)) 
+    for (auto dst : g.N(src)) 
       incomming_sums[dst] += outgoing_contrib;
   }
   for (vidType i = 0; i < m; i ++) {

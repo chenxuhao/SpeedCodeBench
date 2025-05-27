@@ -125,8 +125,6 @@ public:
   eidType get_eid(vidType v, vidType n) const { return vertices[v]+n;}  // get the edge id of the n-th edge of v
   eidType* out_rowptr() { return vertices; }         // get row pointers array
   vidType* out_colidx() { return edges; }            // get column indices array
-  eidType* in_rowptr() { return reverse_vertices; }  // get incoming row pointers array
-  vidType* in_colidx() { return reverse_edges; }     // get incoming column indices array
   bool is_neighbor(vidType v, vidType u) const;      // is vertex u an out-going neighbor of vertex v
   bool is_connected(vidType v, vidType u) const;     // is vertex v and u connected by an edge
   bool is_connected(std::vector<vidType> sg) const;  // is the subgraph sg a connected one
