@@ -1,19 +1,9 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
-#include "timer.h"
-#include "spmv_util.h"
+#include "BaseGraph.hh"
+
 typedef float T;
 
-void SpmvSolver(GraphF &g, const T *x, T *y) {
-  auto m = g.V();
-  auto nnz = g.E();
-  auto Ap = g.in_rowptr();
-  auto Aj = g.in_colidx();
-  auto Ax = g.get_elabel_ptr();
+void SpmvSolver(size_t m, size_t nnz, const eidType *Ap, const vidType *Aj, const T *Ax, const T *x, T *y) {
   printf("Serial SpMV solver\n");
-  Timer t;
-  t.Start();
   for (vidType i = 0; i < m; i++){
     auto row_begin = Ap[i];
     auto row_end   = Ap[i+1];
@@ -24,9 +14,5 @@ void SpmvSolver(GraphF &g, const T *x, T *y) {
     }
     y[i] = sum; 
   }
-  t.Stop();
-  double time = t.Seconds();
-  std::cout << "runtime [serial] = " << t.Seconds() << " sec\n";
-  print_throughput(m, nnz, time);
 }
 

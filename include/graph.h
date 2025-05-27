@@ -1,6 +1,9 @@
 #pragma once
 #include "BaseGraph.hh"
-#include "timer.h"
+
+typedef uint8_t vlabel_t;  // vertex label type
+typedef int32_t elabel_t;  // edge label type
+typedef float   feat_t;    // vertex feature type
 
 using namespace std;
 
@@ -122,7 +125,6 @@ public:
   bool is_neighbor(vidType v, vidType u) const;      // is vertex u an out-going neighbor of vertex v
   bool is_connected(vidType v, vidType u) const;     // is vertex v and u connected by an edge
   bool is_connected(std::vector<vidType> sg) const;  // is the subgraph sg a connected one
-  VertexSet out_neigh(vidType v, vidType off = 0) const; // get the outgoing neighbor list of vertex v
 
   // Galois compatible APIs
   vidType size() const { return n_vertices; }

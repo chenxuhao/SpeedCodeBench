@@ -1,9 +1,7 @@
-// Copyright 2020, MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
 #include <omp.h>
-#include "graph.h"
+#include "BaseGraph.hh"
 
-void CCSolver(Graph &g, comp_t *comp) {
+void CCSolver(BaseGraph &g, int *comp) {
   int num_threads = 1;
   #pragma omp parallel
   {
@@ -14,9 +12,6 @@ void CCSolver(Graph &g, comp_t *comp) {
   for (vidType n = 0; n < g.V(); n ++) comp[n] = n;
   bool change = true;
   int iter = 0;
-
-  Timer t;
-  t.Start();
   while (change) {
     change = false;
     iter++;
@@ -43,8 +38,5 @@ void CCSolver(Graph &g, comp_t *comp) {
       }
     }
   }
-  t.Stop();
   std::cout << "iterations = " << iter << "\n";
-  std::cout << "runtime [omp_base] = " << t.Seconds() << " seconds\n";
-  return;
 }

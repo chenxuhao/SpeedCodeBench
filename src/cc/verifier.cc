@@ -1,11 +1,10 @@
-// Copyright 2022 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
-#include "timer.h"
+#include "BaseGraph.hh"
 #include <map>
 #include <stack>
 #include <random>
 #include <unordered_map>
+
+typedef int comp_t;
 
 comp_t SampleFrequentElement(vidType m, comp_t *comp, int64_t num_samples) {
   // Sample elements from 'comp'
@@ -29,7 +28,7 @@ comp_t SampleFrequentElement(vidType m, comp_t *comp, int64_t num_samples) {
   return most_frequent->first;
 }
 
-int serial_solver(Graph &g, comp_t *components) {
+int serial_solver(BaseGraph &g, comp_t *components) {
   std::stack<int> DFS;
   int num_comps = 0;
   for (vidType src = 0; src < g.V(); src ++) {
@@ -56,37 +55,30 @@ int serial_solver(Graph &g, comp_t *components) {
 // - Asserts search does not reach a vertex with a different component label
 // - If the graph is directed, it performs the search as if it was undirected
 // - Asserts every vertex is visited (degree-0 vertex should have own label)
-void CCVerifier(Graph &g, comp_t *comp_test) {
+bool CCVerifier(BaseGraph &g, comp_t *comp_test) {
   auto m = g.V();
-  std::vector<comp_t> comp(m, -1);
-  Timer t;
-  t.Start();
-  serial_solver(g, comp.data());
-  t.Stop();
-
   printf("Verifying...\n");
-  map<int, int> label_to_source;
-  vector<bool> visited(m);
-  vector<int> frontier;
+  std::map<int, int> label_to_source;
+  std::vector<bool> visited(m);
+  std::vector<int> frontier;
   for (vidType i=0; i<m; i++) {
     visited[i] = false;
     label_to_source[comp_test[i]] = i;
   }
   frontier.reserve(m);
-  map<int, int>::iterator label_source_pair;
+  std::map<int, int>::iterator label_source_pair;
   for (label_source_pair = label_to_source.begin(); label_source_pair != label_to_source.end(); label_source_pair ++) {
     int curr_label = label_source_pair->first;
     int source = label_source_pair->second;
     frontier.clear();
     frontier.push_back(source);
     visited[source] = true;
-    vector<int>::iterator it;
+    std::vector<int>::iterator it;
     for (it = frontier.begin(); it != frontier.end(); it++) {
       int src = *it;
       for (auto dst : g.N(src)) {
         if (comp_test[dst] != curr_label) {
-          printf("Wrong\n");
-          return;
+          return false;
         }
         if (!visited[dst]) {
           visited[dst] = true;
@@ -96,8 +88,7 @@ void CCVerifier(Graph &g, comp_t *comp_test) {
       if (g.is_directed()) {
         for (auto dst : g.N(src)) {
           if (comp_test[dst] != curr_label) {
-            printf("Wrong\n");
-            return;
+            return false;
           }
           if (!visited[dst]) {
             visited[dst] = true;
@@ -107,14 +98,11 @@ void CCVerifier(Graph &g, comp_t *comp_test) {
       }
     } 
   }
-  std::cout << "runtime [verify] = " << t.Seconds() << " seconds\n";
 
   for (vidType n = 0; n < m; n ++) {
     if (!visited[n]) {
-      printf("Wrong\n");
-      return;
+      return false;
     }
   }
-  printf("Correct\n");
-  return;
+  return true;
 }

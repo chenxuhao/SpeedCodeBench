@@ -1,8 +1,9 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "BaseGraph.hh"
 #include <math.h>
 #include <vector>
+
+typedef float score_t; // vertex label
+
 /*
 static ValueT DEFAULT_RELATIVE_TOL = 1e-4;
 static ValueT DEFAULT_ABSOLUTE_TOL = 1e-4;
@@ -63,15 +64,13 @@ bool check_equal(int m, const T * A, const T * B) {
 // - uses vector for BFS queue
 // - regenerates farthest to closest traversal order from depths
 // - regenerates successors from depths
-void BCVerifier(Graph &g, int source, int num_iters, score_t *scores_to_test) {
+void BCVerifier(BaseGraph &g, int source, int num_iters, score_t *scores_to_test) {
   printf("Verifying...\n");
   auto m = g.V();
   std::vector<score_t> scores(m, 0);
   //std::cout << setiosflags(ios::fixed);
   int max_depth = 0;
 
-  Timer t;
-  t.Start();
   for (int iter=0; iter < num_iters; iter++) {
     // BFS phase, only records depth & path_counts
     std::vector<int> depths(m, -1);
@@ -124,12 +123,10 @@ void BCVerifier(Graph &g, int source, int num_iters, score_t *scores_to_test) {
   score_t biggest_score = *max_element(scores.begin(), scores.end());
   for (vidType n = 0; n < m; n ++)
     scores[n] = scores[n] / biggest_score;
-  t.Stop();
 
   printf("iterations = %d.\n", max_depth);
   //std::cout << "\t" << setprecision(8) << "max_score = " << biggest_score << "\n";
   printf("max_score = %.6f.\n", biggest_score);
-  printf("runtime [verify] = %f ms.\n", t.Millisecs());
   //for(int i = 0; i < 10; i++) 
   //	printf("score[%d]=%f, score_test[%d]=%f\n", i, scores[i], i, scores_to_test[i]);
   // Compare scores

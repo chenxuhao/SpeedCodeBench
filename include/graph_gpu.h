@@ -197,12 +197,7 @@ public:
     //auto v_classes = hg.get_vertex_classes();
     vlabel_t* vlabel_ptr = NULL;
     elabel_t* elabel_ptr = NULL;
-    Timer t;
-    t.Start();
     allocateFrom(nv, ne, has_vlabel, has_elabel, use_uva, hg.has_reverse_graph());
-    t.Stop();
-    std::cout << "Time on allocating device memory for the graph on GPU" << device_id << ": " << t.Seconds() << " sec\n";
-    t.Start();
     copyToDevice(nv, ne, hg.rowptr(), hg.colidx(), false, vlabel_ptr, elabel_ptr, use_uva);
     //if (hg.has_vlabel())
     //  CUDA_SAFE_CALL(cudaMalloc((void **)&d_vlabels_frequency, (v_classes+1) * sizeof(vidType)));
@@ -216,8 +211,6 @@ public:
         d_in_colidx = d_colidx;
       }
     }
-    t.Stop();
-    std::cout << "Time on copying graph to GPU" << device_id << ": " << t.Seconds() << " sec\n";
   }
   void toHost(Graph &hg) {
     auto nv = num_vertices;
@@ -258,10 +251,6 @@ public:
     if (!sym_break) d_dst_list = d_colidx + start;
     eidType num = n_tasks_per_gpu;
     if (start + num > end) num = end - start;
-    //std::cout << "Allocating edgelist on GPU" << device_id << " size = " << num 
-    //          << " [" << start << ", " << start+num << ")\n";
-    //Timer t;
-    //t.Start();
     CUDA_SAFE_CALL(cudaMalloc((void **)&d_src_list, num * sizeof(vidType)));
     CUDA_SAFE_CALL(cudaMemcpy(d_src_list, h_src_list+start, num * sizeof(vidType), cudaMemcpyHostToDevice));
     if (sym_break) {
@@ -269,12 +258,8 @@ public:
       CUDA_SAFE_CALL(cudaMemcpy(d_dst_list, h_dst_list+start, num * sizeof(vidType), cudaMemcpyHostToDevice));
     }
     CUDA_SAFE_CALL(cudaDeviceSynchronize());
-    //t.Stop();
-    //std::cout << "Time on copying edgelist to GPU" << device_id << ": " << t.Seconds() << " sec\n";
   }
   void copy_edgelist_to_device(std::vector<eidType> lens, std::vector<vidType*> &srcs, std::vector<vidType*> &dsts) {
-    //Timer t;
-    //t.Start();
     vidType* src_ptr = srcs[device_id];
     vidType* dst_ptr = dsts[device_id];
     auto num = lens[device_id];
@@ -285,12 +270,8 @@ public:
     CUDA_SAFE_CALL(cudaMalloc((void **)&d_dst_list, num * sizeof(vidType)));
     CUDA_SAFE_CALL(cudaMemcpy(d_dst_list, dst_ptr, num * sizeof(vidType), cudaMemcpyHostToDevice));
     CUDA_SAFE_CALL(cudaDeviceSynchronize());
-    //t.Stop();
-    //std::cout << "Time on copying edgelist to GPU" << device_id << ": " << t.Seconds() << " sec\n";
   }
   void init_edgelist_um(Graph &g, bool sym_break = false) {
-    Timer t;
-    t.Start();
     auto nnz = sym_break ? g.E()/2 : g.E();
     CUDA_SAFE_CALL(cudaMallocManaged(&d_src_list, nnz * sizeof(vidType)));
     if (!sym_break) d_dst_list = d_colidx;
@@ -305,13 +286,9 @@ public:
         i ++;
       }
     }
-    t.Stop();
-    std::cout << "Time generating the edgelist on CUDA unified memory: " << t.Seconds() << " sec\n";
   }
   void init_edgelist_zero_copy(Graph &g, bool sym_break = false) {
     std::cout << "Initializing edgelist using zero-copy\n";
-    Timer t;
-    t.Start();
     size_t NUM_BYTES = (sym_break ? g.E()/2 : g.E()) * sizeof(vidType);
     vidType *h_src_list, *h_dst_list;
     cudaHostAlloc((void**)&h_src_list, NUM_BYTES, cudaHostAllocMapped);
@@ -351,8 +328,6 @@ public:
     }
     cudaHostGetDevicePointer((void**)&d_src_list, (void*)h_src_list, 0);
     cudaHostGetDevicePointer((void**)&d_dst_list, (void*)h_dst_list, 0);
-    t.Stop();
-    std::cout << "Time generating the edgelist on CUDA unified memory: " << t.Seconds() << " sec\n";
   }
 
   // using a warp to compute the intersection of the neighbor lists of two vertices

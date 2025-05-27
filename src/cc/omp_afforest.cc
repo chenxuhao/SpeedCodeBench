@@ -1,15 +1,15 @@
-// Copyright 2022 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "BaseGraph.hh"
 #include "platform_atomics.h"
 #include <random>
 #include <omp.h>
+
+typedef int comp_t;
 
 comp_t SampleFrequentElement(vidType m, comp_t *comp, int64_t num_samples = 1024);
 void Link(vidType u, vidType v, comp_t *comp);
 void Compress(vidType m, comp_t *comp);
 
-void CCSolver(Graph &g, comp_t *comp) {
+void CCSolver(BaseGraph &g, comp_t *comp) {
   if (!g.has_reverse_graph()) {
     std::cout << "The Afforest algorithm requires the reverse graph (incoming edges)\n";
     std::cout << "Please set reverse to 1 in the command line\n";
@@ -23,8 +23,6 @@ void CCSolver(Graph &g, comp_t *comp) {
   }
   std::cout << "OpenMP Connected Components (" << num_threads << " threads)\n";
 
-  Timer t;
-  t.Start();
   int neighbor_rounds = 2;
   // Process a sparse sampled subgraph first for approximating components.
   // Sample by processing a fixed number of neighbors for each vertex
@@ -70,9 +68,6 @@ void CCSolver(Graph &g, comp_t *comp) {
   }
   // Finally, 'compress' for final convergence
   Compress(m, comp);
-  t.Stop();
-  std::cout << "runtime [omp_afforest] = " << t.Seconds() << " seconds\n";
-  return;
 }
 
 // Place nodes u and v in same component of lower component ID

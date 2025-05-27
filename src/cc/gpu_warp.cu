@@ -1,7 +1,7 @@
-// Copyright 2022 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
 #include "graph_gpu.h"
 #include "cuda_launch_config.hpp"
+
+typedef int comp_t;
 
 __global__ void hook(GraphGPU g, comp_t *comp, bool *changed) {
   __shared__ int ptrs[BLOCK_SIZE/WARP_SIZE][2];
@@ -42,7 +42,7 @@ __global__ void shortcut(int m, comp_t *comp) {
   }
 }
 
-void CCSolver(Graph &g, comp_t *h_comp) {
+void CCSolver(BaseGraph &g, comp_t *h_comp) {
   size_t memsize = print_device_info(0);
   auto nv = g.num_vertices();
   auto ne = g.num_edges();
@@ -68,8 +68,6 @@ void CCSolver(Graph &g, comp_t *h_comp) {
   bool h_changed, *d_changed;
   CUDA_SAFE_CALL(cudaMalloc((void **)&d_changed, sizeof(bool)));
 
-  Timer t;
-  t.Start();
   int iter = 0;
   do {
     ++ iter;
@@ -81,11 +79,8 @@ void CCSolver(Graph &g, comp_t *h_comp) {
     shortcut<<<(nv - 1) / nthreads + 1, nthreads>>>(nv, d_comp);
     CUDA_SAFE_CALL(cudaMemcpy(&h_changed, d_changed, sizeof(h_changed), cudaMemcpyDeviceToHost));
   } while (h_changed);
-  t.Stop();
 
   std::cout << "iterations = " << iter << ".\n";
-  std::cout << "runtime [cc_gpu_warp] = " << t.Seconds() << " sec\n";
-  std::cout << "throughput = " << double(ne) / t.Seconds() / 1e9 << " billion Traversed Edges Per Second (TEPS)\n";
 
   CUDA_SAFE_CALL(cudaMemcpy(h_comp, d_comp, sizeof(comp_t) * nv, cudaMemcpyDeviceToHost));
   CUDA_SAFE_CALL(cudaFree(d_changed));

@@ -138,6 +138,19 @@ VertexSet BaseGraph::in_neigh(vidType vid) const {
   return VertexSet(reverse_edges + begin, end - begin, vid);
 }
  
+VertexSet BaseGraph::out_neigh(vidType vid, vidType offset) const {
+  assert(vid >= 0);
+  assert(vid < n_vertices);
+  auto begin = vertices[vid];
+  auto end = vertices[vid+1];
+  if (begin > end) {
+    fprintf(stderr, "vertex %u bounds error: [%lu, %lu)\n", vid, begin, end);
+    exit(1);
+  }
+  assert(end <= n_edges);
+  return VertexSet(edges + begin + offset, end - begin, vid);
+}
+
 void BaseGraph::build_reverse_graph() {
   if (!is_directed()) {
     reverse_vertices = vertices;

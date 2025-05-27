@@ -2,7 +2,6 @@
 #include <limits>
 #include <cmath>
 #include <algorithm>
-#include "timer.h"
 
 template <typename T = float>
 inline size_t bytes_per_spmv(vidType m, eidType nnz) {
@@ -39,7 +38,7 @@ T maximum_relative_error(const T * A, const T * B, const size_t N) {
 }
 
 template <typename T = float>
-void SpmvSerial(vidType m, eidType nnz, const eidType *Ap, const vidType *Aj, const T *Ax, const T *x, T *y) {
+void SpmvSerial(size_t m, size_t nnz, const eidType *Ap, const vidType *Aj, const T *Ax, const T *x, T *y) {
   for (vidType i = 0; i < m; i++){
     auto row_begin = Ap[i];
     auto row_end   = Ap[i+1];
@@ -64,24 +63,14 @@ T l2_error(size_t N, const T * a, const T * b) {
 }
 
 template <typename T = float>
-void SpmvVerifier(GraphF &g, const T *x, T *y_test) {
+void SpmvVerifier(size_t m, size_t nnz, const eidType *Ap, const vidType *Aj, const T *Ax, const T *x, T *y_test) {
   printf("Verifying...\n");
-  auto m = g.V();
-  auto nnz = g.E();
-  auto Ap = g.in_rowptr();
-  auto Aj = g.in_colidx();	
-  auto Ax = g.get_elabel_ptr();
   std::vector<T> y(m, 0);
-  Timer t;
-  t.Start();
   SpmvSerial<T>(m, nnz, Ap, Aj, Ax, x, y.data());
-  t.Stop();
-  printf("runtime [serial] = %f s.\n", t.Seconds());
   auto max_error = maximum_relative_error(y_test, y.data(), m);
   printf("[max error %9f]\n", max_error);
   if ( max_error > 5 * std::sqrt( std::numeric_limits<T>::epsilon() ) )
     printf("POSSIBLE FAILURE\n");
-  else
-    printf("Correct\n");
+  else printf("Correct\n");
 }
 

@@ -48,6 +48,7 @@ void PRSolver(BaseGraph &g, score_t *_scores) {
     printf(" %2d    %lf\n", iter+1, error);
     if (error < EPSILON) break;
   }
+  std::copy(scores.begin(), scores.end(), _scores);
   std::cout << "iterations = " << iter+1 << ".\n";
 }
 

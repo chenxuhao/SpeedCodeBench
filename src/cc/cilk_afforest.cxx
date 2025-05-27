@@ -1,26 +1,16 @@
-// Copyright 2023, MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "BaseGraph.hh"
 #include <cilk/cilk.h>
-//#include <random>
 #include "platform_atomics.h"
 
 int SampleFrequentElement(vidType m, int *comp, int64_t num_samples = 1024);
 void Link(vidType u, vidType v, int *comp);
 void Compress(vidType m, int *comp);
 
-void CCSolver(Graph &g, int *comp) {
-  if (!g.has_reverse_graph()) {
-    std::cout << "The Afforest algorithm requires the reverse graph (incoming edges)\n";
-    std::cout << "Please set reverse to 1 in the command line\n";
-    exit(1);
-  }
+void CCSolver(BaseGraph &g, int *comp) {
   cilk_for (vidType i = 0; i < g.V(); i++) comp[i] = i;
   const vidType m = g.V();
   int neighbor_rounds = 2;
 
-  Timer t;
-  t.Start();
   // Process a sparse sampled subgraph first for approximating components.
   // Sample by processing a fixed number of neighbors for each vertex
   for (int r = 0; r < neighbor_rounds; ++r) {
@@ -62,8 +52,6 @@ void CCSolver(Graph &g, int *comp) {
   }
   // Finally, 'compress' for final convergence
   Compress(m, comp);
-  t.Stop();
-  std::cout << "runtime [cilk_afforest] = " << t.Seconds() << " seconds\n";
 }
 
 // Place nodes u and v in same component of lower component ID

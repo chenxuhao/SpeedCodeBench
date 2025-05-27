@@ -1,10 +1,8 @@
-// Copyright 2023, MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-#include "graph.h"
+#include "BaseGraph.hh"
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 
-void CCSolver(Graph &g, comp_t *comp) {
+void CCSolver(BaseGraph &g, int *comp) {
   int num_threads = __cilkrts_get_nworkers();
   std::cout << "Cilk Connected Components (" << num_threads << " threads)\n";
   const vidType bound = g.V();
@@ -12,8 +10,6 @@ void CCSolver(Graph &g, comp_t *comp) {
   bool change = true;
   int iter = 0;
 
-  Timer t;
-  t.Start();
   while (change) {
     change = false;
     iter++;
@@ -40,8 +36,5 @@ void CCSolver(Graph &g, comp_t *comp) {
       }
     }
   }
-  t.Stop();
   std::cout << "iterations = " << iter << "\n";
-  std::cout << "runtime [cilk_base] = " << t.Seconds() << " seconds\n";
-  return;
 }

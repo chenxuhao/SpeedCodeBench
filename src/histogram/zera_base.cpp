@@ -34,5 +34,6 @@ void histogram(unsigned int img_width,
       old_val = histo[value];
     }
   }
+  std::copy(histo.begin(), histo.end(), _histo);
 }
 

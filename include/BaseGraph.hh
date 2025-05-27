@@ -4,11 +4,6 @@
 #include "VertexSet.h"
 
 typedef int64_t eidType;   // edge ID type
-typedef uint8_t vlabel_t;  // vertex label type
-typedef int32_t elabel_t;  // edge label type
-typedef float   feat_t;    // vertex feature type
-typedef float   score_t;   // vertex label for PageRank and BC
-typedef int     comp_t;    // connected components
 
 class BaseGraph {
  protected:
@@ -45,7 +40,16 @@ class BaseGraph {
     is_directed_(directed), vid_size(4), eid_size(4), max_degree(0),
     reverse_edges(NULL), reverse_vertices(NULL) {}
   BaseGraph(std::string prefix) : BaseGraph(NULL, NULL, 0, 0, 0) { load(prefix); }
-  ~BaseGraph() { }
+  ~BaseGraph() {
+    if (edges != NULL) {
+      custom_free(edges, n_edges);
+      edges = NULL;
+    }
+    if (vertices != NULL) {
+      custom_free(vertices, n_vertices+1);
+      vertices = NULL;
+    }
+  }
 
   vidType V() const { return n_vertices; }
   eidType E() const { return n_edges; }
@@ -68,6 +72,7 @@ class BaseGraph {
   void orientation(std::string outfile = "");        // edge orientation: convert the graph from undirected to directed
   VertexSet N(vidType v) const;                      // get the neighbor list of vertex v
   VertexSet in_neigh(vidType v) const;               // get the ingoing neighbor list of vertex v
+  VertexSet out_neigh(vidType v, vidType off = 0) const; // get the outgoing neighbor list of vertex v
   void build_reverse_graph();
 };
 

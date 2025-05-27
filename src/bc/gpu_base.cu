@@ -1,5 +1,3 @@
-// Copyright (c) 2020 MIT
-// Xuhao Chen <cxh@mit.edu>
 #include <thrust/extrema.h>
 #include <thrust/execution_policy.h>
 
@@ -7,7 +5,9 @@
 #include "worklist.cuh"
 #include "cutil_subset.h"
 #include "cuda_launch_config.hpp"
+
 typedef Worklist2<vidType, vidType> WLGPU;
+typedef float score_t; // vertex label
 
 __global__ void initialize(vidType m, int *depths) {
   int id = blockIdx.x * blockDim.x + threadIdx.x;
@@ -78,7 +78,7 @@ __global__ void bc_reverse(int num, GraphGPU g, int depth,
   }
 }
 
-void BCSolver(Graph &g, vidType source, score_t *h_scores) {
+void BCSolver(BaseGraph &g, vidType source, score_t *h_scores) {
   size_t memsize = print_device_info(0);
   auto nv = g.num_vertices();
   auto ne = g.num_edges();
@@ -120,8 +120,6 @@ void BCSolver(Graph &g, vidType source, score_t *h_scores) {
   initialize <<<nblocks, nthreads>>> (nv, d_depths);
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
 
-  Timer t;
-  t.Start();
   insert<<<1, 1>>>(*inwl, source, d_path_counts, d_depths);
   do {
     nblocks = (nitems - 1) / nthreads + 1;
@@ -153,11 +151,9 @@ void BCSolver(Graph &g, vidType source, score_t *h_scores) {
   nblocks = (nv - 1) / nthreads + 1;
   bc_normalize<<<nblocks, nthreads>>>(nv, d_scores, h_max_score);
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  t.Stop();
 
   std::cout << "max_score = " << h_max_score << "\n";
   std::cout << "iterations = " << depth << "\n";
-  std::cout << "runtime [bc_gpu_base] = " << t.Seconds() << " sec\n";
   CUDA_SAFE_CALL(cudaMemcpy(h_scores, d_scores, sizeof(score_t) * nv, cudaMemcpyDeviceToHost));
   CUDA_SAFE_CALL(cudaFree(d_path_counts));
   CUDA_SAFE_CALL(cudaFree(d_depths));

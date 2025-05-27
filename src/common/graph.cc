@@ -1,6 +1,7 @@
 #include <set>
 #include <map>
 #include "graph.h"
+#include "timer.h"
 
 Graph::Graph(std::string prefix, bool use_dag, bool directed, 
              bool use_vlabel, bool use_elabel, bool bipartite, bool partitioned) :
@@ -137,14 +138,6 @@ void Graph::deallocate() {
     delete [] src_list;
     src_list = NULL;
   }
-  if (edges != NULL) {
-    custom_free(edges, n_edges);
-    edges = NULL;
-  }
-  if (vertices != NULL) {
-    custom_free(vertices, n_vertices+1);
-    vertices = NULL;
-  }
   if (vlabels != NULL) {
     delete [] vlabels;
     vlabels = NULL;
@@ -173,19 +166,6 @@ void Graph::sort_neighbors() {
     auto end = edge_end(v);
     std::sort(edges+begin, edges+end);
   }
-}
-
-VertexSet Graph::out_neigh(vidType vid, vidType offset) const {
-  assert(vid >= 0);
-  assert(vid < n_vertices);
-  auto begin = vertices[vid];
-  auto end = vertices[vid+1];
-  if (begin > end) {
-    fprintf(stderr, "vertex %u bounds error: [%lu, %lu)\n", vid, begin, end);
-    exit(1);
-  }
-  assert(end <= n_edges);
-  return VertexSet(edges + begin + offset, end - begin, vid);
 }
  
 void Graph::allocateFrom(vidType nv, eidType ne) {
