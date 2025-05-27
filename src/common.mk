@@ -25,11 +25,12 @@ GENCODE_SM37 := -gencode arch=compute_37,code=sm_37
 GENCODE_SM50 := -gencode arch=compute_50,code=sm_50
 GENCODE_SM52 := -gencode arch=compute_52,code=sm_52
 GENCODE_SM60 := -gencode arch=compute_60,code=sm_60
+GENCODE_SM61 := -gencode arch=compute_61,code=sm_61
 GENCODE_SM70 := -gencode arch=compute_70,code=sm_70
 GENCODE_SM75 := -gencode arch=compute_75,code=sm_75
 GENCODE_SM80 := -gencode arch=compute_80,code=sm_80 -gencode arch=compute_80,code=compute_80
 GENCODE_SM86 := -gencode arch=compute_86,code=sm_86
-CUDA_ARCH := $(GENCODE_SM70)
+CUDA_ARCH := $(GENCODE_SM61)
 
 NVFLAGS := $(CUDA_ARCH)
 NVFLAGS += -Xptxas -v

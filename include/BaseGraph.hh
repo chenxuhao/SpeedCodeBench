@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "VertexSet.h"
 
+typedef int64_t eidType;   // edge ID type
 typedef uint8_t vlabel_t;  // vertex label type
 typedef int32_t elabel_t;  // edge label type
 typedef float   feat_t;    // vertex feature type
@@ -41,13 +42,18 @@ class BaseGraph {
  public:
   BaseGraph(eidType* rowptr, vidType* colidx, vidType nv, eidType ne, bool directed) :
     vertices(rowptr), edges(colidx), n_vertices(nv), n_edges(ne), 
-    is_directed_(directed), vid_size(4), eid_size(4), max_degree(0) {}
+    is_directed_(directed), vid_size(4), eid_size(4), max_degree(0),
+    reverse_edges(NULL), reverse_vertices(NULL) {}
   BaseGraph(std::string prefix) : BaseGraph(NULL, NULL, 0, 0, 0) { load(prefix); }
   ~BaseGraph() { }
 
   vidType V() const { return n_vertices; }
   eidType E() const { return n_edges; }
+  vidType num_vertices() const { return n_vertices; }
+  eidType num_edges() const { return n_edges; }
+  vidType get_max_degree() const { return max_degree; }
   bool is_directed() const { return is_directed_; }
+  bool has_reverse_graph() const { return (reverse_edges != NULL && reverse_vertices != NULL); }
   vidType get_degree(vidType v) const { return vertices[v+1] - vertices[v]; }
   eidType edge_begin(vidType v) const { return vertices[v]; }
   eidType edge_end(vidType v) const { return vertices[v+1]; }

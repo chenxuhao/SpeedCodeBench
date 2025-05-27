@@ -1,5 +1,4 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
+#include "pr.h"
 #include "kernels.cuh"
 #include "cuda_launch_config.hpp"
 
@@ -45,7 +44,7 @@ __global__ void pull_fused(GraphGPU g, score_t *scores, score_t *outgoing_contri
   if(threadIdx.x == 0) atomicAdd(diff, block_sum);
 }
 
-void PRSolver(Graph &g, score_t *scores) {
+void PRSolver(BaseGraph &g, score_t *scores) {
   size_t memsize = print_device_info(0);
   auto nv = g.num_vertices();
   auto ne = g.num_edges();
@@ -75,8 +74,6 @@ void PRSolver(Graph &g, score_t *scores) {
 
   int iter = 0;
   const score_t base_score = (1.0f - kDamp) / nv;
-  Timer t;
-  t.Start();
   do {
     ++iter;
     h_diff = 0;
@@ -94,11 +91,8 @@ void PRSolver(Graph &g, score_t *scores) {
     printf(" %2d    %f\n", iter, h_diff);
   } while (h_diff > EPSILON && iter < MAX_ITER);
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  t.Stop();
 
   std::cout << "iterations = " << iter << ".\n";
-  std::cout << "runtime [gpu_pull_base] = " << t.Seconds() << " sec\n";
-  std::cout << "throughput = " << double(ne) / t.Seconds() / 1e9 << " billion Traversed Edges Per Second (TEPS)\n";
   CUDA_SAFE_CALL(cudaMemcpy(scores, d_scores, nv * sizeof(score_t), cudaMemcpyDeviceToHost));
   CUDA_SAFE_CALL(cudaFree(d_scores));
   CUDA_SAFE_CALL(cudaFree(d_sums));

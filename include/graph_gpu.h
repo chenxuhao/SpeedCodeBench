@@ -29,9 +29,9 @@ public:
       GraphGPUT(n, m, nv, ne, vl, el) {
     if (nv>0 && ne>0 && !use_nvshmem) allocateFrom(nv, ne, vl, el);
   }
-  GraphGPUT(Graph &g, int n=0, int m=1) : 
-      GraphGPUT(n, m, g.V(), g.E(), g.get_vertex_classes(), g.get_edge_classes()) {
-    init(g);
+  GraphGPUT(BaseGraph &g, int n=0, int m=1) : 
+      GraphGPUT(n, m, g.V(), g.E(), 0, 0) {
+    init_base(g);
   }
   GraphGPUT(int n=0, int m=0, vidType nv=0, eidType ne=0, int vl=1, int el=1,
            bool directed=false, bool reverse=false) : 
@@ -147,7 +147,7 @@ public:
     std::cout << "Done\n";
   }
   void copyToDevice(vidType nv, eidType ne, eidType *h_rowptr, vidType *h_colidx, bool reverse = false,
-                    label_t* h_vlabels = NULL, elabel_t* h_elabels = NULL, bool use_uva = false) {
+                    vlabel_t* h_vlabels = NULL, elabel_t* h_elabels = NULL, bool use_uva = false) {
     std::cout << "Copying graph data to GPU memory ... ";
     auto rptr = d_rowptr;
     auto cptr = d_colidx;
@@ -173,35 +173,39 @@ public:
     }
     std::cout << "Done\n";
   }
-  void init(Graph &g, int n, int m) {
+  void init(BaseGraph &g, int n, int m) {
     device_id = n;
     n_gpu = m;
     init(g);
   }
-  void init(Graph &hg) {
+  void init_base(BaseGraph &hg) {
     auto nv = hg.num_vertices();
     auto ne = hg.num_edges();
-    size_t mem_vert = size_t(nv+1)*sizeof(eidType);
-    size_t mem_edge = size_t(ne)*sizeof(vidType);
-    size_t mem_graph = mem_vert + mem_edge;
-    size_t mem_el = mem_edge; // memory for the edgelist
-    size_t mem_all = mem_graph + mem_el;
-    auto mem_gpu = get_gpu_mem_size();
-    bool use_uva = mem_all > mem_gpu;
-    auto v_classes = hg.get_vertex_classes();
-    auto h_vlabel_freq = hg.get_label_freq_ptr();
     max_degree = hg.get_max_degree();
+    //size_t mem_vert = size_t(nv+1)*sizeof(eidType);
+    //size_t mem_edge = size_t(ne)*sizeof(vidType);
+    //size_t mem_graph = mem_vert + mem_edge;
+    //size_t mem_el = mem_edge; // memory for the edgelist
+    //size_t mem_all = mem_graph + mem_el;
+    //auto mem_gpu = get_gpu_mem_size();
+    bool has_vlabel = false;
+    bool has_elabel = false;
+    bool use_uva = false;
+    //bool has_vlabel = hg.has_vlabel();
+    //bool has_elabel = hg.has_elabel();
+    //bool use_uva = mem_all > mem_gpu;
+    //auto v_classes = hg.get_vertex_classes();
+    vlabel_t* vlabel_ptr = NULL;
+    elabel_t* elabel_ptr = NULL;
     Timer t;
     t.Start();
-    allocateFrom(nv, ne, hg.has_vlabel(), hg.has_elabel(), use_uva, hg.has_reverse_graph());
+    allocateFrom(nv, ne, has_vlabel, has_elabel, use_uva, hg.has_reverse_graph());
     t.Stop();
     std::cout << "Time on allocating device memory for the graph on GPU" << device_id << ": " << t.Seconds() << " sec\n";
     t.Start();
-    copyToDevice(nv, ne, hg.out_rowptr(), hg.out_colidx(), false, hg.getVlabelPtr(), hg.getElabelPtr(), use_uva);
-    if (hg.has_vlabel()) {
-      CUDA_SAFE_CALL(cudaMalloc((void **)&d_vlabels_frequency, (v_classes+1) * sizeof(vidType)));
-      CUDA_SAFE_CALL(cudaMemcpy(d_vlabels_frequency, h_vlabel_freq, (v_classes+1) * sizeof(vidType), cudaMemcpyHostToDevice));
-    }
+    copyToDevice(nv, ne, hg.rowptr(), hg.colidx(), false, vlabel_ptr, elabel_ptr, use_uva);
+    //if (hg.has_vlabel())
+    //  CUDA_SAFE_CALL(cudaMalloc((void **)&d_vlabels_frequency, (v_classes+1) * sizeof(vidType)));
     if (hg.has_reverse_graph()) {
       has_reverse = true;
       if (hg.is_directed()) {

@@ -20,7 +20,6 @@
 #include "custom_alloc.h"
 
 typedef uint32_t vidType;  // vertex ID type
-typedef int64_t eidType;   // edge ID type
 typedef std::vector<vidType> VertexList; // vertex ID list
 
 constexpr vidType VID_MIN = 0;

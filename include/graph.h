@@ -79,8 +79,6 @@ public:
          max_label_frequency_(0),
          max_label(0),
          core_length_(0),
-         reverse_edges(NULL),
-         reverse_vertices(NULL),
          vlabels(NULL),
          elabels(NULL),
          features(NULL),
@@ -110,18 +108,14 @@ public:
   vidType VB(int type) const { if (type == 0) return n_vert0; else return n_vert1; }
   Range<vidType> Vertices() const { return Range<vidType>(num_vertices()); }
   eidType get_num_tasks() const { return nnz; }
-  vidType num_vertices() const { return n_vertices; }
-  eidType num_edges() const { return n_edges; }
   std::string get_name() const { return name_; }
   std::string get_inputfile_path() const { return inputfile_path; }
   std::string get_inputfile_prefix() const { return inputfile_prefix; }
   bool is_bipartite() const { return is_bipartite_; }
-  bool has_reverse_graph() const { return has_reverse; }
-  vidType get_max_degree() const { return max_degree; }
 
   // get methods for graph topology information
   vidType out_degree(vidType v) const { return vertices[v+1] - vertices[v]; }
-  vidType N(vidType v, vidType n) const { return edges[vertices[v]+n];} // get the n-th neighbor of v
+  //vidType N(vidType v, vidType n) const { return edges[vertices[v]+n];} // get the n-th neighbor of v
   eidType get_eid(vidType v, vidType n) const { return vertices[v]+n;}  // get the edge id of the n-th edge of v
   eidType* out_rowptr() { return vertices; }         // get row pointers array
   vidType* out_colidx() { return edges; }            // get column indices array
