@@ -1,7 +1,10 @@
-#include "ctimer.h"
 #include <stdint.h>
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
+#include "ctimer.h"
+#include <stdint.h>
+#include <stddef.h>
+#include <vector>
 
 typedef float T;
 typedef uint32_t vidType;
@@ -14,15 +17,22 @@ typedef int64_t eidType;
 extern "C"
 void SpmDm(char transa, char transb, 
            vidType m, eidType nnz, int n,
-           T alpha, const eidType *Ap,
-           const vidType *Aj, const T *Ax, 
-           int lda, const T *BT, int ldb, 
-           T beta, T *C, int ldc) {
+           T alpha, const eidType *_Ap,
+           const vidType *_Aj, const T *_Ax, 
+           int lda, const T *_BT, int ldb, 
+           T beta, T *_C, int ldc) {
   int num_threads = __cilkrts_get_nworkers();
   printf("Cilk SpMDM (%d threads)\n", num_threads);
+
+  std::vector<eidType>Ap(_Ap, _Ap+m+1);
+  std::vector<vidType>Aj(_Aj, _Aj+nnz);
+  std::vector<T>Ax(_Ax, _Ax+nnz);
+  std::vector<T>BT(_BT, _BT+m*n);
+  std::vector<T>C(_C, _C+m*n);
+
   ctimer_t t;
   ctimer_start(&t);
-  #pragma cilk grainsize 1
+  [[tapir::target("cuda"), tapir::grain_size(1)]]
   cilk_for (vidType i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
       T sum = 0;
@@ -36,6 +46,7 @@ void SpmDm(char transa, char transb,
   }
   ctimer_stop(&t);
   ctimer_measure(&t);
-  ctimer_print(t, "SpMDM-cilk_base");
+  ctimer_print(t, "SpMDM-zera_base-kernel");
+  std::copy(C.begin(), C.end(), _C);
 }
 

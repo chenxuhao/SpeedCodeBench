@@ -1,16 +1,22 @@
-#include "BaseGraph.hh"
+#include <omp.h>
+#include <stdint.h>
+
+typedef float T;
+typedef uint32_t vidType;
+typedef int64_t eidType;
 
 typedef float T;
 #define UNROLL 3
 
 void SpmvSolver(size_t m, size_t nnz, const eidType *Ap, const vidType *Aj, const T *Ax, const T *x, T *y) {
+/*
   int num_threads = 1;
   #pragma omp parallel
   {
     num_threads = omp_get_num_threads();
   }
   printf("OpenMP SpMV solver (%d threads) ...\n", num_threads);
-
+*/
   #pragma omp parallel for schedule (dynamic, 1024)
   for (vidType i = 0; i < m; i++) {
     auto row_begin = Ap[i];

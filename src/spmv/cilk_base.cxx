@@ -1,12 +1,16 @@
-#include "BaseGraph.hh"
 #include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
+//#include <cilk/cilk_api.h>
+#include <stdint.h>
+#include <stddef.h>
 
 typedef float T;
+typedef uint32_t vidType;
+typedef int64_t eidType;
 
+extern "C"
 void SpmvSolver(size_t m, size_t nnz, const eidType *Ap, const vidType *Aj, const T *Ax, const T *x, T *y) {
-  int num_threads = __cilkrts_get_nworkers();
-  std::cout << "Cilk SpMV (" << num_threads << " threads)\n";
+  //int num_threads = __cilkrts_get_nworkers();
+  //std::cout << "Cilk SpMV (" << num_threads << " threads)\n";
  
   #pragma cilk grainsize 64
   cilk_for (vidType i = 0; i < m; i++) {

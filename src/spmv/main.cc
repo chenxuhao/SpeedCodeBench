@@ -1,10 +1,13 @@
 #include "BaseGraph.hh"
 #include "spmv_util.h"
 #include "ctimer.h"
-#include <fstream>
 
 typedef float T;
-void SpmvSolver(size_t m, size_t nnz, const eidType *Ap, const vidType *Aj, const T *Ax, const T *x, T *y);
+
+extern "C"
+void SpmvSolver(size_t m, size_t nnz, 
+                const eidType *Ap, const vidType *Aj, 
+                const T *Ax, const T *x, T *y);
 
 int main(int argc, char *argv[]) {
   printf("Sparse Matrix-Vector Multiplication\n");
@@ -18,20 +21,11 @@ int main(int argc, char *argv[]) {
   auto m = g.V();
   auto nnz = g.E();
   std::vector<T> Ax(g.E());
-  srand(13);
-  std::string prefix = argv[1];
-  std::string Ax_filename = prefix + ".elabel.bin";
-  std::ifstream fptr(Ax_filename.c_str());
-  if (fptr.good()) {
-    T* Ax_ptr = Ax.data();
-    read_file(Ax_filename, Ax_ptr, g.E());
-  } else {
-    for (eidType i = 0; i < g.E(); i++) {
-      Ax[i] = rand() / (RAND_MAX + 1.0);
-    }
-  }
+  std::string arr_fname = std::string(argv[1]) + ".elabel.bin";
+  load_array(arr_fname, Ax);
   std::vector<T> x(g.V(), 0);
   std::vector<T> y(g.V(), 0);
+  srand(13);
   for(vidType i = 0; i < g.V(); i++) {
     x[i] = rand() / (RAND_MAX + 1.0);
     //y[i] = rand() / (RAND_MAX + 1.0);

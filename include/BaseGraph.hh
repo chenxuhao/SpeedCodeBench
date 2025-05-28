@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <stdint.h>
 #include "VertexSet.h"
 
@@ -89,5 +90,19 @@ T set_intersect(T nA, T nB, const T* A, const T* B) {
         else { count ++; A_ptr++; B_ptr++; }
     }
     return count;
+}
+
+template <typename T>
+inline void load_array(std::string filename, std::vector<T> &arr) {
+  std::ifstream fptr(filename.c_str());
+  if (fptr.good()) {
+    T* ptr = arr.data();
+    read_file(filename, ptr, arr.size());
+  } else {
+    srand(13);
+    for (size_t i = 0; i < arr.size(); i++) {
+      arr[i] = rand() / (RAND_MAX + 1.0);
+    }
+  }
 }
 

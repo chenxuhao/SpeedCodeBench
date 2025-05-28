@@ -22,8 +22,8 @@ spmv_cilk_base: $(OBJS) cilk_base.o
 	$(CILKCXX) $(CILKCXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
 	mv $@ $(BIN)
 
-spmv_zera_base: main.o zera_base.o VertexSet.o
-	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(CILK_INC) main.o zera_base.o VertexSet.o -o $@
+spmv_zera_base: $(OBJS) main.o zera_base.o 
+	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) zera_base.o -o $@
 	mv $@ $(BIN)
 
 clean:

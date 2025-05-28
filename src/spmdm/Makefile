@@ -1,6 +1,6 @@
 include ../common.mk
-OBJS += main.o verifier.o
-all: spmdm_cpu_base spmdm_omp_base spmdm_cilk_base
+OBJS = main.o verifier.o BaseGraph.o VertexSet.o
+all: spmdm_cpu_base spmdm_omp_base spmdm_cilk_base spmdm_gpu_base
 
 spmdm_cpu_base: $(OBJS) cpu_base.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@
@@ -15,7 +15,11 @@ spmdm_gpu_base: gpu_base.o $(OBJS)
 	mv $@ $(BIN)
 
 spmdm_cilk_base: $(OBJS) cilk_base.o 
-	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	$(CILKCXX) $(CILKCXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	mv $@ $(BIN)
+
+spmdm_zera_base: $(OBJS) zera_base.o
+	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) zera_base.o -o $@
 	mv $@ $(BIN)
 
 clean:

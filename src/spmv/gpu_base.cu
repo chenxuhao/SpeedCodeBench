@@ -1,7 +1,14 @@
-#include "graph_gpu.h"
 #include "cutil_subset.h"
 #include "cuda_launch_config.hpp"
+#include <stdint.h>
+#include <algorithm>
+#include "ctimer.h"
+#include "common.h"
+#include <iostream>
+
 typedef float T;
+typedef uint32_t vidType;
+typedef int64_t eidType;
 
 __global__ void spmv_warp(int m, const eidType* Ap, 
                           const vidType* Aj, const T* Ax, 
@@ -44,6 +51,7 @@ __global__ void spmv_warp(int m, const eidType* Ap,
   }
 }
 
+extern "C"
 void SpmvSolver(size_t m, size_t nnz, const eidType *h_Ap, const vidType *h_Aj, const T *h_Ax, const T *h_x, T *h_y) {
   eidType *d_Ap;
   vidType *d_Aj;
@@ -68,9 +76,17 @@ void SpmvSolver(size_t m, size_t nnz, const eidType *h_Ap, const vidType *h_Aj, 
   size_t max_blocks = max_blocks_per_SM * nSM;
   size_t nblocks = std::min(max_blocks, DIVIDE_INTO(size_t(m), size_t(WARPS_PER_BLOCK)));
   printf("CUDA SpMV solver (%ld CTAs, %ld threads/CTA) ...\n", nblocks, nthreads);
+ 
+  ctimer_t t;
+  ctimer_start(&t);
 
-  spmv_warp<<<nblocks, nthreads>>>(m, d_Ap, d_Aj, d_Ax, d_x, d_y);   
+  spmv_warp<<<nblocks, nthreads>>>(m, d_Ap, d_Aj, d_Ax, d_x, d_y);
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
+ 
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "SpMV-cuda-kernel");
+
   CUDA_SAFE_CALL(cudaMemcpy(h_y, d_y, m * sizeof(T), cudaMemcpyDeviceToHost));
   CUDA_SAFE_CALL(cudaFree(d_Ap));
   CUDA_SAFE_CALL(cudaFree(d_Aj));

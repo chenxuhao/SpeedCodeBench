@@ -1,4 +1,6 @@
 #pragma once
+#include <stdio.h>
+#include <stdint.h>
 #include <cuda_runtime.h>
 
 #define CUDA_RT_CALL(call)                                                                  \
@@ -124,9 +126,8 @@ DivideAndRoundUp(NumeratorT n, DenominatorT d) {
 
 template <typename T = uint32_t>
 void allocate_gpu_buffer(size_t n, T*& ptr) {
-  //std::cout << "allocating GPU memory: size = " << n << "\n";
   size_t total_buffer_size = n * sizeof(T);
-  std::cout << "Allocated memory for buffers: " << float(total_buffer_size)/float(1024*1024) << " MB\n";
+  printf("Allocated memory for buffers: %f MB\n", float(total_buffer_size)/float(1024*1024));
   CUDA_SAFE_CALL(cudaMalloc((void**)&ptr, total_buffer_size));
 }
 

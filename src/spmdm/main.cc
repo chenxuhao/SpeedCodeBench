@@ -1,4 +1,5 @@
-#include "graph.h"
+#include "ctimer.h"
+#include "BaseGraph.hh"
 
 typedef float T;
 
@@ -32,11 +33,14 @@ int main(int argc, char *argv[]) {
     std::cout << "Example: " << argv[0] << " inputs/citeseer\n";
     exit(1);
   }
-  GraphF g(argv[1], 0, 0, 0, 1, 1, 0, 0);
-  g.print_meta_data();
+  BaseGraph g(argv[1]);
+  g.build_reverse_graph();
   vidType m = g.V();
   eidType nnz = g.E();
-
+  std::vector<T> Ax(g.E());
+  std::string arr_fname = std::string(argv[1]) + ".elabel.bin";
+  load_array(arr_fname, Ax);
+ 
   int matBrow, matBcol;
   std::vector<T> matBT;
   std::string matBFile = "";
@@ -45,25 +49,39 @@ int main(int argc, char *argv[]) {
   if (matBFile != "")
     readColMajorMatrixFile(matBFile, matBcol, matBrow, matBT);
   else {
+    printf("generate random matrix\n");
     matBrow = m;
     matBcol = 128;
     matBT.resize(matBrow*matBcol);
     randomInitMatrix(matBcol, matBrow, matBT);
   }
-  assert(matBrow == m);
+  assert(uint32_t(matBrow) == m);
  
   auto Ap = g.in_rowptr();
   auto Aj = g.in_colidx();
-  auto Ax = g.get_elabel_ptr();
-  for (eidType i = 0; i < g.E(); i++) assert(Aj[i] < m);
   std::vector<T> matC(m*matBcol);
+  printf("start SpMDM\n");
+
+  ctimer_t t;
+  ctimer_start(&t);
+
   // A: m x m
   // B: m x matBcol
   // C: m x matBcol
-  SpmDm('N', 'T', m, nnz, matBcol, 1.0f, Ap, Aj, Ax, m,
+  SpmDm('N', 'T', m, nnz, matBcol, 1.0f, Ap, Aj, &Ax[0], m,
         &matBT.front(), matBcol, 0.0f, &matC.front(), m);
-  SpmDmVerifier('N', 'T', m, nnz, matBcol, 1.0f, Ap, Aj, Ax, m,
+
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "SpMDM");
+
+  ctimer_start(&t);
+  SpmDmVerifier('N', 'T', m, nnz, matBcol, 1.0f, Ap, Aj, &Ax[0], m,
                 &matBT.front(), matBcol, 0.0f, &matC.front(), m);
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "SpMDM-verify");
+
   return 0;
 }
 

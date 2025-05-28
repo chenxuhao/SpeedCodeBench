@@ -1,9 +1,9 @@
 #include "ctimer.h"
 #include <stdint.h>
+
 typedef float DType;
 typedef int64_t vidType;
 typedef uint32_t eidType;
-
 
 // SPMM with CSR.
 // C = SpMM(SpA, B) + C
@@ -45,18 +45,17 @@ void SpmDm(char transa, char transb,
            const vidType *Aj, const DType *Ax, 
            int lda, const DType *BT, int ldb, 
            DType beta, DType *C, int ldc) {
-  printf("CUDA SpMDM solver\n");
-  ctimer_t t;
-  ctimer_start(&t);
   eidType * d_Ap;
   vidType * d_Aj;
   DType *d_Ax, *d_BT, *d_C;
 
+  printf("CUDA SpMDM allocate device memory\n");
   cudaMalloc(&d_Ap, sizeof(eidType)*(m+1));
   cudaMalloc(&d_Aj, sizeof(vidType)*nnz);
   cudaMalloc(&d_Ax, sizeof(DType)*nnz);
   cudaMalloc(&d_BT, sizeof(DType)*m*n);
   cudaMalloc(&d_C, sizeof(DType)*m*n);
+  printf("CUDA SpMDM copy data\n");
   cudaMemcpy(d_Ap, Ap, sizeof(eidType)*(m+1), cudaMemcpyHostToDevice);
   cudaMemcpy(d_Aj, Aj, sizeof(vidType)*nnz, cudaMemcpyHostToDevice);
   cudaMemcpy(d_Ax, Ax, sizeof(DType)*nnz, cudaMemcpyHostToDevice);
@@ -65,12 +64,15 @@ void SpmDm(char transa, char transb,
   int nrows = (int)ceil((float)m/32);
   int ncols = (int)ceil((float)n/32);
   dim3 gridSize(nrows, ncols);
+  printf("CUDA SpMDM solver\n");
 
+  ctimer_t t;
+  ctimer_start(&t);
   SpMMCsrKernel<<<gridSize, blockSize>>>(m, nnz, n, d_Ap, d_Aj, d_Ax, d_BT, d_C);
-
   ctimer_stop(&t);
   ctimer_measure(&t);
-  ctimer_print(t, "SpmDm");
+  ctimer_print(t, "SpmDm-kernel");
+
   //float gbyte = bytes_per_spmdm(m, nnz) / 10e9;
   //float GFLOPs = 2*nnz / time / 10e9;
   //float GBYTEs = gbyte / time;

@@ -1,13 +1,18 @@
-#include "BaseGraph.hh"
 #include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
-#include "../common/BaseGraph.cc"
+//#include <cilk/cilk_api.h>
+#include "ctimer.h"
+#include <stdint.h>
+#include <stddef.h>
+#include <vector>
 
 typedef float T;
+typedef uint32_t vidType;
+typedef int64_t eidType;
 
+extern "C"
 void SpmvSolver(size_t m, size_t nnz, const eidType *_Ap, const vidType *_Aj, const T *_Ax, const T *_x, T *_y) {
-  int num_threads = __cilkrts_get_nworkers();
-  std::cout << "Cilk SpMV (" << num_threads << " threads)\n";
+  //int num_threads = __cilkrts_get_nworkers();
+  //std::cout << "Cilk SpMV (" << num_threads << " threads)\n";
 
   std::vector<eidType>Ap(_Ap, _Ap+m+1);
   std::vector<vidType>Aj(_Aj, _Aj+nnz);
@@ -15,6 +20,9 @@ void SpmvSolver(size_t m, size_t nnz, const eidType *_Ap, const vidType *_Aj, co
   std::vector<T>x(_x, _x+m);
   std::vector<T>y(_y, _y+m);
  
+  ctimer_t t;
+  ctimer_start(&t);
+
   [[tapir::target("cuda"), tapir::grain_size(1)]]
   cilk_for (vidType i = 0; i < m; i++) {
     auto row_begin = Ap[i];
@@ -26,6 +34,11 @@ void SpmvSolver(size_t m, size_t nnz, const eidType *_Ap, const vidType *_Aj, co
     }
     y[i] = sum; 
   }
+ 
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "SpMV-zera_base-kernel");
+
   std::copy(y.begin(), y.end(), _y);
 }
 

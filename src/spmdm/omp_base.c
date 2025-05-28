@@ -1,9 +1,6 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
 #include "ctimer.h"
 #include <stdint.h>
 #include <omp.h>
-#include <assert.h>
 
 typedef float T;
 typedef uint32_t vidType;
@@ -33,7 +30,6 @@ void SpmDm(char transa, char transb,
       T sum = 0;
       for (eidType off = Ap[i]; off < Ap[i+1]; off++) {
         vidType k = Aj[off];
-        assert(k < m);
         T value = Ax[off]; // A[i][k]
         //sum += value * B[k*n + j]; // A[i][k] * B[k][j]
         sum += value * BT[j*n + k]; // A[i][k] * BT[j][k]
