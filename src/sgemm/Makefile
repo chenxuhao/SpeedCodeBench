@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS = main.o
-all: sgemm_cpu_base sgemm_omp_base
+all: sgemm_cpu_base sgemm_omp_base sgemm_gpu_base sgemm_cilk_base
 
 sgemm_cpu_base: $(OBJS) cpu_base.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@ -lm
@@ -27,7 +27,11 @@ sgemm_gpu_tiled: $(OBJS) gpu_tiled.o
 	mv $@ $(BIN)
 
 sgemm_cilk_base: $(OBJS) cilk_base.o 
-	$(CLANGXX) $(CILKFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	$(CILKCXX) $(CILKCXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) cilk_base.o -o $@
+	mv $@ $(BIN)
+
+sgemm_zera_base: $(OBJS) zera_base.o
+	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(CILK_INC) $(OBJS) zera_base.o -o $@
 	mv $@ $(BIN)
 
 clean:

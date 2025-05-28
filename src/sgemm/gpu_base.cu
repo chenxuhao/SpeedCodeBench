@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctimer.h>
 
 #define CHECK_ERROR(errorMessage) {                                    \
   cudaError_t err = cudaGetLastError();                                    \
@@ -26,6 +27,7 @@ __global__ void sgemm_kernel(const DType *A, int lda, const DType *B, int ldb,
   C[m+n*ldc] = C[m+n*ldc] * beta + alpha * c;
 }
 
+extern "C"
 void sgemm(char transa, char transb, 
            int m, int n, int k, DType alpha, 
            const DType *A, int lda, const DType *B, int ldb,
@@ -53,8 +55,15 @@ void sgemm(char transa, char transb,
 
   dim3 grid(m/TILE_SZ, n/TILE_SZ);
   dim3 threads(TILE_SZ, TILE_SZ);
+
+  ctimer_t t;
+  ctimer_start(&t);
   sgemm_kernel<<<grid, threads>>>(d_A, lda, d_B, ldb, d_C, ldc, k, alpha, beta);
   cudaDeviceSynchronize();
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "SGEMM-gpu_base-kernel");
+
   CHECK_ERROR("mySgemm");
 
   cudaMemcpy(C, d_C, m*n*sizeof(DType), cudaMemcpyDeviceToHost);

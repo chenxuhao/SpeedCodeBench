@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdio.h>
 
 void sgemm(char transa, char transb, 
            int m, int n, int k,
@@ -6,11 +6,11 @@ void sgemm(char transa, char transb,
            const float *B, int ldb, float beta,
            float *C, int ldc ) {
   if ((transa != 'N') && (transa != 'n')) {
-    std::cerr << "unsupported value of 'transa' in regtileSgemm()" << std::endl;
+    printf("unsupported value of 'transa' in regtileSgemm()\n");
     return;
   }
   if ((transb != 'T') && (transb != 't')) {
-    std::cerr << "unsupported value of 'transb' in regtileSgemm()" << std::endl;
+    printf("unsupported value of 'transb' in regtileSgemm()"\n);
     return;
   }
   // Transpose A and B.

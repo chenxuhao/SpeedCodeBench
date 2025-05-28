@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctimer.h>
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
+#include <vector>
+
+typedef float T;
 
 #define TILE_SIZE 48
 
@@ -9,9 +13,9 @@
 extern "C"
 void sgemm(char transa, char transb,
            int m, int n, int k, 
-           float alpha, const float *A, int lda,
-           const float *B, int ldb, float beta,
-           float *C, int ldc) {
+           float alpha, const float *_A, int lda,
+           const float *_B, int ldb, float beta,
+           float *_C, int ldc) {
   int num_threads = __cilkrts_get_nworkers();
   printf("Cilk SGEMM (%d threads)\n", num_threads);
  
@@ -35,8 +39,16 @@ void sgemm(char transa, char transb,
   wB = n;
   hC = m;
   wC = n;
+
   //clear C
-  memset(C, 0, hC*wC*sizeof(float));
+  memset(_C, 0, hC*wC*sizeof(float));
+
+  std::vector<T>A(_A, _A+m*k);
+  std::vector<T>B(_B, _B+k*n);
+  std::vector<T>C(_C, _C+m*n);
+
+  ctimer_t t;
+  ctimer_start(&t);
   hA_grid = (hA+TILE_SIZE-1)/TILE_SIZE;
   hA_bound = hA%TILE_SIZE;
   wB_grid = (wB+TILE_SIZE-1)/TILE_SIZE;
@@ -46,8 +58,9 @@ void sgemm(char transa, char transb,
 
   // bx, by: tile index
   //for each block in the whole matrix C
+  [[tapir::target("cuda"), tapir::grain_size(1)]]
   cilk_for (int by=0; by<hA_grid; by++) {
-    cilk_for (int bx=0; bx<wB_grid; bx++) {
+    for (int bx=0; bx<wB_grid; bx++) {
       //for each block in the same row of martix A (or the same column of matrix B)
       for (a=0; a<wA_grid; a++) {
         //check bound
@@ -79,5 +92,11 @@ void sgemm(char transa, char transb,
       }//end for a
     }//end for bx
   }//end for by
+ 
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "SGEMM-zera_base-kernel");
+
+  std::copy(C.begin(), C.end(), _C);
 }
 

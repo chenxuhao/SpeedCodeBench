@@ -6,12 +6,13 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include "timer.h"
+#include "ctimer.h"
 
 // I/O routines
 bool readColMajorMatrixFile(const char *fn, int &nr_row, int &nr_col, std::vector<float>&v);
 bool writeColMajorMatrixFile(const char *fn, int, int, std::vector<float>&);
 
+extern "C"
 void sgemm(char transa, char transb, 
            int m, int n, int k, 
            float alpha, const float *A, 
@@ -40,17 +41,24 @@ int main (int argc, char *argv[]) {
   readColMajorMatrixFile(inpFiles[2], matBcol, matBrow, matBT);
   // allocate space for C
   std::vector<float> matC(matArow*matBcol);
-  Timer t;
-  t.Start();
+
+  ctimer_t t;
+  ctimer_start(&t);
+
   // Use standard sgemm interface
   sgemm('N', 'T', matArow, matBcol, matAcol, 1.0f, &matA.front(), matArow,
         &matBT.front(), matBcol, 0.0f, &matC.front(), matArow);
+
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "SGEMM");
+
+  double time = (double)timespec_nsec(t.elapsed) / 1e9;
+  std::cout<< "GFLOPs = " << 2.* matArow * matBcol * matAcol/time/1e9 << "\n";
+ 
   if (outFile) {
     writeColMajorMatrixFile(outFile, matArow, matBcol, matC); 
   }
-  t.Stop();
-  double CPUtime = t.Seconds();
-  std::cout<< "GFLOPs = " << 2.* matArow * matBcol * matAcol/CPUtime/1e9 << std::endl;
   return 0;
 }
 
