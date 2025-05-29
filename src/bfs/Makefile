@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS = verifier.o main.o BaseGraph.o VertexSet.o
-all: bfs_cpu_base bfs_omp_base bfs_omp_sliding bfs_omp_direction 
+all: bfs_cpu_base bfs_omp_base bfs_omp_sliding bfs_omp_direction bfs_cilk_base bfs_cilk_sliding bfs_cilk_direction bfs_gpu_base
 
 bfs_cpu_base: cpu_base.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) cpu_base.o -o $@

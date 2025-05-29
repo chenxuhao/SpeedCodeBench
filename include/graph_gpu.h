@@ -1,61 +1,65 @@
 #pragma once
-#include "graph.h"
-#include "scan.h"
-#include "operations.cuh"
+#include "BaseGraph.hh"
+#include "common.h"
 #include "cutil_subset.h"
-#include "cuda_profiler_api.h"
 
-template <typename elabel_t=int32_t>
-class GraphGPUT {
-protected:
+class GraphGPU {
+ protected:
   bool is_directed_;                // is it a directed graph?
   bool has_reverse;                 // has reverse/incoming edges maintained
   vidType num_vertices;             // number of vertices
   eidType num_edges;                // number of edges
-  int device_id, n_gpu;             // no. of GPUs
-  int num_vertex_classes;           // number of unique vertex labels
-  int num_edge_classes;             // number of unique edge labels
   vidType max_degree;               // maximun degree
   eidType *d_rowptr, *d_in_rowptr;  // row pointers of CSR format
   vidType *d_colidx, *d_in_colidx;  // column induces of CSR format
-  vidType *d_src_list, *d_dst_list; // for COO format
-  vlabel_t *d_vlabels;              // vertex labels
-  elabel_t *d_elabels;              // edge labels
-  vidType *d_vlabels_frequency;     // vertex label frequency
-  vidType *d_adj_buffer;            // buffer for copying an adjacency list from a remote GPU
-public:
-  GraphGPUT(vidType nv, eidType ne, int vl=0, int el=0, 
-           int n=0, int m=1, bool use_nvshmem=false) :
-      GraphGPUT(n, m, nv, ne, vl, el) {
-    if (nv>0 && ne>0 && !use_nvshmem) allocateFrom(nv, ne, vl, el);
+
+ public:
+  GraphGPU(BaseGraph &hg) : 
+      GraphGPU(hg.V(), hg.E(), hg.is_directed(), hg.has_reverse_graph(), hg.get_max_degree()) {
+    auto nv = hg.V();
+    auto ne = hg.E();
+    std::cout << "Copying graph data to GPU memory ... ";
+    CUDA_SAFE_CALL(cudaMemcpy(d_rowptr, hg.rowptr(), (nv+1) * sizeof(eidType), cudaMemcpyHostToDevice));
+    CUDA_SAFE_CALL(cudaMemcpy(d_colidx, hg.colidx(), ne * sizeof(vidType), cudaMemcpyHostToDevice));
+    if (hg.has_reverse_graph()) {
+      if (hg.is_directed()) {
+        std::cout << "This graph maintains both incomming and outgoing edge-list\n";
+        CUDA_SAFE_CALL(cudaMemcpy(d_in_rowptr, hg.in_rowptr(), (nv+1) * sizeof(eidType), cudaMemcpyHostToDevice));
+        CUDA_SAFE_CALL(cudaMemcpy(d_in_colidx, hg.in_colidx(), ne * sizeof(vidType), cudaMemcpyHostToDevice));
+      } else { // undirected graph
+        d_in_rowptr = d_rowptr;
+        d_in_colidx = d_colidx;
+      }
+    }
+    CUDA_SAFE_CALL(cudaDeviceSynchronize());
+    std::cout << "Done\n";
   }
-  GraphGPUT(BaseGraph &g, int n=0, int m=1) : 
-      GraphGPUT(n, m, g.V(), g.E(), 0, 0) {
-    init_base(g);
-  }
-  GraphGPUT(int n=0, int m=0, vidType nv=0, eidType ne=0, int vl=1, int el=1,
-           bool directed=false, bool reverse=false) : 
+  GraphGPU(vidType nv, eidType ne, bool directed, bool reverse, vidType max_d) : 
       is_directed_(directed),
       has_reverse(reverse),
       num_vertices(nv),
       num_edges(ne),
-      device_id(n), n_gpu(m),
-      num_vertex_classes(vl),
-      num_edge_classes(el),
-      max_degree(0),
+      max_degree(max_d),
       d_rowptr(NULL),
       d_in_rowptr(NULL),
       d_colidx(NULL), 
-      d_in_colidx(NULL), 
-      d_src_list(NULL), d_dst_list(NULL),
-      d_vlabels(NULL), d_elabels(NULL), 
-      d_vlabels_frequency(NULL),
-      d_adj_buffer(NULL) {
+      d_in_colidx(NULL) {
+    assert (nv>0 && ne>0);
+    allocateFrom(nv, ne, has_reverse);
   }
-  void release() { clean(); clean_edgelist(); clean_labels(); }
+  void allocateFrom(vidType nv, eidType ne, bool has_reverse = false) {
+    std::cout << "Allocating GPU memory for the graph ... ";
+    CUDA_SAFE_CALL(cudaMalloc((void **)&d_rowptr, (nv+1) * sizeof(eidType)));
+    CUDA_SAFE_CALL(cudaMalloc((void **)&d_colidx, ne * sizeof(vidType)));
+    if (has_reverse) {
+      CUDA_SAFE_CALL(cudaMalloc((void **)&d_in_rowptr, (nv+1) * sizeof(eidType)));
+      CUDA_SAFE_CALL(cudaMalloc((void **)&d_in_colidx, ne * sizeof(vidType)));
+    }
+    CUDA_SAFE_CALL(cudaDeviceSynchronize());
+    std::cout << "Done\n";
+  }
+
   inline __device__ __host__ bool is_directed() { return is_directed_; }
-  inline __device__ __host__ int get_num_devices() { return n_gpu; }
-  inline __device__ __host__ vidType* get_buffer_ptr() { return d_adj_buffer; }
   inline __device__ __host__ vidType V() { return num_vertices; }
   inline __device__ __host__ vidType size() { return num_vertices; }
   inline __device__ __host__ eidType E() { return num_edges; }
@@ -63,10 +67,6 @@ public:
   inline __device__ __host__ vidType get_max_degree() { return max_degree; }
   inline __device__ __host__ bool valid_vertex(vidType vertex) { return (vertex < num_vertices); }
   inline __device__ __host__ bool valid_edge(eidType edge) { return (edge < num_edges); }
-  inline __device__ __host__ vidType get_src(eidType eid) const { return d_src_list[eid]; }
-  inline __device__ __host__ vidType get_dst(eidType eid) const { return d_dst_list[eid]; }
-  inline __device__ __host__ vidType* get_src_ptr(eidType eid) const { return d_src_list; }
-  inline __device__ __host__ vidType* get_dst_ptr(eidType eid) const { return d_dst_list; }
   inline __device__ __host__ vidType* N(vidType vid) { return d_colidx + d_rowptr[vid]; }
   inline __device__ __host__ vidType N(vidType v, eidType e) { return d_colidx[d_rowptr[v] + e]; }
   inline __device__ __host__ eidType* rowptr() { return d_rowptr; }
@@ -87,275 +87,60 @@ public:
   inline __device__ __host__ eidType out_edge_end(vidType src) { return d_rowptr[src+1]; }
   inline __device__ __host__ eidType in_edge_begin(vidType src) { return d_in_rowptr[src]; }
   inline __device__ __host__ eidType in_edge_end(vidType src) { return d_in_rowptr[src+1]; }
-  inline __device__ __host__ vlabel_t getData(vidType vid) { return d_vlabels[vid]; }
-  inline __device__ __host__ elabel_t getEdgeData(eidType eid) { return d_elabels[eid]; }
-  inline __device__ __host__ vidType getLabelsFrequency(vlabel_t label) { return d_vlabels_frequency[label]; }
-  inline __device__ __host__ vlabel_t* getVlabelPtr() { return d_vlabels; }
-  inline __device__ __host__ elabel_t* getElabelPtr() { return d_elabels; }
-  inline __device__ __host__ vlabel_t* get_vlabel_ptr() { return d_vlabels; }
-  inline __device__ __host__ elabel_t* get_elabel_ptr() { return d_elabels; }
- 
-  inline __device__ __host__ bool is_freq_vertex(vidType v, int threshold) {
-    auto label = int(d_vlabels[v]);
-    assert(label <= num_vertex_classes);
-    if (d_vlabels_frequency[label] >= threshold) return true;
-    return false;
-  }
-  void clean() {
-    if (d_rowptr != NULL)
-      CUDA_SAFE_CALL(cudaFree(d_rowptr));
-    if (d_colidx != NULL)
-      CUDA_SAFE_CALL(cudaFree(d_colidx));
-  }
-  void clean_edgelist() {
-    if (d_src_list != NULL)
-      CUDA_SAFE_CALL(cudaFree(d_src_list));
-    if (d_dst_list != NULL)
-      CUDA_SAFE_CALL(cudaFree(d_dst_list));
-  }
-  void clean_labels() {
-    if (d_vlabels != NULL)
-      CUDA_SAFE_CALL(cudaFree(d_vlabels));
-    if (d_elabels != NULL)
-      CUDA_SAFE_CALL(cudaFree(d_elabels));
-    if (d_vlabels_frequency != NULL)
-      CUDA_SAFE_CALL(cudaFree(d_vlabels_frequency));
-  }
-  void allocateFrom(vidType nv, eidType ne, bool has_vlabel = false, 
-                    bool has_elabel = false, bool use_uva = false, bool has_reverse = false) {
-    std::cout << "Allocating GPU memory for the graph ... ";
-    if (use_uva) {
-      CUDA_SAFE_CALL(cudaMallocManaged(&d_rowptr, (nv+1) * sizeof(eidType)));
-      CUDA_SAFE_CALL(cudaMallocManaged(&d_colidx, ne * sizeof(vidType)));
-      if (has_reverse) {
-        CUDA_SAFE_CALL(cudaMallocManaged(&d_in_rowptr, (nv+1) * sizeof(eidType)));
-        CUDA_SAFE_CALL(cudaMallocManaged(&d_in_colidx, ne * sizeof(vidType)));
-      }
-    } else {
-      CUDA_SAFE_CALL(cudaMalloc((void **)&d_rowptr, (nv+1) * sizeof(eidType)));
-      CUDA_SAFE_CALL(cudaMalloc((void **)&d_colidx, ne * sizeof(vidType)));
-      if (has_reverse) {
-        CUDA_SAFE_CALL(cudaMalloc((void **)&d_in_rowptr, (nv+1) * sizeof(eidType)));
-        CUDA_SAFE_CALL(cudaMalloc((void **)&d_in_colidx, ne * sizeof(vidType)));
-      }
-    }
-    if (has_vlabel)
-      CUDA_SAFE_CALL(cudaMalloc((void **)&d_vlabels, nv * sizeof(vlabel_t)));
-    if (has_elabel)
-      CUDA_SAFE_CALL(cudaMalloc((void **)&d_elabels, ne * sizeof(elabel_t)));
-    CUDA_SAFE_CALL(cudaDeviceSynchronize());
-    std::cout << "Done\n";
-  }
-  void copyToDevice(vidType nv, eidType ne, eidType *h_rowptr, vidType *h_colidx, bool reverse = false,
-                    vlabel_t* h_vlabels = NULL, elabel_t* h_elabels = NULL, bool use_uva = false) {
-    std::cout << "Copying graph data to GPU memory ... ";
-    auto rptr = d_rowptr;
-    auto cptr = d_colidx;
-    if (reverse) {
-      rptr = d_in_rowptr;
-      cptr = d_in_colidx;
-    }
-    if (use_uva) {
-      if (h_rowptr != NULL)
-        std::copy(h_rowptr, h_rowptr+nv+1, rptr);
-      if (h_colidx != NULL)
-        std::copy(h_colidx, h_colidx+ne, cptr);
-    } else {
-      if (h_rowptr != NULL)
-        CUDA_SAFE_CALL(cudaMemcpy(rptr, h_rowptr, (nv+1) * sizeof(eidType), cudaMemcpyHostToDevice));
-      if (h_colidx != NULL)
-        CUDA_SAFE_CALL(cudaMemcpy(cptr, h_colidx, ne * sizeof(vidType), cudaMemcpyHostToDevice));
-      if (h_vlabels != NULL)
-        CUDA_SAFE_CALL(cudaMemcpy(d_vlabels, h_vlabels, nv * sizeof(vlabel_t), cudaMemcpyHostToDevice));
-      if (h_elabels != NULL)
-        CUDA_SAFE_CALL(cudaMemcpy(d_elabels, h_elabels, ne * sizeof(elabel_t), cudaMemcpyHostToDevice));
-      CUDA_SAFE_CALL(cudaDeviceSynchronize());
-    }
-    std::cout << "Done\n";
-  }
-  void init(BaseGraph &g, int n, int m) {
-    device_id = n;
-    n_gpu = m;
-    init(g);
-  }
-  void init_base(BaseGraph &hg) {
-    auto nv = hg.num_vertices();
-    auto ne = hg.num_edges();
-    max_degree = hg.get_max_degree();
-    //size_t mem_vert = size_t(nv+1)*sizeof(eidType);
-    //size_t mem_edge = size_t(ne)*sizeof(vidType);
-    //size_t mem_graph = mem_vert + mem_edge;
-    //size_t mem_el = mem_edge; // memory for the edgelist
-    //size_t mem_all = mem_graph + mem_el;
-    //auto mem_gpu = get_gpu_mem_size();
-    bool has_vlabel = false;
-    bool has_elabel = false;
-    bool use_uva = false;
-    //bool has_vlabel = hg.has_vlabel();
-    //bool has_elabel = hg.has_elabel();
-    //bool use_uva = mem_all > mem_gpu;
-    //auto v_classes = hg.get_vertex_classes();
-    vlabel_t* vlabel_ptr = NULL;
-    elabel_t* elabel_ptr = NULL;
-    allocateFrom(nv, ne, has_vlabel, has_elabel, use_uva, hg.has_reverse_graph());
-    copyToDevice(nv, ne, hg.rowptr(), hg.colidx(), false, vlabel_ptr, elabel_ptr, use_uva);
-    //if (hg.has_vlabel())
-    //  CUDA_SAFE_CALL(cudaMalloc((void **)&d_vlabels_frequency, (v_classes+1) * sizeof(vidType)));
-    if (hg.has_reverse_graph()) {
-      has_reverse = true;
-      if (hg.is_directed()) {
-        std::cout << "This graph maintains both incomming and outgoing edge-list\n";
-        copyToDevice(nv, ne, hg.in_rowptr(), hg.in_colidx(), true);
-      } else { // undirected graph
-        d_in_rowptr = d_rowptr;
-        d_in_colidx = d_colidx;
-      }
-    }
-  }
-  void toHost(Graph &hg) {
-    auto nv = num_vertices;
-    auto ne = num_edges;
-    hg.allocateFrom(nv, ne);
-    auto h_rowptr = hg.out_rowptr();
-    auto h_colidx = hg.out_colidx();
-    CUDA_SAFE_CALL(cudaMemcpy(h_rowptr, d_rowptr, (nv+1) * sizeof(eidType), cudaMemcpyDeviceToHost));
-    CUDA_SAFE_CALL(cudaMemcpy(h_colidx, d_colidx, ne * sizeof(vidType), cudaMemcpyDeviceToHost));
-  }
-  // this is for single-GPU only
-  size_t init_edgelist(Graph &hg, bool sym_break = false, bool ascend = false, bool zero_copy = false) {
-    auto nnz = sym_break ? num_edges/2 : num_edges;
-    size_t mem_el = size_t(nnz)*sizeof(vidType);
-    auto mem_gpu = get_gpu_mem_size();
-    if (zero_copy || mem_el > mem_gpu) {
-      //init_edgelist_um(hg, sym_break);
-      init_edgelist_zero_copy(hg, sym_break);
-    } else {
-      hg.init_edgelist(sym_break, ascend);
-      copy_edgelist_to_device(nnz, hg.get_src_ptr(), hg.get_dst_ptr(), sym_break);
-    }
-    return nnz;
-  }
-  void copy_edgelist_to_device(size_t nnz, Graph &hg, bool sym_break = false) {
-    copy_edgelist_to_device(0, nnz, hg, sym_break);
-  }
-  void copy_edgelist_to_device(size_t begin, size_t end, Graph &hg, bool sym_break = false) {
-    copy_edgelist_to_device(begin, end, hg.get_src_ptr(), hg.get_dst_ptr(), sym_break);
-  }
-  void copy_edgelist_to_device(size_t nnz, vidType* h_src_list, vidType* h_dst_list, bool sym_break) {
-    copy_edgelist_to_device(0, nnz, h_src_list, h_dst_list, sym_break);
-  }
-  void copy_edgelist_to_device(size_t begin, size_t end, vidType* h_src_list, vidType* h_dst_list, bool sym_break) {
-    auto n = end - begin;
-    eidType n_tasks_per_gpu = eidType(n-1) / eidType(n_gpu) + 1;
-    eidType start = begin + device_id * n_tasks_per_gpu;
-    if (!sym_break) d_dst_list = d_colidx + start;
-    eidType num = n_tasks_per_gpu;
-    if (start + num > end) num = end - start;
-    CUDA_SAFE_CALL(cudaMalloc((void **)&d_src_list, num * sizeof(vidType)));
-    CUDA_SAFE_CALL(cudaMemcpy(d_src_list, h_src_list+start, num * sizeof(vidType), cudaMemcpyHostToDevice));
-    if (sym_break) {
-      CUDA_SAFE_CALL(cudaMalloc((void **)&d_dst_list, num * sizeof(vidType)));
-      CUDA_SAFE_CALL(cudaMemcpy(d_dst_list, h_dst_list+start, num * sizeof(vidType), cudaMemcpyHostToDevice));
-    }
-    CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  }
-  void copy_edgelist_to_device(std::vector<eidType> lens, std::vector<vidType*> &srcs, std::vector<vidType*> &dsts) {
-    vidType* src_ptr = srcs[device_id];
-    vidType* dst_ptr = dsts[device_id];
-    auto num = lens[device_id];
-    //std::cout << "src_ptr = " << src_ptr << " dst_ptr = " << dst_ptr << "\n";
-    //std::cout << "Allocating edgelist on GPU" << device_id << " size = " << num << "\n";
-    CUDA_SAFE_CALL(cudaMalloc((void **)&d_src_list, num * sizeof(vidType)));
-    CUDA_SAFE_CALL(cudaMemcpy(d_src_list, src_ptr, num * sizeof(vidType), cudaMemcpyHostToDevice));
-    CUDA_SAFE_CALL(cudaMalloc((void **)&d_dst_list, num * sizeof(vidType)));
-    CUDA_SAFE_CALL(cudaMemcpy(d_dst_list, dst_ptr, num * sizeof(vidType), cudaMemcpyHostToDevice));
-    CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  }
-  void init_edgelist_um(Graph &g, bool sym_break = false) {
-    auto nnz = sym_break ? g.E()/2 : g.E();
-    CUDA_SAFE_CALL(cudaMallocManaged(&d_src_list, nnz * sizeof(vidType)));
-    if (!sym_break) d_dst_list = d_colidx;
-    else CUDA_SAFE_CALL(cudaMallocManaged(&d_dst_list, nnz * sizeof(vidType)));
-    size_t i = 0;
-    for (vidType v = 0; v < g.V(); v ++) {
-      for (auto u : g.N(v)) {
-        assert(u != v);
-        if (sym_break && v < u) break;  
-        d_src_list[i] = v;
-        if (sym_break) d_dst_list[i] = u;
-        i ++;
-      }
-    }
-  }
-  void init_edgelist_zero_copy(Graph &g, bool sym_break = false) {
-    std::cout << "Initializing edgelist using zero-copy\n";
-    size_t NUM_BYTES = (sym_break ? g.E()/2 : g.E()) * sizeof(vidType);
-    vidType *h_src_list, *h_dst_list;
-    cudaHostAlloc((void**)&h_src_list, NUM_BYTES, cudaHostAllocMapped);
-    cudaHostAlloc((void**)&h_dst_list, NUM_BYTES, cudaHostAllocMapped);
-    if (sym_break) {
-      VertexList degrees(g.V(), 0);
-      #pragma omp parallel for
-      for (vidType v = 0; v < g.V(); v ++) {
-        for (auto u : g.N(v)) {
-          if (v < u) break;
-          degrees[v] ++;
-        }
-      }
-      eidType *offsets = custom_alloc_global<eidType>(g.V()+1);
-      parallel_prefix_sum<vidType,eidType>(degrees, offsets);
-      #pragma omp parallel for
-      for (vidType v = 0; v < g.V(); v ++) {
-        auto idx = offsets[v];
-        for (auto u : g.N(v)) {
-          if (v < u) break;
-          h_src_list[idx] = v;
-          h_dst_list[idx] = u;
-          idx ++;
-        }
-      }
-    } else {
-      std::cout << "Initializing edgelist\n";
-      #pragma omp parallel for
-      for (vidType v = 0; v < g.V(); v ++) {
-        auto idx = g.edge_begin(v);
-        for (auto u : g.N(v)) {
-          h_src_list[idx] = v;
-          h_dst_list[idx] = u;
-          idx ++;
-        }
-      }
-    }
-    cudaHostGetDevicePointer((void**)&d_src_list, (void*)h_src_list, 0);
-    cudaHostGetDevicePointer((void**)&d_dst_list, (void*)h_dst_list, 0);
-  }
-
-  // using a warp to compute the intersection of the neighbor lists of two vertices
-  inline __device__ vidType warp_intersect(vidType v, vidType u) {
-    vidType count = 0;
-    assert(v != u);
-    vidType v_degree = getOutDegree(v);
-    vidType u_degree = getOutDegree(u);
-    if (v_degree == 0 || u_degree == 0) return 0;
-    vidType* adj_v = d_colidx + edge_begin(v);
-    vidType* adj_u = d_colidx + edge_begin(u);
-    count = intersect_num(adj_v, v_degree, adj_u, u_degree);
-    return count;
-  }
-
-  // using a CTA to compute the intersection of the neighbor lists of two vertices
-  inline __device__ vidType cta_intersect(vidType v, vidType u) {
-    vidType count = 0;
-    assert(v != u);
-    vidType v_degree = getOutDegree(v);
-    vidType u_degree = getOutDegree(u);
-    if (v_degree == 0 || u_degree == 0) return 0;
-    vidType* adj_v = d_colidx + edge_begin(v);
-    vidType* adj_u = d_colidx + edge_begin(u);
-    count = intersect_num_cta(adj_v, v_degree, adj_u, u_degree);
-    return count;
-  }
 };
 
-typedef GraphGPUT<int32_t> GraphGPU;
-typedef GraphGPUT<float> GraphGPUF;
+template <typename T = vidType>
+__forceinline__ __device__ bool binary_search_2phase(T *list, T *cache, T key, T size) {
+  int p = (threadIdx.x / WARP_SIZE) * WARP_SIZE;
+  int mid = 0;
+  // phase 1: search in the cache
+  int bottom = 0;
+  int top = WARP_SIZE;
+  while (top > bottom + 1) {
+    mid = (top + bottom) / 2;
+    T y = cache[p + mid];
+    if (key == y) return true;
+    if (key < y) top = mid;
+    if (key > y) bottom = mid;
+  }
+
+  //phase 2: search in global memory
+  bottom = bottom * size / WARP_SIZE;
+  top = top * size / WARP_SIZE - 1;
+  while (top >= bottom) {
+    mid = (top + bottom) / 2;
+    T y = list[mid];
+    if (key == y) return true;
+    if (key < y) top = mid - 1;
+    else bottom = mid + 1;
+  }
+  return false;
+}
+
+template <typename T = vidType>
+__forceinline__ __device__ T intersect_num(T* a, T size_a, T* b, T size_b) {
+  if (size_a == 0 || size_b == 0) return 0;
+  int thread_lane = threadIdx.x & (WARP_SIZE-1); // thread index within the warp
+  int warp_lane   = threadIdx.x / WARP_SIZE;     // warp index within the CTA
+  __shared__ T cache[BLOCK_SIZE];
+  T num = 0;
+  T* lookup = a;
+  T* search = b;
+  T lookup_size = size_a;
+  T search_size = size_b;
+  if (size_a > size_b) {
+    lookup = b;
+    search = a;
+    lookup_size = size_b;
+    search_size = size_a;
+  }
+  cache[warp_lane * WARP_SIZE + thread_lane] = search[thread_lane * search_size / WARP_SIZE];
+  __syncwarp();
+
+  for (auto i = thread_lane; i < lookup_size; i += WARP_SIZE) {
+    auto key = lookup[i]; // each thread picks a vertex as the key
+    if (binary_search_2phase(search, cache, key, search_size))
+      num += 1;
+  }
+  return num;
+}

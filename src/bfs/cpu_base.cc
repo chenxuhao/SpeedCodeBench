@@ -1,5 +1,3 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
 #include "BaseGraph.hh"
 
 void BFSSolver(BaseGraph &g, vidType source, int* depth) {

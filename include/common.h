@@ -18,8 +18,3 @@ typedef unsigned long long AccType;
 #define NUM_WARPS (BLOCK_SIZE / WARP_SIZE)
 #define BYTESTOMB(memory_cost) ((memory_cost)/(double)(1024 * 1024))
 
-// Vertex Coloring
-#define MAX_COLOR 1024
-
-// BFS & SSSP parameters
-#define MYINFINITY	1000000000

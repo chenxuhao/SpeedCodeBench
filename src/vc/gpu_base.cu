@@ -5,7 +5,8 @@
 #include "worklist.cuh"
 #include "cutil_subset.h"
 #include "cuda_launch_config.hpp"
-typedef Worklist2<vidType, vidType> WLGPU;
+
+#define MAX_COLOR 1024
 
 __global__ void first_fit_topo(GraphGPU g, int *colors, bool *changed) {
   int id = blockIdx.x * blockDim.x + threadIdx.x;	

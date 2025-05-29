@@ -1,18 +1,21 @@
 #include "../common/BaseGraph.cc"
+#include "ctimer.h"
 #include <vector>
 #include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
+//#include <cilk/cilk_api.h>
 #include <cilk/opadd_reducer.h>
 
 void TCSolver(BaseGraph &g, uint64_t &total) {
+  //int num_threads = __cilkrts_get_nworkers();
+  //std::cout << "Cilk TC (" << num_threads << " threads)\n";
   auto nv = g.V();
   const eidType* _verts = g.rowptr(); // get row pointers array
   const vidType* _edges = g.colidx(); // get column indices array
   std::vector<eidType>verts(_verts, _verts+nv+1);
   std::vector<vidType>edges(_edges, _edges+g.E());
  
-  //int num_threads = __cilkrts_get_nworkers();
-  //std::cout << "Cilk TC (" << num_threads << " threads)\n";
+  ctimer_t t;
+  ctimer_start(&t);
   cilk::opadd_reducer<uint64_t> counter = 0;
   [[tapir::target("cuda"), tapir::grain_size(1)]]
   cilk_for (vidType u = 0; u < nv; u ++) {
@@ -26,6 +29,8 @@ void TCSolver(BaseGraph &g, uint64_t &total) {
     }
   }
   total = counter;
-  return;
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "TC-zera_base-kernel");
 }
 

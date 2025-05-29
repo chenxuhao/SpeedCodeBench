@@ -20,14 +20,16 @@ int main(int argc, char *argv[]) {
 
   ctimer_t t;
   ctimer_start(&t);
-
   BFSSolver(g, source, &distances[0]);
-
   ctimer_stop(&t);
   ctimer_measure(&t);
   ctimer_print(t, "BFS");
 
+  ctimer_start(&t);
   BFSVerifier(g, source, &distances[0]);
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "BFS-Verify");
 
   return 0;
 }

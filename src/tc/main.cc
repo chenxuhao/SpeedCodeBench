@@ -1,5 +1,4 @@
-// Copyright 2020, MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
+#include "ctimer.h"
 #include "BaseGraph.hh"
 
 void TCSolver(BaseGraph &g, uint64_t &total);
@@ -16,7 +15,16 @@ int main(int argc, char *argv[]) {
   BaseGraph g(argv[1]);
   if (oriented) g.orientation();
   uint64_t total = 0;
+
+  ctimer_t t;
+  ctimer_start(&t);
+
   TCSolver(g, total);
+ 
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "Triangle Counting");
+
   std::cout << "total_num_triangles = " << total << "\n";
   return 0;
 }

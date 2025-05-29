@@ -1,19 +1,21 @@
 #ifndef PLATFORM_ATOMICS_H_
 #define PLATFORM_ATOMICS_H_
 
-#include <atomic>
+//#include <atomic>
 
 // gcc/clang/icc instrinsics
 template<typename T, typename U>
 T fetch_and_add(T &x, U inc) {
   //return __atomic_fetch_add(&x, inc, std::memory_order_seq_cst);
-  return __atomic_fetch_add(&x, inc, std::memory_order_relaxed);
+  //return __atomic_fetch_add(&x, inc, std::memory_order_relaxed);
+  return __atomic_fetch_add(&x, inc, __ATOMIC_RELAXED);
 }
 
 template<typename T, typename U, typename V>
 bool compare_and_swap(T &x, U old_val, V new_val) {
   //return __atomic_compare_exchange_n(&x, &old_val, new_val, false, std::memory_order_seq_cst, std::memory_order_seq_cst);
-  return __atomic_compare_exchange_n(&x, &old_val, new_val, false, std::memory_order_relaxed, std::memory_order_relaxed);
+  //return __atomic_compare_exchange_n(&x, &old_val, new_val, false, std::memory_order_relaxed, std::memory_order_relaxed);
+  return __atomic_compare_exchange_n(&x, &old_val, new_val, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
 }
 
 template <typename ET>
