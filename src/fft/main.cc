@@ -4,6 +4,7 @@
 #include <malloc.h>
 #include <inttypes.h>
 #include "float2.h"
+#include "ctimer.h"
 
 #if __BYTE_ORDER != __LITTLE_ENDIAN
 # error "File I/O is not implemented for this system: wrong endianness."
@@ -36,7 +37,14 @@ int main( int argc, char **argv ) {
   float2 *source = (float2 *)malloc( n_bytes );
   float2 *result = (float2 *)malloc( n_bytes );
   inputData(inpFile, (float*)source, N*B*2);
+
+  ctimer_t t;
+  ctimer_start(&t);
   fft(result, source, B, N);
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "fft");
+
   if (outFile) outputData(outFile, (float*)result, N*B*2);
   free(source);
   free(result);

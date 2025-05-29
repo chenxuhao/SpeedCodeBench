@@ -1,8 +1,8 @@
-#include "../common/BaseGraph.cc"
-#include "sliding_queue.h"
 #include <cilk/cilk.h>
 //#include <cilk/cilk_api.h>
 #include "ctimer.h"
+#include "sliding_queue.h"
+#include "../common/BaseGraph.cc"
 #include <memory>
 
 void BFSSolver(BaseGraph &g, vidType source, int *_depths) {

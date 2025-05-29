@@ -1,11 +1,9 @@
-#include <omp.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "float2.h"
 
 void fft(float2 *dst, float2 *src, int batch, int n) {   
-  double start_time = omp_get_wtime();
   float2 *X = (float2*) malloc(n*sizeof(float2));
   float2 *Y = (float2*) malloc(n*sizeof(float2));
   for (int ibatch = 0; ibatch < batch; ibatch++) {
@@ -35,6 +33,4 @@ void fft(float2 *dst, float2 *src, int batch, int n) {
   }
   free(X);
   free(Y);
-  double end_time = omp_get_wtime();
-  printf("runtime [base] = %f \n", end_time - start_time);
 }

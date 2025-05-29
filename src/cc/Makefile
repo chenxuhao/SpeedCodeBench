@@ -30,5 +30,9 @@ cc_gpu_afforest: gpu_afforest.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJS) gpu_afforest.o -o $@ $(NVLIBS)
 	mv $@ $(BIN)
 
+cc_zera_base: main.o zera_base.o VertexSet.o verifier.o
+	$(ZERACXX) $(ZERACXXFLAGS) $(INCLUDES) $(CILK_INC) main.o zera_base.o VertexSet.o verifier.o -o $@
+	mv $@ $(BIN)
+
 clean:
 	rm *.o

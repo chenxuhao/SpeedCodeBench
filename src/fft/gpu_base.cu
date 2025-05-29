@@ -49,12 +49,12 @@ inline __device__ void GPU_FFT2(float2* v) {
   GPU_FFT2(v[0],v[1]);
 }
 
-inline __device__ void GPU_FFT4(float2* v){
+inline __device__ void GPU_FFT4(float2* v) {
   GPU_FFT4(v[0],v[1],v[2],v[3] );
 }
 
 
-inline __device__ void GPU_FFT8(float2* v){
+inline __device__ void GPU_FFT8(float2* v) {
   GPU_FFT2(v[0],v[4]);
   GPU_FFT2(v[1],v[5]);
   GPU_FFT2(v[2],v[6]);
@@ -69,8 +69,7 @@ inline __device__ void GPU_FFT8(float2* v){
   
 }
 
-inline __device__ void GPU_FFT16( float2 *v )
-{
+inline __device__ void GPU_FFT16( float2 *v ) {
     GPU_FFT4( v[0], v[4], v[8], v[12] );
     GPU_FFT4( v[1], v[5], v[9], v[13] );
     GPU_FFT4( v[2], v[6], v[10], v[14] );
@@ -143,8 +142,9 @@ void fft(float2 *dst, float2 *source, int B, int N) {
   cudaMemcpy(d_source, source, n_bytes,cudaMemcpyHostToDevice);
   cudaMalloc((void**) &d_work, n_bytes);
   cudaMemset(d_work, 0,n_bytes);
+  printf("CUDA FFT solver N=%d R=%d \n", N, R);
 
-  for( int Ns=1; Ns<N; Ns*=R){
+  for ( int Ns=1; Ns<N; Ns*=R) {
     GPU_FFT_Global<<<dim3(B), dim3(N/R)>>>(Ns, d_source, d_work, N);
     float2 *tmp = d_source;
     d_source = d_work;
