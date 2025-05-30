@@ -2,6 +2,13 @@
 #include <stdio.h>
 
 int reduction(int n, int *arr, int *max, int *min) {
+  int num_threads = 1;
+  #pragma omp parallel
+  {
+    num_threads = omp_get_num_threads();
+  }
+  printf("OpenMP reduction (%d threads)\n", num_threads);
+ 
   int i, sum = 0;
   double start = omp_get_wtime();
   // Compute sum in parallel using OpenMP

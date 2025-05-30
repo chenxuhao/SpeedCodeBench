@@ -2,9 +2,12 @@
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
-#include <omp.h>
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
+#include <cilk/opadd_reducer.h>
 #include "kmeans.h"
 
+extern "C"
 float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
                           int     nfeatures,
                           int     npoints,
@@ -12,18 +15,14 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
                           float   threshold,
                           int    *membership) /* out: [npoints] */
 {
-  int nthreads = 1;
-  #pragma omp parallel
-  {
-    nthreads = omp_get_num_threads();
-  }
-  printf("OpenMP kmeans (%d threads)\n", nthreads);
- 
   int     *new_centers_len;			/* [nclusters]: no. of points in each cluster */
   float  **new_centers;				/* [nclusters][nfeatures] */
   float  **clusters;					/* out: [nclusters][nfeatures] */
   int    **partial_new_centers_len;
   float ***partial_new_centers;
+  int nthreads = __cilkrts_get_nworkers();
+  printf("Cilk Histogram (%d threads)\n", nthreads);
+
   /* allocate space for returning variable clusters[] */
   clusters    = (float**) malloc(nclusters *             sizeof(float*));
   clusters[0] = (float*)  malloc(nclusters * nfeatures * sizeof(float));
@@ -54,20 +53,21 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
     for (int j=0; j<nclusters; j++)
       partial_new_centers[i][j] = (float*)calloc(nfeatures, sizeof(float));
   }
+
   float delta = 0.0;
   int loop=0;
   do {
-    delta = 0.0;
-    int tid = omp_get_thread_num();				
-    #pragma omp parallel for reduction(+:delta)
-    for (int i=0; i<npoints; i++) {
+    int tid = __cilkrts_get_worker_number();
+    cilk::opadd_reducer<float> sum = 0.0;
+    cilk_for (int i=0; i<npoints; i++) {
       int index = find_nearest_point(feature[i], nfeatures, clusters, nclusters);				
-      if (membership[i] != index) delta += 1.0;
+      if (membership[i] != index) sum += 1.0;
       membership[i] = index;
       partial_new_centers_len[tid][index]++;
       for (int j=0; j<nfeatures; j++)
         partial_new_centers[tid][index][j] += feature[i][j];
     }
+    delta = sum;
 
     /* let the main thread perform the array reduction */
     for (int i=0; i<nclusters; i++) {

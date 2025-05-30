@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <omp.h>
 #include <cuda.h>
 #include <assert.h>
+#include "ctimer.h"
 
 #define THREADS_PER_DIM 16
 #define BLOCKS_PER_DIM 16
@@ -20,12 +20,6 @@
 /* to turn on the GPU delta and center reduction */
 //#define GPU_DELTA_REDUCTION
 //#define GPU_NEW_CENTER_REDUCTION
-
-// t_features has the layout dim0[points 0-m-1]dim1[ points 0-m-1]...
-texture<float, 1, cudaReadModeElementType> t_features;
-// t_features_flipped has the layout point0[dim 0-n-1]point1[dim 0-n-1]
-texture<float, 1, cudaReadModeElementType> t_features_flipped;
-texture<float, 1, cudaReadModeElementType> t_clusters;
 
 // GLOBAL!!!!!
 unsigned int num_threads_perdim = THREADS_PER_DIM;					/* sqrt(256) -- see references for this choice */
@@ -133,6 +127,7 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
         }
         new_centers_len[i] = 0;			/* set back to 0 */
       }
+    printf("iteration %d: delta=%f\n", c, delta);
     c++;
   } while ((delta > threshold) && (loop++ < 500));	/* makes sure loop terminates */
   printf("iterated %d times\n", c);
@@ -224,7 +219,7 @@ __global__ void invert_mapping(float *input,  /* original */
 
 /* find the index of nearest cluster centers and change membership*/
 __global__ void
-kmeansPoint(float  *features,			/* in: [npoints*nfeatures] */
+kmeansPoint(const float  *features,	/* in: [npoints*nfeatures] */
             int     nfeatures,
             int     npoints,
             int     nclusters,
@@ -232,28 +227,24 @@ kmeansPoint(float  *features,			/* in: [npoints*nfeatures] */
 			float  *clusters,
 			float  *block_clusters,
 			int    *block_deltas) {
-  // block ID
   const unsigned int block_id = gridDim.x*blockIdx.y+blockIdx.x;
-  // point/thread ID  
   const unsigned int point_id = block_id*blockDim.x*blockDim.y + threadIdx.x;
   int  index = -1;
   if (point_id < npoints) {
-    int i, j;
     float min_dist = FLT_MAX;
     float dist;													/* distance square between a point to cluster center */
     /* find the cluster center id with min distance to pt */
-    for (i=0; i<nclusters; i++) {
+    for (int i=0; i<nclusters; i++) {
       int cluster_base_index = i*nfeatures;					/* base index of cluster centers for inverted array */			
       float ans=0.0;												/* Euclidean distance sqaure */
-      for (j=0; j < nfeatures; j++) {					
-        int addr = point_id + j*npoints;					/* appropriate index of data point */
-        float diff = (tex1Dfetch(t_features,addr) -
-            c_clusters[cluster_base_index + j]);	/* distance between a data point to cluster centers */
+      for (int j=0; j < nfeatures; j++) {					
+        float diff = features[point_id + j*npoints] -
+                     c_clusters[cluster_base_index + j];	/* distance between a data point to cluster centers */
         ans += diff*diff;									/* sum of squares */
       }
       dist = ans;		
-      /* see if distance is smaller than previous ones:
-         if so, change minimum distance and save index of cluster center */
+      // see if distance is smaller than previous ones:
+      // if so, change minimum distance and save index of cluster center
       if (dist < min_dist) {
         min_dist = dist;
         index    = i;
@@ -306,11 +297,8 @@ kmeansPoint(float  *features,			/* in: [npoints*nfeatures] */
   __shared__ int new_center_ids[THREADS_PER_BLOCK];
   new_center_ids[threadIdx.x] = index;
   __syncthreads();
-  /***
-    determine which dimension calculte the sum for
-    mapping of threads is
-    center0[dim0,dim1,dim2,...]center1[dim0,dim1,dim2,...]...
-   ***/ 	
+  // determine which dimension calculte the sum for mapping of threads is
+  // center0[dim0,dim1,dim2,...]center1[dim0,dim1,dim2,...]...
   int new_base_index = (point_id - threadIdx.x)*nfeatures + dim_id;
   float accumulator = 0.f;
   if(threadIdx.x < nfeatures * nclusters) {
@@ -321,10 +309,7 @@ kmeansPoint(float  *features,			/* in: [npoints*nfeatures] */
         accumulator += val;
     }
     // now store the sum for this threadblock
-    /***
-      mapping to global array is
-      block0[center0[dim0,dim1,dim2,...]center1[dim0,dim1,dim2,...]...]block1[...]...
-     ***/
+    // mapping to global array is block0[center0[dim0,dim1,dim2,...]center1[dim0,dim1,dim2,...]...]block1[...]...
     block_clusters[(blockIdx.y*gridDim.x + blockIdx.x) * nclusters * nfeatures + threadIdx.x] = accumulator;
   }
 #endif
@@ -346,40 +331,26 @@ int kmeansCuda(float  **feature,				/* in: [npoints][nfeatures] */
   cudaMemcpy(membership_d, membership_new, npoints*sizeof(int), cudaMemcpyHostToDevice);
   /* copy clusters (host to device) */
   cudaMemcpy(clusters_d, clusters[0], nclusters*nfeatures*sizeof(float), cudaMemcpyHostToDevice);
-  /* set up texture */
-  cudaChannelFormatDesc chDesc0 = cudaCreateChannelDesc<float>();
-  t_features.filterMode = cudaFilterModePoint;   
-  t_features.normalized = false;
-  t_features.channelDesc = chDesc0;
-  if(cudaBindTexture(NULL, &t_features, feature_d, &chDesc0, npoints*nfeatures*sizeof(float)) != CUDA_SUCCESS)
-    printf("Couldn't bind features array to texture!\n");
-  cudaChannelFormatDesc chDesc1 = cudaCreateChannelDesc<float>();
-  t_features_flipped.filterMode = cudaFilterModePoint;   
-  t_features_flipped.normalized = false;
-  t_features_flipped.channelDesc = chDesc1;
-  if(cudaBindTexture(NULL, &t_features_flipped, feature_flipped_d, &chDesc1, npoints*nfeatures*sizeof(float)) != CUDA_SUCCESS)
-    printf("Couldn't bind features_flipped array to texture!\n");
-  cudaChannelFormatDesc chDesc2 = cudaCreateChannelDesc<float>();
-  t_clusters.filterMode = cudaFilterModePoint;   
-  t_clusters.normalized = false;
-  t_clusters.channelDesc = chDesc2;
-  if(cudaBindTexture(NULL, &t_clusters, clusters_d, &chDesc2, nclusters*nfeatures*sizeof(float)) != CUDA_SUCCESS)
-    printf("Couldn't bind clusters array to texture!\n");
-  /* copy clusters to constant memory */
-  cudaMemcpyToSymbol("c_clusters",clusters[0],nclusters*nfeatures*sizeof(float),0,cudaMemcpyHostToDevice);
+
   /* setup execution parameters. changed to 2d (source code on NVIDIA CUDA Programming Guide) */
   dim3  grid( num_blocks_perdim, num_blocks_perdim );
   dim3  threads( num_threads_perdim*num_threads_perdim );
-  /* execute the kernel */
+
+  ctimer_t t;
+  ctimer_start(&t);
   kmeansPoint<<< grid, threads >>>( feature_d,
-      nfeatures,
-      npoints,
-      nclusters,
-      membership_d,
-      clusters_d,
-      block_clusters_d,
-      block_deltas_d);
+                                    nfeatures,
+                                    npoints,
+                                    nclusters,
+                                    membership_d,
+                                    clusters_d,
+                                    block_clusters_d,
+                                    block_deltas_d);
   cudaThreadSynchronize();
+  ctimer_stop(&t);
+  ctimer_measure(&t);
+  ctimer_print(t, "kmeans-cuda-kernel");
+
   /* copy back membership (device to host) */
   cudaMemcpy(membership_new, membership_d, npoints*sizeof(int), cudaMemcpyDeviceToHost);	
 #ifdef BLOCK_CENTER_REDUCE
