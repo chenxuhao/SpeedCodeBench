@@ -58,9 +58,9 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
   int loop=0;
   do {
     delta = 0.0;
-    int tid = omp_get_thread_num();				
     #pragma omp parallel for reduction(+:delta)
     for (int i=0; i<npoints; i++) {
+      int tid = omp_get_thread_num();
       int index = find_nearest_point(feature[i], nfeatures, clusters, nclusters);				
       if (membership[i] != index) delta += 1.0;
       membership[i] = index;

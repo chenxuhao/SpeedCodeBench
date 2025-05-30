@@ -83,10 +83,10 @@ float** kmeans_clustering(float **_feature,    /* in: [npoints][nfeatures] */
   float delta = 0.0;
   int loop=0;
   do {
-    int tid = __cilkrts_get_worker_number();
     cilk::opadd_reducer<float> sum = 0.0;
     [[tapir::target("cuda"), tapir::grain_size(1)]]
     cilk_for (int i=0; i<npoints; i++) {
+      int tid = __cilkrts_get_worker_number();
       int index = find_nearest_point_(feature[i], nfeatures, clusters, nclusters);
       if (membership[i] != index) sum += 1.0;
       membership[i] = index;
