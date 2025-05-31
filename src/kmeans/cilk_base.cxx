@@ -1,41 +1,24 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <float.h>
-#include <math.h>
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 #include <cilk/opadd_reducer.h>
 #include "kmeans.h"
 
 extern "C"
-float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
-                          int     nfeatures,
-                          int     npoints,
-                          int     nclusters,
-                          float   threshold,
-                          int    *membership) /* out: [npoints] */
+void kmeans_clustering(int     nfeatures,
+                       int     npoints,
+                       int     nclusters,
+                       int64_t threshold,
+                       float **feature,    // in: [npoints][nfeatures]
+                       float **centroids,   // out: [nclusters][nfeatures]
+                       int    *membership) // out: [npoints]
 {
   int     *new_centers_len;			/* [nclusters]: no. of points in each cluster */
   float  **new_centers;				/* [nclusters][nfeatures] */
-  float  **clusters;					/* out: [nclusters][nfeatures] */
   int    **partial_new_centers_len;
   float ***partial_new_centers;
   int nthreads = __cilkrts_get_nworkers();
   printf("Cilk Histogram (%d threads)\n", nthreads);
-
-  /* allocate space for returning variable clusters[] */
-  clusters    = (float**) malloc(nclusters *             sizeof(float*));
-  clusters[0] = (float*)  malloc(nclusters * nfeatures * sizeof(float));
-  for (int i=1; i<nclusters; i++) clusters[i] = clusters[i-1] + nfeatures;
-  /* randomly pick cluster centers */
-  for (int i=0; i<nclusters; i++) {
-    int n = i;
-    for (int j=0; j<nfeatures; j++)
-      clusters[i][j] = feature[n][j];
-  }
-  for (int i=0; i<npoints; i++) membership[i] = -1;
-
-  /* need to initialize new_centers_len and new_centers[0] to all 0 */
+  // need to initialize new_centers_len and new_centers[0] to all 0
   new_centers_len = (int*) calloc(nclusters, sizeof(int));
   new_centers    = (float**) malloc(nclusters *            sizeof(float*));
   new_centers[0] = (float*)  calloc(nclusters * nfeatures, sizeof(float));
@@ -53,15 +36,14 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
     for (int j=0; j<nclusters; j++)
       partial_new_centers[i][j] = (float*)calloc(nfeatures, sizeof(float));
   }
-
-  float delta = 0.0;
+  int64_t delta = 0;
   int loop=0;
   do {
-    cilk::opadd_reducer<float> sum = 0.0;
+    cilk::opadd_reducer<int64_t> sum = 0;
     cilk_for (int i=0; i<npoints; i++) {
       int tid = __cilkrts_get_worker_number();
-      int index = find_nearest_point(feature[i], nfeatures, clusters, nclusters);				
-      if (membership[i] != index) sum += 1.0;
+      int index = find_nearest_point(feature[i], nfeatures, centroids, nclusters);				
+      if (membership[i] != index) sum += 1;
       membership[i] = index;
       partial_new_centers_len[tid][index]++;
       for (int j=0; j<nfeatures; j++)
@@ -85,17 +67,16 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
     for (int i=0; i<nclusters; i++) {
       for (int j=0; j<nfeatures; j++) {
         if (new_centers_len[i] > 0)
-          clusters[i][j] = new_centers[i][j] / new_centers_len[i];
+          centroids[i][j] = new_centers[i][j] / new_centers_len[i];
         new_centers[i][j] = 0.0;   /* set back to 0 */
       }
       new_centers_len[i] = 0;   /* set back to 0 */
     }
-    printf("iteration %d: delta=%f\n", loop, delta);
+    printf("iteration %d: delta=%ld\n", loop, delta);
   } while (delta > threshold && loop++ < 500);
   printf("iterated %d times\n", loop);
   free(new_centers[0]);
   free(new_centers);
   free(new_centers_len);
-  return clusters;
 }
 

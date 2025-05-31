@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define RANDOM_MAX 2147483647
 
@@ -11,7 +12,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-float **kmeans_clustering(float**, int, int, int, float, int*);
+void kmeans_clustering(int, int, int, int64_t, float **, float **, int*);
 #ifdef __cplusplus
 }
 #endif

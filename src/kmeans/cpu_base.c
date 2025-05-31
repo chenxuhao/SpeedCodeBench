@@ -4,43 +4,29 @@
 #include <math.h>
 #include "kmeans.h"
 
-float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
-                          int     nfeatures,
-                          int     npoints,
-                          int     nclusters,
-                          float   threshold,
-                          int    *membership) /* out: [npoints] */
+void kmeans_clustering(int     nfeatures,
+                       int     npoints,
+                       int     nclusters,
+                       int64_t threshold,
+                       float **feature,    // in: [npoints][nfeatures]
+                       float **clusters,   // out: [nclusters][nfeatures]
+                       int    *membership) // out: [npoints]
 {
-  /* allocate space for returning variable clusters[] */
-  float  **clusters;   /* out: [nclusters][nfeatures] */
-  clusters    = (float**) malloc(nclusters *             sizeof(float*));
-  clusters[0] = (float*)  malloc(nclusters * nfeatures * sizeof(float));
-  for (int i=1; i<nclusters; i++) clusters[i] = clusters[i-1] + nfeatures;
-
-  /* randomly pick cluster centers */
-  for (int i=0; i<nclusters; i++) {
-    int n = i;
-    //n = (int)rand() % npoints;
-    for (int j=0; j<nfeatures; j++)
-      clusters[i][j] = feature[n][j];
-    n++;
-  }
-  for (int i=0; i<npoints; i++) membership[i] = -1;
-  /* need to initialize new_centers_len and new_centers[0] to all 0 */
+  // need to initialize new_centers_len and new_centers[0] to all 0
   float  **new_centers;     /* [nclusters][nfeatures] */
   int *new_centers_len = (int*) calloc(nclusters, sizeof(int));
   new_centers    = (float**) malloc(nclusters *            sizeof(float*));
   new_centers[0] = (float*)  calloc(nclusters * nfeatures, sizeof(float));
   for (int i=1; i<nclusters; i++) new_centers[i] = new_centers[i-1] + nfeatures;
-  float delta;
+  int64_t delta = 0;
   int loop=0;
   do {
-    delta = 0.0;
+    delta = 0;
     for (int i=0; i<npoints; i++) {
       /* find the index of nestest cluster centers */
       int index = find_nearest_point(feature[i], nfeatures, clusters, nclusters);
       /* if membership changes, increase delta by 1 */
-      if (membership[i] != index) delta += 1.0;
+      if (membership[i] != index) delta += 1;
       /* assign the membership to object i */
       membership[i] = index;
       /* update new cluster centers : sum of objects located within */
@@ -58,11 +44,10 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
       new_centers_len[i] = 0;   /* set back to 0 */
     }
     //delta /= npoints;
-    printf("iteration %d: delta=%f\n", loop, delta);
+    printf("iteration %d: delta=%ld\n", loop, delta);
   } while (delta > threshold && loop++ < 500);
   free(new_centers[0]);
   free(new_centers);
   free(new_centers_len);
-  return clusters;
 }
 

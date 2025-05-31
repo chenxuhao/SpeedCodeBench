@@ -57,32 +57,26 @@ int main(int argc, char **argv) {
                break;
     }
   }
-
   if (filename == 0) usage(argv[0]);
-  int numAttributes = 0;
-  int numObjects = 0;
-  float *buf = NULL;
-  float **attributes = NULL;
+  int dim = 0; // number of dimensions
+  int npoints = 0; // number of data points
+  float **attributes;
 
-  /* from the input file, get the numAttributes and numObjects ------------*/
+  /* from the input file, get the dim and npoints ------------*/
   if (isBinaryFile) {
     int infile;
     if ((infile = open(filename, O_RDONLY, "0600")) == -1) {
       fprintf(stderr, "Error: no such file (%s)\n", filename);
       exit(1);
     }
-    if (read(infile, &numObjects, sizeof(int)) < 0)
+    if (read(infile, &npoints, sizeof(int)) < 0)
       printf("WARNING: reading file error\n");
-    if (read(infile, &numAttributes, sizeof(int)) < 0)
+    if (read(infile, &dim, sizeof(int)) < 0)
       printf("WARNING: reading file error\n");
-
-    /* allocate space for attributes[] and read attributes of all objects */
-    buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
-    attributes    = (float**)malloc(numObjects*             sizeof(float*));
-    attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
-    for (int i=1; i<numObjects; i++)
-      attributes[i] = attributes[i-1] + numAttributes;
-    if (read(infile, buf, numObjects*numAttributes*sizeof(float)) < 0)
+    attributes    = (float**)malloc(npoints*    sizeof(float*));
+    attributes[0] = (float*) malloc(npoints*dim*sizeof(float));
+    for (int i=1; i<npoints; i++) attributes[i] = attributes[i-1] + dim;
+    if (read(infile, attributes[0], npoints*dim*sizeof(float)) < 0)
       printf("WARNING: reading file error\n");
     close(infile);
   }
@@ -94,28 +88,24 @@ int main(int argc, char **argv) {
     }
     while (fgets(line, 1024, infile) != NULL)
       if (strtok(line, " \t\n") != 0)
-        numObjects++;
+        npoints++;
     rewind(infile);
     while (fgets(line, 1024, infile) != NULL) {
       if (strtok(line, " \t\n") != 0) {
-        /* ignore the id (first attribute): numAttributes = 1; */
-        while (strtok(NULL, " ,\t\n") != NULL) numAttributes++;
+        /* ignore the id (first attribute): dim = 1; */
+        while (strtok(NULL, " ,\t\n") != NULL) dim++;
         break;
       }
     }
-    /* allocate space for attributes[] and read attributes of all objects */
-    buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
-    attributes    = (float**)malloc(numObjects*             sizeof(float*));
-    attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
-    int i;
-    for (i=1; i<numObjects; i++)
-      attributes[i] = attributes[i-1] + numAttributes;
+    attributes    = (float**)malloc(npoints*    sizeof(float*));
+    attributes[0] = (float*) malloc(npoints*dim*sizeof(float));
+    for (int i=1; i<npoints; i++) attributes[i] = attributes[i-1] + dim;
     rewind(infile);
-    i = 0;
+    int i = 0;
     while (fgets(line, 1024, infile) != NULL) {
       if (strtok(line, " \t\n") == NULL) continue; 
-      for (int j=0; j<numAttributes; j++) {
-        buf[i] = atof(strtok(NULL, " ,\t\n"));
+      for (int j=0; j<dim; j++) {
+        attributes[0][i] = atof(strtok(NULL, " ,\t\n"));
         i++;
       }
     }
@@ -123,31 +113,44 @@ int main(int argc, char **argv) {
   }
   //printf("I/O completed\n");
 
-  memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
-  printf("number of Objects %d\n", numObjects);
-  printf("number of Clusters %d\n",nclusters); 
-  printf("number of Attributes %d\n",numAttributes); 
+  // allocate space for returning variable memberships[]
+  int *memberships = (int*) malloc(npoints * sizeof(int));
+  for (int i=0; i<npoints; i++) memberships[i] = -1;
+
+  // allocate space for returning variable clusters[]
+  float **centroids;
+  centroids    = (float**) malloc(nclusters *             sizeof(float*));
+  centroids[0] = (float*)  malloc(nclusters * dim * sizeof(float));
+  for (int i=1; i<nclusters; i++) centroids[i] = centroids[i-1] + dim;
+ 
+  // randomly pick cluster centers
+  for (int i=0; i<nclusters; i++) {
+    int n = i;
+    for (int j=0; j<dim; j++)
+      centroids[i][j] = attributes[n][j];
+  }
+
+  printf("dim %d\n", dim);
+  printf("number of Objects %d\n", npoints);
+  printf("number of Clusters %d\n", nclusters); 
+  //srand(7);
 
   ctimer_t t;
   ctimer_start(&t);
-  int *membership = (int*) malloc(numObjects * sizeof(int));
-  //srand(7);
-  float **centres = kmeans_clustering(attributes,
-                                        numAttributes,
-                                        numObjects,
-                                        nclusters,
-                                        threshold,
-                                        membership);
+  kmeans_clustering(dim, npoints, nclusters, threshold, attributes, centroids, memberships);
   ctimer_stop(&t);
   ctimer_measure(&t);
   ctimer_print(t, "kmeans");
 
-  //print_centers(nclusters, numAttributes, centres);
-  free(centres[0]);
-  free(centres);
-  free(membership);
+  //TODO: verify outputs
+  //print_centroids(nclusters, dim, centroids);
+  //print_memberships(npoints, memberships);
+
+  free(memberships);
+  free(centroids[0]);
+  free(centroids);
+  free(attributes[0]);
   free(attributes);
-  free(buf);
   return(0);
 }
 
