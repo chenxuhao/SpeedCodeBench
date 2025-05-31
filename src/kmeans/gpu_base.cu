@@ -4,7 +4,10 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include "kmeans.h"
+
 typedef unsigned long long AccType;
+
+#define BLOCK_SIZE 256
 
 inline __device__ float euclidean_distance(const float* p1, const float* p2, int dim) {
   float dist = 0.0f;
@@ -47,8 +50,6 @@ __global__ void assign_clusters(
   }
 }
 
-#define BLOCK_SIZE 256
-
 void kmeans_clustering(int     dim,
                        int     npoints,
                        int     nclusters,
@@ -59,7 +60,6 @@ void kmeans_clustering(int     dim,
 {
   size_t points_size = npoints * dim * sizeof(float);
   size_t centroids_size = nclusters * dim * sizeof(float);
-
   const float* h_features = features[0];
   float* h_centroids = centroids[0];
   float* d_features, *d_centroids, *d_new_centers;
@@ -75,27 +75,25 @@ void kmeans_clustering(int     dim,
   cudaMemcpy(d_memberships, memberships, npoints * sizeof(int), cudaMemcpyHostToDevice);
   float* h_new_centers = (float*)malloc(centroids_size);
   int* h_counts = (int*)malloc(nclusters * sizeof(int));
+  AccType delta;
+  int threads_per_block = BLOCK_SIZE;
+  int num_blocks = (npoints + BLOCK_SIZE - 1) / BLOCK_SIZE;
+  printf("CUDA Kmeans (%d CTAs, %d threads/CTA)\n", num_blocks, threads_per_block );
 
   int loop = 0;
-  AccType delta;
   do {
     delta = 0.;
     cudaMemcpy(d_delta, &delta, sizeof(AccType), cudaMemcpyHostToDevice);
     cudaMemcpy(d_centroids, h_centroids, centroids_size, cudaMemcpyHostToDevice);
     cudaMemset(d_new_centers, 0, centroids_size);
     cudaMemset(d_cluster_sizes, 0, nclusters * sizeof(int));
-
-    int num_blocks = (npoints + BLOCK_SIZE - 1) / BLOCK_SIZE;
-    assign_clusters<<<num_blocks, BLOCK_SIZE>>>(d_features, d_centroids, d_memberships,
-                     d_new_centers, d_cluster_sizes, npoints, dim, nclusters, d_delta);
+    assign_clusters<<<num_blocks, threads_per_block>>>(d_features, d_centroids, d_memberships,
+                            d_new_centers, d_cluster_sizes, npoints, dim, nclusters, d_delta);
     cudaDeviceSynchronize();
-
     cudaMemcpy(&delta, d_delta, sizeof(AccType), cudaMemcpyDeviceToHost);
     printf("iteration %d: delta=%ld\n", loop, delta);
-
     cudaMemcpy(h_new_centers, d_new_centers, centroids_size, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_counts, d_cluster_sizes, nclusters * sizeof(int), cudaMemcpyDeviceToHost);
-
     for (int i = 0; i < nclusters; i++) {
       if (h_counts[i] > 0) {
         for (int j = 0; j < dim; j++) {

@@ -74,7 +74,7 @@ void kmeans_clustering(int     nfeatures,
     }
     printf("iteration %d: delta=%ld\n", loop, delta);
   } while (delta > threshold && loop++ < 500);
-  printf("iterated %d times\n", loop);
+  //printf("iterated %d times\n", loop);
   free(new_centers[0]);
   free(new_centers);
   free(new_centers_len);

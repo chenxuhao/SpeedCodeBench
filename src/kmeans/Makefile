@@ -1,6 +1,6 @@
 include ../common.mk
 OBJS = main.o
-all: kmeans_cpu_base kmeans_omp_base kmeans_cilk_base kmeans_gpu_base
+all: kmeans_cpu_base kmeans_omp_base kmeans_cilk_base kmeans_gpu_base kmeans_gpu_warp
 
 kmeans_cpu_base: $(OBJS) cpu_base.o
 	$(CC) $(CFLAGS) $(OBJS) cpu_base.o -o $@
@@ -12,6 +12,10 @@ kmeans_omp_base: $(OBJS) omp_base.o
 
 kmeans_gpu_base: $(OBJS) gpu_base.o
 	$(CC) $(CFLAGS) $(OBJS) gpu_base.o -o $@ $(NVLIBS) -lm
+	mv $@ $(BIN)
+
+kmeans_gpu_warp: $(OBJS) gpu_warp.o
+	$(CC) $(CFLAGS) $(OBJS) gpu_warp.o -o $@ $(NVLIBS) -lm
 	mv $@ $(BIN)
 
 kmeans_cilk_base: $(OBJS) cilk_base.o 
