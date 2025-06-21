@@ -18,21 +18,17 @@ class GraphGPU {
       GraphGPU(hg.V(), hg.E(), hg.is_directed(), hg.has_reverse_graph(), hg.get_max_degree()) {
     auto nv = hg.V();
     auto ne = hg.E();
-    std::cout << "Copying graph data to GPU memory ... ";
+    std::cout << "Copying graph to GPU\n";
     CUDA_SAFE_CALL(cudaMemcpy(d_rowptr, hg.rowptr(), (nv+1) * sizeof(eidType), cudaMemcpyHostToDevice));
     CUDA_SAFE_CALL(cudaMemcpy(d_colidx, hg.colidx(), ne * sizeof(vidType), cudaMemcpyHostToDevice));
     if (hg.has_reverse_graph()) {
       if (hg.is_directed()) {
-        std::cout << "This graph maintains both incomming and outgoing edge-list\n";
+        std::cout << "Copying reverse graph to GPU\n";
         CUDA_SAFE_CALL(cudaMemcpy(d_in_rowptr, hg.in_rowptr(), (nv+1) * sizeof(eidType), cudaMemcpyHostToDevice));
         CUDA_SAFE_CALL(cudaMemcpy(d_in_colidx, hg.in_colidx(), ne * sizeof(vidType), cudaMemcpyHostToDevice));
-      } else { // undirected graph
-        d_in_rowptr = d_rowptr;
-        d_in_colidx = d_colidx;
       }
     }
     CUDA_SAFE_CALL(cudaDeviceSynchronize());
-    std::cout << "Done\n";
   }
   GraphGPU(vidType nv, eidType ne, bool directed, bool reverse, vidType max_d) : 
       is_directed_(directed),
@@ -48,15 +44,20 @@ class GraphGPU {
     allocateFrom(nv, ne, has_reverse);
   }
   void allocateFrom(vidType nv, eidType ne, bool has_reverse = false) {
-    std::cout << "Allocating GPU memory for the graph ... ";
+    std::cout << "Allocating GPU memory for graph\n";
     CUDA_SAFE_CALL(cudaMalloc((void **)&d_rowptr, (nv+1) * sizeof(eidType)));
     CUDA_SAFE_CALL(cudaMalloc((void **)&d_colidx, ne * sizeof(vidType)));
     if (has_reverse) {
-      CUDA_SAFE_CALL(cudaMalloc((void **)&d_in_rowptr, (nv+1) * sizeof(eidType)));
-      CUDA_SAFE_CALL(cudaMalloc((void **)&d_in_colidx, ne * sizeof(vidType)));
+      if (is_directed()) {
+        std::cout << "Allocating GPU memory for reverse graph\n";
+        CUDA_SAFE_CALL(cudaMalloc((void **)&d_in_rowptr, (nv+1) * sizeof(eidType)));
+        CUDA_SAFE_CALL(cudaMalloc((void **)&d_in_colidx, ne * sizeof(vidType)));
+      } else { // undirected graph; symmetric
+        d_in_rowptr = d_rowptr;
+        d_in_colidx = d_colidx;
+      }
     }
     CUDA_SAFE_CALL(cudaDeviceSynchronize());
-    std::cout << "Done\n";
   }
 
   inline __device__ __host__ bool is_directed() { return is_directed_; }

@@ -10,8 +10,8 @@ class BaseGraph {
  protected:
   eidType *vertices;            // row pointers of CSR format
   vidType *edges;               // column indices of CSR format
-  vidType n_vertices;           // number of vertices
-  eidType n_edges;              // number of edges
+  size_t  n_vertices;           // number of vertices
+  size_t  n_edges;              // number of edges
 
   bool is_directed_;            // is it a directed graph?
   int vid_size, eid_size;       // number of bytes for vid, eid
@@ -29,9 +29,7 @@ class BaseGraph {
     assert(n_vertices > 0 && n_edges > 0);
     if (vid_size == 4) assert(n_vertices < 4294967295);
     std::cout << "Reading graph: |V| " << n_vertices << " |E| " << n_edges << "\n";
-    // read row pointers
     read_file(prefix + ".vertex.bin", vertices, n_vertices+1);
-    // read column indices
     read_file(prefix + ".edge.bin", edges, n_edges);
   }
 

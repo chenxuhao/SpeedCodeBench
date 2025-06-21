@@ -1,15 +1,10 @@
 #include "pr.h"
 #include "kernels.cuh"
 #include "cutil_subset.h"
-#include "cuda_launch_config.hpp"
 
-//#define SHFL
 //#define FUSED
 
 __global__ void pull_step(GraphGPU g, score_t *sums, const score_t *outgoing_contrib) {
-#ifndef SHFL
-  __shared__ score_t sdata[BLOCK_SIZE + 16];                       // padded to avoid reduction ifs
-#endif
   __shared__ int ptrs[BLOCK_SIZE/WARP_SIZE][2];
 
   const int thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;  // global thread index
@@ -18,19 +13,15 @@ __global__ void pull_step(GraphGPU g, score_t *sums, const score_t *outgoing_con
   const int warp_lane   = threadIdx.x / WARP_SIZE;                // warp index within the CTA
   const int num_warps   = (BLOCK_SIZE / WARP_SIZE) * gridDim.x;   // total number of active warps
 
-  for(int dst = warp_id; dst < g.V(); dst += num_warps) {
-    if(thread_lane < 2)
-      ptrs[warp_lane][thread_lane] = g.edge_begin(dst + thread_lane);
-    const int row_begin = ptrs[warp_lane][0];                   //same as: row_begin = row_offsets[dst];
-    const int row_end   = ptrs[warp_lane][1];                   //same as: row_end   = row_offsets[dst+1];
-
-    // compute local sum
+  for (vidType dst = warp_id; dst < g.V(); dst += num_warps) {
+    auto row_begin = g.edge_begin(dst);
+    auto row_end   = g.edge_end(dst); 
     score_t sum = 0;
-    for (int offset = row_begin + thread_lane; offset < row_end; offset += WARP_SIZE) {
+    for (auto offset = row_begin + thread_lane; offset < row_end; offset += WARP_SIZE) {
       auto src = g.getEdgeDst(offset);
-      sum += __ldg(outgoing_contrib+src);
+      sum += outgoing_contrib[src];
     }
-#ifndef SHFL
+/*
     // store local sum in shared memory,
     // and reduce local sums to global sum
     sdata[threadIdx.x] = sum; __syncthreads();
@@ -40,7 +31,7 @@ __global__ void pull_step(GraphGPU g, score_t *sums, const score_t *outgoing_con
     sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  2]; __syncthreads();
     sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  1]; __syncthreads();
     if(thread_lane == 0) sums[dst] += sdata[threadIdx.x];
-#else
+*/
     sum += __shfl_down_sync(0xFFFFFFFF, sum, 16);
     sum += __shfl_down_sync(0xFFFFFFFF, sum,  8);
     sum += __shfl_down_sync(0xFFFFFFFF, sum,  4);
@@ -48,7 +39,6 @@ __global__ void pull_step(GraphGPU g, score_t *sums, const score_t *outgoing_con
     sum += __shfl_down_sync(0xFFFFFFFF, sum,  1);
     sum = __shfl_sync(0xFFFFFFFF, sum,  0);
     if(thread_lane == 0) sums[dst] = sum;
-#endif
   }
 }
 
@@ -66,16 +56,13 @@ __global__ void pull_fused(GraphGPU g, score_t *scores, score_t *outgoing_contri
   const int num_warps   = (BLOCK_SIZE / WARP_SIZE) * gridDim.x;   // total number of active warps
 
   float error = 0;
-  for(int dst = warp_id; dst < g.V(); dst += num_warps) {
-    if(thread_lane < 2)
-      ptrs[warp_lane][thread_lane] = g.edge_begin(dst + thread_lane);
-    const int row_begin = ptrs[warp_lane][0];                   //same as: row_begin = row_offsets[dst];
-    const int row_end   = ptrs[warp_lane][1];                   //same as: row_end   = row_offsets[dst+1];
-
+  for (vidType dst = warp_id; dst < g.V(); dst += num_warps) {
+    auto row_begin = g.edge_begin(dst);
+    auto row_end   = g.edge_end(dst); 
     // compute local sum
     score_t sum = 0;
-    for (int offset = row_begin + thread_lane; offset < row_end; offset += WARP_SIZE) {
-      int src = g.getEdgeDst(offset);
+    for (auto offset = row_begin + thread_lane; offset < row_end; offset += WARP_SIZE) {
+      auto src = g.getEdgeDst(offset);
       sum += outgoing_contrib[src];
     }
     // store local sum in shared memory
@@ -100,17 +87,15 @@ __global__ void pull_fused(GraphGPU g, score_t *scores, score_t *outgoing_contri
 }
 
 void PRSolver(BaseGraph &g, score_t *scores) {
-  size_t memsize = print_device_info(0);
+  //size_t memsize = print_device_info(0);
   auto nv = g.num_vertices();
   auto ne = g.num_edges();
-  auto md = g.get_max_degree();
-  size_t mem_graph = size_t(nv+1)*sizeof(eidType) + size_t(2)*size_t(ne)*sizeof(vidType);
-  std::cout << "GPU_total_mem = " << memsize << " graph_mem = " << mem_graph << "\n";
-
   GraphGPU gg(g);
   size_t nthreads = BLOCK_SIZE;
-  const int WARPS_PER_BLOCK = (BLOCK_SIZE / WARP_SIZE);
-  size_t nblocks = (nv-1)/WARPS_PER_BLOCK+1;
+  //const int WARPS_PER_BLOCK = (BLOCK_SIZE / WARP_SIZE);
+  const int nblocks = (nv - 1) / BLOCK_SIZE + 1;
+  const int mblocks = 2048; //(nv - 1) / WARPS_PER_BLOCK + 1;
+  std::cout << "CUDA PageRank (" << mblocks << " CTAs, " << nthreads << " threads/CTA)\n";
 
   score_t *d_scores, *d_sums, *d_contrib;
   CUDA_SAFE_CALL(cudaMalloc((void **)&d_scores, nv * sizeof(score_t)));
@@ -122,17 +107,6 @@ void PRSolver(BaseGraph &g, score_t *scores) {
 
   int iter = 0;
   const score_t base_score = (1.0f - kDamp) / nv;
-  cudaDeviceProp deviceProp;
-  CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, 0));
-  auto nSM = deviceProp.multiProcessorCount;
-#ifdef FUSED
-  auto max_blocks_per_SM = maximum_residency(pull_fused, nthreads, 0);
-#else
-  auto max_blocks_per_SM = maximum_residency(pull_step, nthreads, 0);
-#endif
-  vidType max_blocks = max_blocks_per_SM * nSM;
-  auto mblocks = std::min(max_blocks, DIVIDE_INTO(nv, WARPS_PER_BLOCK));
-
   do {
     ++iter;
     h_diff = 0;
@@ -143,6 +117,7 @@ void PRSolver(BaseGraph &g, score_t *scores) {
     pull_fused <<<mblocks, nthreads>>>(gg, d_scores, d_contrib, d_diff, base_score);
 #else
     pull_step <<<mblocks, nthreads>>>(gg, d_sums, d_contrib);
+    CUDA_SAFE_CALL(cudaDeviceSynchronize());
     l1norm <<<nblocks, nthreads>>> (nv, d_scores, d_sums, d_diff, base_score);
 #endif
     CUDA_SAFE_CALL(cudaDeviceSynchronize());
@@ -157,5 +132,4 @@ void PRSolver(BaseGraph &g, score_t *scores) {
   CUDA_SAFE_CALL(cudaFree(d_sums));
   CUDA_SAFE_CALL(cudaFree(d_contrib));
   CUDA_SAFE_CALL(cudaFree(d_diff));
-  return;
 }

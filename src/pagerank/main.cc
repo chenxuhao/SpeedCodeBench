@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Example: " << argv[0] << " ../inputs/citeseer/graph\n";
     exit(1);
   }
-  std::cout << "PageRank: directed graphs only, undirected graphs are treated as bidirected\n";
+  std::cout << "PageRank: assuming symmetric (bidirected) graph for simplicity\n";
   BaseGraph g(argv[1]);
   g.build_reverse_graph();
 

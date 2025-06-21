@@ -28,9 +28,7 @@ void BaseGraph::orientation(std::string outfile_prefix) {
   for (vidType i = 0; i < n_vertices; i++) {
     new_vertices[i+1] = new_vertices[i] + new_degrees[i];
   }
-  auto num_edges = new_vertices[n_vertices];
-
-  //std::cout << "|E| after clean: " << num_edges << "\n";
+  size_t num_edges = new_vertices[n_vertices];
   assert(n_edges == num_edges*2);
   std::string vertex_file_path = outfile_prefix + ".vertex.bin";
   std::string edge_file_path = outfile_prefix + ".edge.bin";
@@ -115,7 +113,7 @@ void BaseGraph::orientation(std::string outfile_prefix) {
 VertexSet BaseGraph::N(vidType vid) const {
   assert(vid >= 0);
   assert(vid < n_vertices);
-  eidType begin = vertices[vid], end = vertices[vid+1];
+  size_t begin = vertices[vid], end = vertices[vid+1];
   if (begin > end || end > n_edges) {
     fprintf(stderr, "vertex %u bounds error: [%lu, %lu)\n", vid, begin, end);
     exit(1);
@@ -128,8 +126,8 @@ VertexSet BaseGraph::N(vidType vid) const {
 VertexSet BaseGraph::in_neigh(vidType vid) const {
   assert(vid >= 0);
   assert(vid < n_vertices);
-  auto begin = reverse_vertices[vid];
-  auto end = reverse_vertices[vid+1];
+  size_t begin = reverse_vertices[vid];
+  size_t end = reverse_vertices[vid+1];
   if (begin > end) {
     fprintf(stderr, "vertex %u bounds error: [%lu, %lu)\n", vid, begin, end);
     exit(1);
@@ -141,8 +139,8 @@ VertexSet BaseGraph::in_neigh(vidType vid) const {
 VertexSet BaseGraph::out_neigh(vidType vid, vidType offset) const {
   assert(vid >= 0);
   assert(vid < n_vertices);
-  auto begin = vertices[vid];
-  auto end = vertices[vid+1];
+  size_t begin = vertices[vid];
+  size_t end = vertices[vid+1];
   if (begin > end) {
     fprintf(stderr, "vertex %u bounds error: [%lu, %lu)\n", vid, begin, end);
     exit(1);
@@ -153,6 +151,7 @@ VertexSet BaseGraph::out_neigh(vidType vid, vidType offset) const {
 
 void BaseGraph::build_reverse_graph() {
   if (!is_directed()) {
+    printf("undirected (symmetric) graph, no need to reverse\n");
     reverse_vertices = vertices;
     reverse_edges = edges;
     return;
