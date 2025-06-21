@@ -10,7 +10,7 @@ CLANG := $(CILK_HOME)/bin/clang
 CILKCC := $(CILK_HOME)/bin/clang
 CLANGXX := $(CILK_HOME)/bin/clang++
 CILKCXX := $(CILK_HOME)/bin/clang++
-ZERACXX := /home/macy404/kitsune/cilk-kitsune/ock++.py
+ZERACXX := $(ZERA_HOME)/ock++.py
 
 CFLAGS    := -Wall -fopenmp
 CXXFLAGS  := -Wall -fopenmp -std=c++17

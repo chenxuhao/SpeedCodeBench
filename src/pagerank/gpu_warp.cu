@@ -109,6 +109,7 @@ void PRSolver(BaseGraph &g, score_t *scores) {
 
   GraphGPU gg(g);
   size_t nthreads = BLOCK_SIZE;
+  const int WARPS_PER_BLOCK = (BLOCK_SIZE / WARP_SIZE);
   size_t nblocks = (nv-1)/WARPS_PER_BLOCK+1;
 
   score_t *d_scores, *d_sums, *d_contrib;

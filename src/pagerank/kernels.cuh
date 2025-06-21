@@ -1,5 +1,6 @@
 #pragma once
 #include "graph_gpu.h"
+#include <cub/cub.cuh>
 
 typedef cub::BlockReduce<score_t, BLOCK_SIZE> BlockReduce;
 

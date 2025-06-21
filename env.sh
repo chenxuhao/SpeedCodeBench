@@ -14,4 +14,4 @@ export MKL_DIR=/opt/apps/sysnet/intel/20.0/mkl
 
 export CILK_HOME=/opt/opencilk
 export THRUST_HOME=/usr/local/cuda/include/thrust
-
+export ZERA_HOME=/opt/kitsune/cilk-kitsune
