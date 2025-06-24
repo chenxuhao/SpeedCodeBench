@@ -1,12 +1,16 @@
-// Copyright 2020 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
 #include <omp.h>
-#include "sssp.h"
+#include <climits>
+#include "BaseGraph.hh"
 #include "platform_atomics.h"
+
+typedef int T;
+#define kDistInf UINT_MAX/2
+typedef std::vector<vidType> VertexList; // vertex ID list
+typedef std::vector<std::vector<vidType>> VertexLists;
 
 //[1] Ulrich Meyer and Peter Sanders. "δ-stepping: a parallelizable shortest path
 //    algorithm." Journal of Algorithms, 49(1):114--152, 2003.
-void SSSPSolver(Graph &g, vidType source, int *dist) {
+void SSSPSolver(BaseGraph &g, T* weights, vidType source, T *dist) {
   int delta = 4;
   int num_threads = 1;
   #pragma omp parallel
@@ -14,7 +18,6 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
     num_threads = omp_get_num_threads();
   }
   printf("OpenMP SSSP solver (%d threads)\n", num_threads);
-  Timer t;
   dist[source] = 0;
   VertexList frontier(g.E());
   // two element arrays for double buffering curr=iter&1, next=(iter+1)&1
@@ -22,7 +25,6 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
   size_t frontier_tails[2] = {1, 0}; 
   frontier[0] = source;
 
-  t.Start();
   #pragma omp parallel
   {
     VertexLists local_bins(0);
@@ -39,7 +41,7 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
           auto offset = g.edge_begin(src);
           for (auto dst : g.N(src)) {
             auto old_dist = dist[dst];
-            auto new_dist = dist[src] + g.getEdgeData(offset++);
+            auto new_dist = dist[src] + weights[offset++];
             if (new_dist < old_dist) {
               bool changed_dist = true;
               while (!compare_and_swap(dist[dst], old_dist, new_dist)) {
@@ -63,7 +65,7 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
       for (size_t i = curr_bin_index; i < local_bins.size(); i ++) {
         if (!local_bins[i].empty()) {
           #pragma omp critical
-          next_bin_index = min(next_bin_index, i);
+          next_bin_index = std::min(next_bin_index, i);
           break;
         }
       }
@@ -86,8 +88,4 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
     #pragma omp single
     std::cout << "iterations = " << iter << "\n";
   }
-  t.Stop();
-  std::cout << "runtime [omp_dstep] = " << t.Seconds() << "sec\n";
-  return;
 }
-

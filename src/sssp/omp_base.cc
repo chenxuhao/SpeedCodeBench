@@ -1,10 +1,11 @@
-// Copyright 2023 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
 #include <omp.h>
-#include "graph.h"
+#include <climits>
+#include "BaseGraph.hh"
 #include "sliding_queue.h"
 
-void SSSPSolver(Graph &g, vidType source, int *distances) {
+typedef int T;
+#define kDistInf UINT_MAX/2
+void SSSPSolver(BaseGraph &g, T *weights, vidType source, T *distances) {
   int num_threads = 1;
   #pragma omp parallel
   {
@@ -12,9 +13,6 @@ void SSSPSolver(Graph &g, vidType source, int *distances) {
   }
   printf("OpenMP SSSP solver (%d threads)\n", num_threads);
   distances[source] = 0;
-
-  Timer t;
-  t.Start();
   int iter = 0;
   SlidingQueue<vidType> queue(g.E());
   queue.push_back(source);
@@ -31,7 +29,7 @@ void SSSPSolver(Graph &g, vidType source, int *distances) {
       auto offset = g.edge_begin(v);
       auto dist_v = distances[v];
       for (auto u : g.N(v)) {
-        auto wt = g.getEdgeData(offset++);
+        auto wt = weights[offset++];
         auto new_dist = dist_v + wt;
         auto old_dist = distances[u];
         if (new_dist < old_dist) {
@@ -44,9 +42,4 @@ void SSSPSolver(Graph &g, vidType source, int *distances) {
     lqueues.collect();
     queue.slide_window();
   }
-  t.Stop();
-  std::cout << "iterations = " << iter << "\n";
-  std::cout << "runtime [omp_base] = " << t.Seconds() << "sec\n";
-  return;
 }
-

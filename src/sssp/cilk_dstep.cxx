@@ -1,14 +1,17 @@
-// Copyright 2023 MIT
-// Authors: Xuhao Chen <cxh@mit.edu>
-#include "sssp.h"
-#include "graph.h"
+#include <climits>
+#include "BaseGraph.hh"
 #include "platform_atomics.h"
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 
+typedef int T;
+#define kDistInf UINT_MAX/2
+typedef std::vector<vidType> VertexList; // vertex ID list
+typedef std::vector<std::vector<vidType>> VertexLists;
+
 //[1] Ulrich Meyer and Peter Sanders. "δ-stepping: a parallelizable shortest path
 //    algorithm." Journal of Algorithms, 49(1):114--152, 2003.
-void SSSPSolver(Graph &g, vidType source, int *dist) {
+void SSSPSolver(BaseGraph &g, T* weights, vidType source, int *dist) {
   const int delta = 4;
   dist[source] = 0;
   VertexList frontier(g.E());
@@ -21,8 +24,6 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
   size_t frontier_tails[2] = {1, 0}; 
   std::vector<VertexLists> per_thread_bins(num_threads);
 
-  Timer t;
-  t.Start();
   int iter = 0;
   while (static_cast<int>(shared_indexes[iter&1]) != kDistInf) {
     size_t &curr_bin_index = shared_indexes[iter&1];
@@ -40,7 +41,7 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
         auto offset = g.edge_begin(src);
         for (auto dst : g.N(src)) {
           auto old_dist = dist[dst];
-          auto new_dist = dist[src] + g.getEdgeData(offset++);
+          auto new_dist = dist[src] + weights[offset++];
           if (new_dist < old_dist) {
             bool changed_dist = true;
             while (!compare_and_swap(dist[dst], old_dist, new_dist)) {
@@ -99,10 +100,5 @@ void SSSPSolver(Graph &g, vidType source, int *dist) {
     }
     iter++;
   }
-
-  t.Stop();
   std::cout << "iterations = " << iter << "\n";
-  std::cout << "runtime [cilk_dstep] = " << t.Seconds() << "sec\n";
-  return;
 }
-
