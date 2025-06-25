@@ -60,6 +60,11 @@ class BaseGraph {
   vidType get_degree(vidType v) const { return vertices[v+1] - vertices[v]; }
   eidType edge_begin(vidType v) const { return vertices[v]; }
   eidType edge_end(vidType v) const { return vertices[v+1]; }
+  eidType in_edge_begin(vidType v) const { return reverse_vertices[v]; }
+  eidType in_edge_end(vidType v) const { return reverse_vertices[v+1]; }
+  vidType get_edge_dst(eidType e) const { return edges[e]; }
+  vidType get_in_edge_dst(eidType e) const { return reverse_edges[e]; }
+  vidType* get_in_adj(vidType v) const { return &edges[vertices[v]]; }
   vidType* adj_ptr(vidType v) const { return &edges[vertices[v]]; }
   vidType* get_adj(vidType v) const { return &edges[vertices[v]]; }
   eidType* rowptr() { return vertices; }             // get row pointers array
