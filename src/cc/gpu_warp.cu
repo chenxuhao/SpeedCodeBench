@@ -43,23 +43,11 @@ __global__ void shortcut(int m, comp_t *comp) {
 }
 
 void CCSolver(BaseGraph &g, comp_t *h_comp) {
-  size_t memsize = print_device_info(0);
-  auto nv = g.num_vertices();
-  auto ne = g.num_edges();
-  auto md = g.get_max_degree();
-  size_t mem_graph = size_t(nv+1)*sizeof(eidType) + size_t(2)*size_t(ne)*sizeof(vidType);
-  std::cout << "GPU_total_mem = " << memsize << " graph_mem = " << mem_graph << "\n";
-
   GraphGPU gg(g);
+  auto nv = g.V();
   size_t nthreads = BLOCK_SIZE;
+  size_t WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
   size_t nblocks = (nv-1)/WARPS_PER_BLOCK+1;
-  if (nblocks > 65536) nblocks = 65536;
-  cudaDeviceProp deviceProp;
-  CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, 0));
-  int max_blocks_per_SM = maximum_residency(hook, nthreads, 0);
-  std::cout << "max_blocks_per_SM = " << max_blocks_per_SM << "\n";
-  size_t max_blocks = max_blocks_per_SM * deviceProp.multiProcessorCount;
-  nblocks = std::min(max_blocks, nblocks);
   std::cout << "CUDA CC (" << nblocks << " CTAs, " << nthreads << " threads/CTA)\n";
 
   comp_t *d_comp;
@@ -73,7 +61,6 @@ void CCSolver(BaseGraph &g, comp_t *h_comp) {
     ++ iter;
     h_changed = false;
     CUDA_SAFE_CALL(cudaMemcpy(d_changed, &h_changed, sizeof(h_changed), cudaMemcpyHostToDevice));
-    //printf("iteration=%d\n", iter);
     hook<<<nblocks, nthreads>>>(gg, d_comp, d_changed);
     CUDA_SAFE_CALL(cudaDeviceSynchronize());
     shortcut<<<(nv - 1) / nthreads + 1, nthreads>>>(nv, d_comp);
